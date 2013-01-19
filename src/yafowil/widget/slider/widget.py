@@ -73,12 +73,12 @@ def slider_edit_renderer(widget, data):
     if show_value:
         unit = attr_value('unit', widget, data)
         if unit:
-            content += data.tag('span', unit, **{'class': 'unit'})
+            content += data.tag('span', '%s: ' % unit, **{'class': 'unit'})
         if range is True:
             content += data.tag('span', value[0], **{'class': 'lower_value'})
             content += data.tag('span', value[1], **{'class': 'upper_value'})
         else:
-            content += data.tag('span', value, **{'class': 'value'})
+            content += data.tag('span', value, **{'class': 'slider_value'})
     content += data.tag('div', ' ', **{'class': 'slider'})
     wrapper_attrs = data_attrs_helper(widget, data, js_options)
     wrapper_attrs['class'] = cssclasses(widget, data)

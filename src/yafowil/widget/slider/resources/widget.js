@@ -60,6 +60,7 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
                             upper_value.val(ui.values[1]);
                         } else {
                             value.attr('value', ui.value);
+                            $('span.slider_value', widget).html(ui.value);
                         }
                     };
                     if (options.slide) {
