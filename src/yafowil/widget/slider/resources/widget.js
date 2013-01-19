@@ -43,30 +43,37 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
                 $('.yafowil_slider').each(function() {
                     var widget = $(this);
                     var input = $('input.slider_value', widget);
+                    var slider_elem = $('div.slider', widget);
                     var options = widget.data();
+                    var value, lower_value, upper_value;
                     if (options.range === true) {
-                        var lower_value = $('input.lower_value', widget);
-                        var upper_value = $('input.upper_value', widget);
+                        lower_value = $('input.lower_value', widget);
+                        upper_value = $('input.upper_value', widget);
                         options.values = [lower_value.val(), upper_value.val()];
                     } else {
-                        var value = $('input.slider_value', widget);
+                        value = $('input.slider_value', widget);
                         options.value = value.val();
                     }
+                    var callback = function(event, ui) {
+                        if (options.range === true) {
+                            lower_value.val(ui.values[0]);
+                            upper_value.val(ui.values[1]);
+                        } else {
+                            value.attr('value', ui.value);
+                        }
+                    };
                     if (options.slide) {
                         var path = options.slide;
                         options.slide = yafowil.slider.lookup_callback(path);
                     } else {
-                        options.slide = function(event, ui) {
-                        };
+                        options.slide = callback;
                     }
                     if (options.change) {
                         var path = options.change;
                         options.change = yafowil.slider.lookup_callback(path);
                     } else {
-                        options.change = function(event, ui) {
-                        };
+                        options.change = callback;
                     }
-                    var slider_elem = $('div.slider', widget);
                     slider_elem.slider(options);
                 });
             }

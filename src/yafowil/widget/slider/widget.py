@@ -5,6 +5,7 @@ from yafowil.base import (
 )
 from yafowil.utils import (
     cssid,
+    cssclasses,
     managedprops,
     attr_value,
     data_attrs_helper,
@@ -26,7 +27,9 @@ def slider_extractor(widget, data):
         return [lower_value, upper_value]
     # regular value extraction
     if widget.dottedpath in data.request:
-        return int(data.request[widget.dottedpath])
+        val = data.request[widget.dottedpath]
+        if val:
+            return int(val)
     return UNSET
 
 
@@ -44,6 +47,7 @@ def slider_edit_renderer(widget, data):
             'id': cssid(widget, 'input-lower'),
             'style': 'display:none;',
             'class': 'lower_value',
+            'value': value[0],
         }
         content += data.tag('input', **lower_input_attrs)
         upper_input_attrs = {
@@ -52,15 +56,17 @@ def slider_edit_renderer(widget, data):
             'id': cssid(widget, 'input-upper'),
             'style': 'display:none;',
             'class': 'upper_value',
+            'value': value[1],
         }
         content += data.tag('input', **upper_input_attrs)
     else:
         input_attrs = {
             'type': 'text',
             'name': widget.dottedpath,
-            'id': cssid(widget, 'input-upper'),
+            'id': cssid(widget, 'input'),
             'style': 'display:none;',
-            'class': 'upper_value',
+            'class': 'slider_value',
+            'value': value,
         }
         content += data.tag('input', **input_attrs)
     show_value = attr_value('show_value', widget, data)
@@ -73,11 +79,9 @@ def slider_edit_renderer(widget, data):
             content += data.tag('span', value[1], **{'class': 'upper_value'})
         else:
             content += data.tag('span', value, **{'class': 'value'})
-    content += data.tag('div', '&nbsp;', **{'class': 'slider'})
+    content += data.tag('div', ' ', **{'class': 'slider'})
     wrapper_attrs = data_attrs_helper(widget, data, js_options)
-    wrapper_attrs['class'] = cssclasses(widget,
-                                        data,
-                                        additional=['yafowil_slider'])
+    wrapper_attrs['class'] = cssclasses(widget, data)
     return data.tag('div', content, **wrapper_attrs)
 
 
@@ -111,14 +115,14 @@ factory.doc['props']['slider.unit'] = \
 """Slider value unit.
 """
 
-factory.defaults['slider.orientation'] = 'horizontal'
+factory.defaults['slider.orientation'] = None
 factory.doc['props']['slider.orientation'] = \
 """Slider Orientation. Either ``horizontal`` or ``vertical``.
 """
 
-factory.defaults['slider.range'] = False
+factory.defaults['slider.range'] = None
 factory.doc['props']['slider.range'] = \
-"""Slider Range. Either ``True``, ``False``, ``'min'`` or ``'max'``.
+"""Slider Range. Either ``True``, ``'min'`` or ``'max'``.
 """
 
 factory.defaults['slider.min'] = None
