@@ -2,7 +2,7 @@ from yafowil.base import factory
 
 
 DOC_DEFAULT_SLIDER = """
-Default Slider
+Default slider
 --------------
 
 jQuery UI slider. Default behavior.
@@ -20,7 +20,7 @@ def default_slider():
         'label': 'Default Slider'})
     return {'widget': form,
             'doc': DOC_DEFAULT_SLIDER,
-            'title': 'Default Slider'}
+            'title': 'Default slider'}
 
 
 DOC_FIXED_MIN_RANGE_SLIDER = """
@@ -123,10 +123,44 @@ def range_slider():
             'title': 'Range slider'}
 
 
+DOC_STEP_SLIDER = """
+Step slider
+-----------
+
+Increment slider values with the step option set to an integer, commonly a
+dividend of the slider's maximum value. The default increment is '1'.
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=100, props={
+        'label': 'Step slider',
+        'min': 0,
+        'max': 500,
+        'step': 50,
+        'show_value': True,
+        'unit': 'Donation (50 EUR increments)'})
+"""
+
+def step_slider():
+    form = factory('fieldset',
+                   name='yafowil.widget.slider.step')
+    slider = form['slider'] = factory('#field:slider', value=100, props={
+        'label': 'Step slider',
+        'min': 0,
+        'max': 500,
+        'step': 50,
+        'show_value': True,
+        'unit': 'Donation (50 EUR increments)'})
+    return {'widget': form,
+            'doc': DOC_STEP_SLIDER,
+            'title': 'Step slider'}
+
+
 def get_example():
     return [
         default_slider(),
         fixed_minimum_range(),
         fixed_maximum_range(),
         range_slider(),
+        step_slider(),
     ]
