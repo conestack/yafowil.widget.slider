@@ -56,8 +56,10 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
                     }
                     var callback = function(event, ui) {
                         if (options.range === true) {
-                            lower_value.val(ui.values[0]);
-                            upper_value.val(ui.values[1]);
+                            lower_value.attr('value', ui.values[0]);
+                            upper_value.attr('value', ui.values[1]);
+                            $('span.lower_value', widget).html(ui.values[0]);
+                            $('span.upper_value', widget).html(ui.values[1]);
                         } else {
                             value.attr('value', ui.value);
                             $('span.slider_value', widget).html(ui.value);

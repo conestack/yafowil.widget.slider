@@ -89,9 +89,44 @@ def fixed_maximum_range():
             'title': 'Fixed maximum'}
 
 
+DOC_RANGE_SLIDER = """
+Range slider
+------------
+
+Set the range option to true to capture a range of values with two drag
+handles. The space between the handles is filled with a different background
+color to indicate those values are selected.
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=[75, 300], props={
+        'label': 'Range slider',
+        'range': True,
+        'min': 0,
+        'max': 500,
+        'show_value': True,
+        'unit': 'Price range (EUR)'})
+"""
+
+def range_slider():
+    form = factory('fieldset',
+                   name='yafowil.widget.slider.range')
+    slider = form['slider'] = factory('#field:slider', value=[75, 300], props={
+        'label': 'Range slider',
+        'range': True,
+        'min': 0,
+        'max': 500,
+        'show_value': True,
+        'unit': 'Price range (EUR)'})
+    return {'widget': form,
+            'doc': DOC_RANGE_SLIDER,
+            'title': 'Range slider'}
+
+
 def get_example():
     return [
         default_slider(),
         fixed_minimum_range(),
         fixed_maximum_range(),
+        range_slider(),
     ]

@@ -18,12 +18,14 @@ def slider_extractor(widget, data):
     if attr_value('range', widget, data) is True:
         lower_value_name = '%s.lower' % widget.dottedpath
         upper_value_name = '%s.upper' % widget.dottedpath
+        lower_value = UNSET
         if lower_value_name in data.request:
             lower_value = data.request[lower_value_name]
             if lower_value:
                 lower_value = int(lower_value)
             else:
                 lower_value = UNSET
+        upper_value = UNSET
         if upper_value_name in data.request:
             upper_value = data.request[upper_value_name]
             if upper_value:
@@ -82,6 +84,7 @@ def slider_edit_renderer(widget, data):
             content += data.tag('span', '%s: ' % unit, **{'class': 'unit'})
         if range is True:
             content += data.tag('span', value[0], **{'class': 'lower_value'})
+            content += ' - '
             content += data.tag('span', value[1], **{'class': 'upper_value'})
         else:
             content += data.tag('span', value, **{'class': 'slider_value'})
