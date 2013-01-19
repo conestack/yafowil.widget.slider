@@ -1,5 +1,5 @@
 /*
- * jQuery UI Slider 1.8.16
+ * jQuery UI Slider 1.8.18
  *
  * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
@@ -21,4 +21,4 @@
 .ui-slider-vertical .ui-slider-handle { left: -.3em; margin-left: 0; margin-bottom: -.6em; }
 .ui-slider-vertical .ui-slider-range { left: 0; width: 100%; }
 .ui-slider-vertical .ui-slider-range-min { bottom: 0; }
-.ui-slider-vertical .ui-slider-range-max { top: 0; }/*
+.ui-slider-vertical .ui-slider-range-max { top: 0; }
