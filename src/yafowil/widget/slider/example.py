@@ -53,11 +53,45 @@ def fixed_minimum_range():
         'unit': 'Pieces'})
     return {'widget': form,
             'doc': DOC_FIXED_MIN_RANGE_SLIDER,
-            'title': 'Default Slider'}
+            'title': 'Fixed minimum'}
+
+
+DOC_FIXED_MAX_RANGE_SLIDER = """
+Range with fixed maximum
+------------------------
+
+Fix the maximum value of the range slider so that the user can only select a
+minimum. Set the ``range`` option to ``'max'``.
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=2, props={
+        'label': 'Range with fixed maximum',
+        'range': 'max',
+        'min': 1,
+        'max': 10,
+        'show_value': True,
+        'unit': 'Minimum number'})
+"""
+
+def fixed_maximum_range():
+    form = factory('fieldset',
+                   name='yafowil.widget.slider.fixed_maximum_range')
+    slider = form['slider'] = factory('#field:slider', value=2, props={
+        'label': 'Range with fixed maximum',
+        'range': 'max',
+        'min': 1,
+        'max': 10,
+        'show_value': True,
+        'unit': 'Minimum number'})
+    return {'widget': form,
+            'doc': DOC_FIXED_MAX_RANGE_SLIDER,
+            'title': 'Fixed maximum'}
 
 
 def get_example():
     return [
         default_slider(),
         fixed_minimum_range(),
+        fixed_maximum_range(),
     ]
