@@ -18,12 +18,18 @@ def slider_extractor(widget, data):
     if attr_value('range', widget, data) is True:
         lower_value_name = '%s.lower' % widget.dottedpath
         upper_value_name = '%s.upper' % widget.dottedpath
-        lower_value = UNSET
-        upper_value = UNSET
         if lower_value_name in data.request:
-            lower_value = int(data.request[lower_value_name])
+            lower_value = data.request[lower_value_name]
+            if lower_value:
+                lower_value = int(lower_value)
+            else:
+                lower_value = UNSET
         if upper_value_name in data.request:
-            upper_value = int(data.request[upper_value_name])
+            upper_value = data.request[upper_value_name]
+            if upper_value:
+                upper_value = int(upper_value)
+            else:
+                upper_value = UNSET
         return [lower_value, upper_value]
     # regular value extraction
     if widget.dottedpath in data.request:
@@ -47,7 +53,7 @@ def slider_edit_renderer(widget, data):
             'id': cssid(widget, 'input-lower'),
             'style': 'display:none;',
             'class': 'lower_value',
-            'value': value[0],
+            'value': value and value[0],
         }
         content += data.tag('input', **lower_input_attrs)
         upper_input_attrs = {
@@ -56,7 +62,7 @@ def slider_edit_renderer(widget, data):
             'id': cssid(widget, 'input-upper'),
             'style': 'display:none;',
             'class': 'upper_value',
-            'value': value[1],
+            'value': value and value[1],
         }
         content += data.tag('input', **upper_input_attrs)
     else:
