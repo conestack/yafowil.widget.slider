@@ -156,6 +156,38 @@ def step_slider():
             'title': 'Step slider'}
 
 
+DOC_VERTICAL_SLIDER = """
+Vertical slider
+---------------
+
+Change the orientation of the slider to vertical. Assign a height value via
+``height`` or by setting the height through CSS, and set the ``orientation``
+option to ``vertical``.
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=50, props={
+        'label': 'Vertical slider',
+        'orientation': 'vertical',
+        'show_value': True,
+        'height': 200,
+        'unit': 'mmHg'})
+"""
+
+def vertical_slider():
+    form = factory('fieldset',
+                   name='yafowil.widget.slider.vertical')
+    slider = form['slider'] = factory('#field:slider', value=50, props={
+        'label': 'Vertical slider',
+        'orientation': 'vertical',
+        'show_value': True,
+        'height': 200,
+        'unit': 'mmHg'})
+    return {'widget': form,
+            'doc': DOC_VERTICAL_SLIDER,
+            'title': 'Vertical slider'}
+
+
 def get_example():
     return [
         default_slider(),
@@ -163,4 +195,5 @@ def get_example():
         fixed_maximum_range(),
         range_slider(),
         step_slider(),
+        vertical_slider(),
     ]

@@ -43,7 +43,7 @@ def slider_extractor(widget, data):
 
 js_options = ['orientation', 'range', 'min', 'max', 'step', 'slide', 'change']
 
-@managedprops(*['show_value', 'unit'] + js_options)
+@managedprops(*['show_value', 'unit', 'height'] + js_options)
 def slider_edit_renderer(widget, data):
     value = fetch_value(widget, data)
     content = ''
@@ -88,7 +88,12 @@ def slider_edit_renderer(widget, data):
             content += data.tag('span', value[1], **{'class': 'upper_value'})
         else:
             content += data.tag('span', value, **{'class': 'slider_value'})
-    content += data.tag('div', ' ', **{'class': 'slider'})
+    slider_attrs = {'class': 'slider'}
+    if attr_value('orientation', widget, data) == 'vertical':
+        height = attr_value('height', widget, data)
+        if height:
+            slider_attrs['style'] = 'height:%spx;' % height
+    content += data.tag('div', ' ', **slider_attrs)
     wrapper_attrs = data_attrs_helper(widget, data, js_options)
     wrapper_attrs['class'] = cssclasses(widget, data)
     return data.tag('div', content, **wrapper_attrs)
@@ -127,6 +132,11 @@ factory.doc['props']['slider.unit'] = \
 factory.defaults['slider.orientation'] = None
 factory.doc['props']['slider.orientation'] = \
 """Slider Orientation. Either ``horizontal`` or ``vertical``.
+"""
+
+factory.defaults['slider.height'] = None
+factory.doc['props']['slider.height'] = \
+"""Height of slider if orientation is ``vertical`` in pixel.
 """
 
 factory.defaults['slider.range'] = None
