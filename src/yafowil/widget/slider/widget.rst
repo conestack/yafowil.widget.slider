@@ -143,13 +143,13 @@ Render with all options::
     ... })
     >>> widget()
     u'<div class="yafowil_slider" 
-    data-change="some_ns.some_callback" 
-    data-max="50" 
-    data-min="1" 
-    data-orientation="vertical" 
-    data-range="true" 
-    data-slide="some_ns.some_callback" 
-    data-step="5"><input 
+    data-change=\'some_ns.some_callback\' 
+    data-max=\'50\' 
+    data-min=\'1\' 
+    data-orientation=\'vertical\' 
+    data-range=\'true\' 
+    data-slide=\'some_ns.some_callback\' 
+    data-step=\'5\'><input 
     class="lower_value" 
     id="input-lower-sliderfield" 
     name="sliderfield.lower" 
