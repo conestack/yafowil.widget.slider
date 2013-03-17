@@ -140,6 +140,7 @@ Render with all options::
     ...     'step': 5,
     ...     'slide': 'some_ns.some_callback',
     ...     'change': 'some_ns.some_callback',
+    ...     'data': {'mydata': 1}
     ... })
     >>> widget()
     u'<div class="yafowil_slider" 

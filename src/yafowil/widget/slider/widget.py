@@ -43,7 +43,7 @@ def slider_extractor(widget, data):
 
 js_options = ['orientation', 'range', 'min', 'max', 'step', 'slide', 'change']
 
-@managedprops(*['show_value', 'unit', 'height'] + js_options)
+@managedprops(*['show_value', 'unit', 'height', 'data'] + js_options)
 def slider_edit_renderer(widget, data):
     value = fetch_value(widget, data)
     content = ''
@@ -94,7 +94,13 @@ def slider_edit_renderer(widget, data):
         if height:
             slider_attrs['style'] = 'height:%spx;' % height
     content += data.tag('div', ' ', **slider_attrs)
-    wrapper_attrs = data_attrs_helper(widget, data, js_options)
+    html_data = widget.attrs['data']
+    data_keys = html_data.keys()
+    for key in data_keys:
+        if key in js_options:
+            raise ValueError(u"Additional data dict contains reserved "
+                             u"attribute name '%s'" % key)
+    wrapper_attrs = data_attrs_helper(widget, data, js_options + data_keys)
     wrapper_attrs['class'] = cssclasses(widget, data)
     return data.tag('div', content, **wrapper_attrs)
 
@@ -167,4 +173,10 @@ factory.doc['props']['slider.slide'] = \
 factory.defaults['slider.change'] = None
 factory.doc['props']['slider.change'] = \
 """Optional Javascript ``change`` callback as string.
+"""
+
+factory.defaults['slider.data'] = dict()
+factory.doc['props']['slider.data'] = \
+"""Additional data redered as HTML data attributes on slider wrapper
+DOM Element.
 """
