@@ -147,6 +147,7 @@ Render with all options::
     data-change=\'some_ns.some_callback\' 
     data-max=\'50\' 
     data-min=\'1\' 
+    data-mydata=\'1\' 
     data-orientation=\'vertical\' 
     data-range=\'true\' 
     data-slide=\'some_ns.some_callback\' 
@@ -177,3 +178,13 @@ Render display mode, fails::
       ...
     NotImplementedError: ``yafowil.widget.slider`` does not support display 
     mode yet
+
+Render reserved data attribute, fails::
+
+    >>> widget = factory('slider', 'sliderfield', props={
+    ...     'data': {'min': 1}
+    ... })
+    >>> widget()
+    Traceback (most recent call last):
+      ...
+    ValueError: Additional data dict contains reserved attribute name 'min'

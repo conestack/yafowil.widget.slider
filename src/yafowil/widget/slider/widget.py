@@ -94,14 +94,15 @@ def slider_edit_renderer(widget, data):
         if height:
             slider_attrs['style'] = 'height:%spx;' % height
     content += data.tag('div', ' ', **slider_attrs)
+    wrapper_attrs = data_attrs_helper(widget, data, js_options)
+    wrapper_attrs['class'] = cssclasses(widget, data)
     html_data = widget.attrs['data']
     data_keys = html_data.keys()
     for key in data_keys:
         if key in js_options:
             raise ValueError(u"Additional data dict contains reserved "
                              u"attribute name '%s'" % key)
-    wrapper_attrs = data_attrs_helper(widget, data, js_options + data_keys)
-    wrapper_attrs['class'] = cssclasses(widget, data)
+        wrapper_attrs['data-%s' % key] = html_data[key]
     return data.tag('div', content, **wrapper_attrs)
 
 
