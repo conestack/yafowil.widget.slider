@@ -55,7 +55,8 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
             },
 
             binder: function(context) {
-                $('.yafowil_slider').each(function() {
+                var sliders = $('.yafowil_slider');
+                sliders.each(function() {
                     var widget = $(this);
                     var input = $('input.slider_value', widget);
                     var slider_elem = $('div.slider', widget);
@@ -87,6 +88,12 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
                         options.change = yafowil.slider.callback;
                     }
                     slider_elem.slider(options);
+                });
+                // initial JS change to display value if configured
+                sliders.each(function() {
+                    var widget = $(this);
+                    var slider_elem = $('div.slider', widget);
+                    slider_elem.data("slider")._change();
                 });
             }
         }
