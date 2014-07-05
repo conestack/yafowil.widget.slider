@@ -5,7 +5,7 @@ from yafowil.base import factory
 resourcedir = os.path.join(os.path.dirname(__file__), 'resources')
 js = [{
     'group': 'yafowil.widget.slider.dependencies',
-    'resource': 'jquery-ui-1.8.18.slider.min.js',
+    'resource': 'jquery.ui.slider.min.js',
     'order': 20,
 }, {
     'group': 'yafowil.widget.slider.common',
@@ -14,7 +14,7 @@ js = [{
 }]
 default_css = [{
     'group': 'yafowil.widget.slider.dependencies',
-    'resource': 'jquery-ui-1.8.18.slider.css',
+    'resource': 'jquery.ui.slider.css',
     'order': 20,
 }, {
     'group': 'yafowil.widget.slider.common',
@@ -23,7 +23,7 @@ default_css = [{
 }]
 bootstrap_css = [{
     'group': 'yafowil.widget.slider.dependencies',
-    'resource': 'jquery-ui-1.8.16.slider.bootstrap.css',
+    'resource': 'jquery-ui.slider.bootstrap.css',
     'order': 20,
 }, {
     'group': 'yafowil.widget.slider.common',
