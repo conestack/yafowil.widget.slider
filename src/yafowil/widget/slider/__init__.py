@@ -23,7 +23,7 @@ default_css = [{
 }]
 bootstrap_css = [{
     'group': 'yafowil.widget.slider.dependencies',
-    'resource': 'jquery-ui.slider.bootstrap.css',
+    'resource': 'jquery.ui.slider.bootstrap.css',
     'order': 20,
 }, {
     'group': 'yafowil.widget.slider.common',

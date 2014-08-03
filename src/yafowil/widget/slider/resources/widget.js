@@ -89,12 +89,6 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
                     }
                     slider_elem.slider(options);
                 });
-                // initial JS change to display value if configured
-                sliders.each(function() {
-                    var widget = $(this);
-                    var slider_elem = $('div.slider', widget);
-                    slider_elem.data("slider")._change();
-                });
             }
         }
     });
