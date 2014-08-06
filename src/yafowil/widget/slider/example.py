@@ -10,17 +10,21 @@ jQuery UI slider. Default behavior.
 .. code-block:: python
 
     slider = factory('#field:slider', value=20, props={
-        'label': 'Default Slider'})
+        'label': 'Default Slider',
+    })
 """
 
 def default_slider():
     form = factory('fieldset',
                    name='yafowil.widget.slider.default')
     slider = form['slider'] = factory('#field:slider', value=20, props={
-        'label': 'Default Slider'})
-    return {'widget': form,
-            'doc': DOC_DEFAULT_SLIDER,
-            'title': 'Default slider'}
+        'label': 'Default Slider',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_DEFAULT_SLIDER,
+        'title': 'Default slider',
+    }
 
 
 DOC_FIXED_MIN_RANGE_SLIDER = """
@@ -38,7 +42,8 @@ maximum. Set the ``range`` option to ``'min'``.
         'min': 1,
         'max': 200,
         'show_value': True,
-        'unit': 'Pieces'})
+        'unit': 'Pieces',
+    })
 """
 
 def fixed_minimum_range():
@@ -50,10 +55,13 @@ def fixed_minimum_range():
         'min': 1,
         'max': 200,
         'show_value': True,
-        'unit': 'Pieces'})
-    return {'widget': form,
-            'doc': DOC_FIXED_MIN_RANGE_SLIDER,
-            'title': 'Fixed minimum'}
+        'unit': 'Pieces',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_FIXED_MIN_RANGE_SLIDER,
+        'title': 'Fixed minimum',
+    }
 
 
 DOC_FIXED_MAX_RANGE_SLIDER = """
@@ -71,7 +79,8 @@ minimum. Set the ``range`` option to ``'max'``.
         'min': 1,
         'max': 10,
         'show_value': True,
-        'unit': 'Minimum number'})
+        'unit': 'Minimum number',
+    })
 """
 
 def fixed_maximum_range():
@@ -83,10 +92,13 @@ def fixed_maximum_range():
         'min': 1,
         'max': 10,
         'show_value': True,
-        'unit': 'Minimum number'})
-    return {'widget': form,
-            'doc': DOC_FIXED_MAX_RANGE_SLIDER,
-            'title': 'Fixed maximum'}
+        'unit': 'Minimum number',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_FIXED_MAX_RANGE_SLIDER,
+        'title': 'Fixed maximum',
+    }
 
 
 DOC_RANGE_SLIDER = """
@@ -105,7 +117,8 @@ color to indicate those values are selected.
         'min': 0,
         'max': 500,
         'show_value': True,
-        'unit': 'Price range (EUR)'})
+        'unit': 'Price range (EUR)',
+    })
 """
 
 def range_slider():
@@ -117,10 +130,13 @@ def range_slider():
         'min': 0,
         'max': 500,
         'show_value': True,
-        'unit': 'Price range (EUR)'})
-    return {'widget': form,
-            'doc': DOC_RANGE_SLIDER,
-            'title': 'Range slider'}
+        'unit': 'Price range (EUR)',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_RANGE_SLIDER,
+        'title': 'Range slider',
+    }
 
 
 DOC_STEP_SLIDER = """
@@ -138,7 +154,8 @@ dividend of the slider's maximum value. The default increment is '1'.
         'max': 500,
         'step': 50,
         'show_value': True,
-        'unit': 'Donation (50 EUR increments)'})
+        'unit': 'Donation (50 EUR increments)',
+    })
 """
 
 def step_slider():
@@ -150,10 +167,13 @@ def step_slider():
         'max': 500,
         'step': 50,
         'show_value': True,
-        'unit': 'Donation (50 EUR increments)'})
-    return {'widget': form,
-            'doc': DOC_STEP_SLIDER,
-            'title': 'Step slider'}
+        'unit': 'Donation (50 EUR increments)',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_STEP_SLIDER,
+        'title': 'Step slider',
+    }
 
 
 DOC_VERTICAL_SLIDER = """
@@ -171,7 +191,8 @@ option to ``vertical``.
         'orientation': 'vertical',
         'show_value': True,
         'height': 200,
-        'unit': 'mmHg'})
+        'unit': 'mmHg',
+    })
 """
 
 def vertical_slider():
@@ -182,10 +203,13 @@ def vertical_slider():
         'orientation': 'vertical',
         'show_value': True,
         'height': 200,
-        'unit': 'mmHg'})
-    return {'widget': form,
-            'doc': DOC_VERTICAL_SLIDER,
-            'title': 'Vertical slider'}
+        'unit': 'mmHg',
+    })
+    return {
+        'widget': form,
+        'doc': DOC_VERTICAL_SLIDER,
+        'title': 'Vertical slider',
+    }
 
 
 def get_example():
