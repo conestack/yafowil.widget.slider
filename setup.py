@@ -5,7 +5,7 @@ from setuptools import (
 )
 
 
-version = '1.1pre1'
+version = '1.1.dev1'
 shortdesc = 'Slider Widget for YAFOWIL'
 longdesc = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 longdesc += open(os.path.join(os.path.dirname(__file__), 'HISTORY.rst')).read()
