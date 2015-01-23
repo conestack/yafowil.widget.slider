@@ -2,7 +2,7 @@
 History
 =======
 
-1.1 (unreleased)
+1.1 (2015-01-23)
 ----------------
 
 - Update jquery UI slider to 1.10.3 and use latest jquery ui boostrap
