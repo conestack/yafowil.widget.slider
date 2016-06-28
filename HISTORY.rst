@@ -2,6 +2,13 @@
 History
 =======
 
+1.2 (unreleased)
+----------------
+
+- Use ``yafowil.utils.entry_point`` decorator.
+  [rnix, 2016-06-28]
+
+
 1.1 (2015-01-23)
 ----------------
 
