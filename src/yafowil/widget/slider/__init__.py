@@ -31,6 +31,15 @@ bootstrap_css = [{
     'resource': 'widget.css',
     'order': 21,
 }]
+plone5_css = [{
+    'group': 'yafowil.widget.slider.dependencies',
+    'resource': 'jquery.ui.slider.plone5.css',
+    'order': 20,
+}, {
+    'group': 'yafowil.widget.slider.common',
+    'resource': 'widget.css',
+    'order': 21,
+}]
 
 
 @entry_point(order=10)
@@ -40,3 +49,5 @@ def register():
                            resourcedir, js=js, css=default_css)
     factory.register_theme('bootstrap', 'yafowil.widget.slider',
                            resourcedir, js=js, css=bootstrap_css)
+    factory.register_theme('plone5', 'yafowil.widget.slider',
+                           resourcedir, js=js, css=plone5_css)

@@ -5,6 +5,9 @@ History
 1.2 (unreleased)
 ----------------
 
+- Add dedicated CSS for ``plone5`` theme provided by ``yafowil.plone``.
+  [rnix, 2016-06-28]
+
 - Use ``yafowil.utils.entry_point`` decorator.
   [rnix, 2016-06-28]
 
