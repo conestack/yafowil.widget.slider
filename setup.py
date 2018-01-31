@@ -41,7 +41,7 @@ setup(
     extras_require = dict(
         test=tests_require,
     ),
-    test_suite="yafowil.widget.slider.tests.test_suite",
+    test_suite="yafowil.widget.slider.tests",
     entry_points={
         'yafowil.plugin': [
             'register = yafowil.widget.slider:register',
