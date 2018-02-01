@@ -1,13 +1,17 @@
-from node.tests import NodeTestCase
 from node.utils import UNSET
 from yafowil.base import ExtractionError
 from yafowil.base import factory
+from yafowil.tests import YafowilTestCase
 from yafowil.tests import fxml
-import yafowil.widget.slider
 import yafowil.loader
 
 
-class TestSliderWidget(NodeTestCase):
+class TestSliderWidget(YafowilTestCase):
+
+    def setUp(self):
+        super(TestSliderWidget, self).setUp()
+        from yafowil.widget.slider import widget
+        reload(widget)
 
     def test_render_no_range(self):
         # Render no range
