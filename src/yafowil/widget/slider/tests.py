@@ -1,3 +1,8 @@
+from yafowil.compat import IS_PY2
+
+if not IS_PY2:
+    from importlib import reload 
+
 from node.utils import UNSET
 from yafowil.base import ExtractionError
 from yafowil.base import factory
