@@ -16,4 +16,6 @@ We'd be happy to see many forks and pull-requests to make YAFOWIL even better.
 Contributors
 ============
 
-- Robert Niederreiter <rnix [at] squarewave [dot] at>
+- Robert Niederreiter
+
+- Georg Bernhard
