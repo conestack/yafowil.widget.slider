@@ -55,7 +55,7 @@ if (typeof(window.yafowil) == "undefined") yafowil = {};
             },
 
             binder: function(context) {
-                var sliders = $('.yafowil_slider');
+                var sliders = $('.yafowil_slider', context);
                 sliders.each(function() {
                     var widget = $(this);
                     var input = $('input.slider_value', widget);

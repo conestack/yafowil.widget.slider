@@ -2,10 +2,11 @@
 History
 =======
 
-1.4 (unreleased)
-----------------
+1.3.1 (unreleased)
+------------------
 
-- No changes yet.
+- Fix binding scope in ``bdajax`` binder callback.
+  [rnix]
 
 
 1.3 (2018-07-16)
