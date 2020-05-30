@@ -2,7 +2,7 @@
 History
 =======
 
-1.3.1 (unreleased)
+1.3.1 (2020-05-30)
 ------------------
 
 - Fix binding scope in ``bdajax`` binder callback.

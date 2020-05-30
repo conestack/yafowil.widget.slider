@@ -3,7 +3,7 @@ from setuptools import setup
 import os
 
 
-version = '1.3.1.dev0'
+version = '1.3.1'
 shortdesc = 'Slider Widget for YAFOWIL'
 longdesc = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 longdesc += open(os.path.join(os.path.dirname(__file__), 'HISTORY.rst')).read()
@@ -33,7 +33,7 @@ setup(
     url=u'http://pypi.python.org/pypi/yafowil.widget.slider',
     license='Simplified BSD',
     packages=find_packages('src'),
-    package_dir = {'': 'src'},
+    package_dir={'': 'src'},
     namespace_packages=['yafowil', 'yafowil.widget'],
     include_package_data=True,
     zip_safe=False,
@@ -42,7 +42,7 @@ setup(
         'yafowil>2.1.99',
     ],
     tests_require=tests_require,
-    extras_require = dict(
+    extras_require=dict(
         test=tests_require,
     ),
     test_suite="yafowil.widget.slider.tests",
