@@ -14,12 +14,19 @@ jQuery UI slider. Default behavior.
     })
 """
 
+
 def default_slider():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.default')
-    slider = form['slider'] = factory('#field:slider', value=20, props={
-        'label': 'Default Slider',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.default'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=20,
+        props={
+            'label': 'Default Slider',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_DEFAULT_SLIDER,
@@ -46,17 +53,24 @@ maximum. Set the ``range`` option to ``'min'``.
     })
 """
 
+
 def fixed_minimum_range():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.fixed_minimum_range')
-    slider = form['slider'] = factory('#field:slider', value=37, props={
-        'label': 'Range with fixed minimum',
-        'range': 'min',
-        'min': 1,
-        'max': 200,
-        'show_value': True,
-        'unit': 'Pieces',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.fixed_minimum_range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=37,
+        props={
+            'label': 'Range with fixed minimum',
+            'range': 'min',
+            'min': 1,
+            'max': 200,
+            'show_value': True,
+            'unit': 'Pieces',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_FIXED_MIN_RANGE_SLIDER,
@@ -83,17 +97,24 @@ minimum. Set the ``range`` option to ``'max'``.
     })
 """
 
+
 def fixed_maximum_range():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.fixed_maximum_range')
-    slider = form['slider'] = factory('#field:slider', value=2, props={
-        'label': 'Range with fixed maximum',
-        'range': 'max',
-        'min': 1,
-        'max': 10,
-        'show_value': True,
-        'unit': 'Minimum number',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.fixed_maximum_range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=2,
+        props={
+            'label': 'Range with fixed maximum',
+            'range': 'max',
+            'min': 1,
+            'max': 10,
+            'show_value': True,
+            'unit': 'Minimum number',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_FIXED_MAX_RANGE_SLIDER,
@@ -121,17 +142,24 @@ color to indicate those values are selected.
     })
 """
 
+
 def range_slider():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.range')
-    slider = form['slider'] = factory('#field:slider', value=[75, 300], props={
-        'label': 'Range slider',
-        'range': True,
-        'min': 0,
-        'max': 500,
-        'show_value': True,
-        'unit': 'Price range (EUR)',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=[75, 300],
+        props={
+            'label': 'Range slider',
+            'range': True,
+            'min': 0,
+            'max': 500,
+            'show_value': True,
+            'unit': 'Price range (EUR)',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_RANGE_SLIDER,
@@ -158,17 +186,24 @@ dividend of the slider's maximum value. The default increment is '1'.
     })
 """
 
+
 def step_slider():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.step')
-    slider = form['slider'] = factory('#field:slider', value=100, props={
-        'label': 'Step slider',
-        'min': 0,
-        'max': 500,
-        'step': 50,
-        'show_value': True,
-        'unit': 'Donation (50 EUR increments)',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.step'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=100,
+        props={
+            'label': 'Step slider',
+            'min': 0,
+            'max': 500,
+            'step': 50,
+            'show_value': True,
+            'unit': 'Donation (50 EUR increments)',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_STEP_SLIDER,
@@ -195,16 +230,23 @@ option to ``vertical``.
     })
 """
 
+
 def vertical_slider():
-    form = factory('fieldset',
-                   name='yafowil.widget.slider.vertical')
-    slider = form['slider'] = factory('#field:slider', value=50, props={
-        'label': 'Vertical slider',
-        'orientation': 'vertical',
-        'show_value': True,
-        'height': 200,
-        'unit': 'mmHg',
-    })
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.vertical'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=50,
+        props={
+            'label': 'Vertical slider',
+            'orientation': 'vertical',
+            'show_value': True,
+            'height': 200,
+            'unit': 'mmHg',
+        }
+    )
     return {
         'widget': form,
         'doc': DOC_VERTICAL_SLIDER,

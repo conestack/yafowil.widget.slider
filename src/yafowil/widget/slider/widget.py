@@ -39,6 +39,7 @@ def slider_extractor(widget, data):
 
 js_options = ['orientation', 'range', 'min', 'max', 'step', 'slide', 'change']
 
+
 @managedprops(*['show_value', 'unit', 'height', 'data'] + js_options)
 def slider_edit_renderer(widget, data):
     value = fetch_value(widget, data)
@@ -113,8 +114,8 @@ factory.register(
     edit_renderers=[slider_edit_renderer],
     display_renderers=[slider_display_renderer])
 
-factory.doc['blueprint']['slider'] = \
-"""Add-on blueprint `yafowil.widget.slider
+factory.doc['blueprint']['slider'] = """\
+Add-on blueprint `yafowil.widget.slider
 <http://github.com/bluedynamics/yafowil.widget.slider/>`_ .
 """
 
@@ -123,57 +124,57 @@ factory.defaults['slider.default'] = ''
 factory.defaults['slider.class'] = 'yafowil_slider'
 
 factory.defaults['slider.show_value'] = False
-factory.doc['props']['slider.show_value'] = \
-"""Show value in addition to slider.
+factory.doc['props']['slider.show_value'] = """\
+Show value in addition to slider.
 """
 
 factory.defaults['slider.unit'] = ''
-factory.doc['props']['slider.unit'] = \
-"""Slider value unit.
+factory.doc['props']['slider.unit'] = """\
+Slider value unit.
 """
 
 factory.defaults['slider.orientation'] = None
-factory.doc['props']['slider.orientation'] = \
-"""Slider Orientation. Either ``horizontal`` or ``vertical``.
+factory.doc['props']['slider.orientation'] = """\
+Slider Orientation. Either ``horizontal`` or ``vertical``.
 """
 
 factory.defaults['slider.height'] = None
-factory.doc['props']['slider.height'] = \
-"""Height of slider if orientation is ``vertical`` in pixel.
+factory.doc['props']['slider.height'] = """\
+Height of slider if orientation is ``vertical`` in pixel.
 """
 
 factory.defaults['slider.range'] = None
-factory.doc['props']['slider.range'] = \
-"""Slider Range. Either ``True``, ``'min'`` or ``'max'``.
+factory.doc['props']['slider.range'] = """\
+Slider Range. Either ``True``, ``'min'`` or ``'max'``.
 """
 
 factory.defaults['slider.min'] = None
-factory.doc['props']['slider.min'] = \
-"""Minimum slider value. Defaults to 0.
+factory.doc['props']['slider.min'] = """\
+Minimum slider value. Defaults to 0.
 """
 
 factory.defaults['slider.max'] = None
-factory.doc['props']['slider.max'] = \
-"""Maximum slider value value. Defaults to 100.
+factory.doc['props']['slider.max'] = """\
+Maximum slider value value. Defaults to 100.
 """
 
 factory.defaults['slider.step'] = None
-factory.doc['props']['slider.step'] = \
-"""Snap slider to increments.
+factory.doc['props']['slider.step'] = """\
+Snap slider to increments.
 """
 
 factory.defaults['slider.slide'] = None
-factory.doc['props']['slider.slide'] = \
-"""Optional Javascript ``slide`` callback as string.
+factory.doc['props']['slider.slide'] = """\
+Optional Javascript ``slide`` callback as string.
 """
 
 factory.defaults['slider.change'] = None
-factory.doc['props']['slider.change'] = \
-"""Optional Javascript ``change`` callback as string.
+factory.doc['props']['slider.change'] = """\
+Optional Javascript ``change`` callback as string.
 """
 
 factory.defaults['slider.data'] = dict()
-factory.doc['props']['slider.data'] = \
-"""Additional data redered as HTML data attributes on slider wrapper
+factory.doc['props']['slider.data'] = """\
+Additional data redered as HTML data attributes on slider wrapper
 DOM Element.
 """
