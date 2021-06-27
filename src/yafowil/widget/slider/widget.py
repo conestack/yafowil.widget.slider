@@ -116,7 +116,7 @@ factory.register(
 
 factory.doc['blueprint']['slider'] = """\
 Add-on blueprint `yafowil.widget.slider
-<http://github.com/bluedynamics/yafowil.widget.slider/>`_ .
+<http://github.com/conestack/yafowil.widget.slider/>`_ .
 """
 
 factory.defaults['slider.default'] = ''
