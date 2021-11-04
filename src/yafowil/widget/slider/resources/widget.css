@@ -1,3 +1,20 @@
 div.yafowil_slider {
     padding-top:0.65em;
+    width: 100%;
+}
+
+div.yafowil_slider > .slider {
+    height:20px;
+    background: lightgray;
+}
+
+div.yafowil_slider > .slider .slider-value-track {
+    background: pink;
+    height: 20px;
+    position: absolute;
+}
+
+div.yafowil_slider > .slider .slider-handle {
+    position: absolute;
+    background: black;
 }

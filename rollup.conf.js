@@ -16,15 +16,14 @@ export default args => {
             cleanup()
         ],
         output: [{
-            file: 'src/yafowil/widget/slider/yafowil.widget.slider.js',
+            file: 'src/yafowil/widget/slider/resources/widget.js',
             format: 'iife',
             outro: outro,
             globals: {
                 jquery: 'jQuery'
             },
             interop: 'default',
-            sourcemap: true,
-            sourcemapExcludeSources: true
+            sourcemap: false
         }],
         external: [
             'jquery'
@@ -32,7 +31,7 @@ export default args => {
     };
     if (args.configDebug !== true) {
         conf.output.push({
-            file: 'src/yafowil/widget/slider/yafowil.widget.slider.min.js',
+            file: 'src/yafowil/widget/slider/resources/widget.min.js',
             format: 'iife',
             plugins: [
                 terser()
@@ -42,8 +41,7 @@ export default args => {
                 jquery: 'jQuery'
             },
             interop: 'default',
-            sourcemap: true,
-            sourcemapExcludeSources: true
+            sourcemap: false
         });
     }
     return conf;
