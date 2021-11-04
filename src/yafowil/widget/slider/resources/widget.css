@@ -4,17 +4,38 @@ div.yafowil_slider {
 }
 
 div.yafowil_slider > .slider {
-    height:20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 20px;
+}
+
+div.yafowil_slider > .slider .slider-bg {
+    height: 15px;
+    position: absolute;
     background: lightgray;
+    width: 100%;
+    border-radius: 15px;
 }
 
 div.yafowil_slider > .slider .slider-value-track {
-    background: pink;
-    height: 20px;
+    height: 15px;
     position: absolute;
+    background: lightskyblue;
+    border-radius: 15px;
 }
 
 div.yafowil_slider > .slider .slider-handle {
     position: absolute;
     background: black;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+div.yafowil_slider > .slider .slider-handle-end {
+    position: absolute;
+    left: 200px;
+    background: orange;
+    border-radius: 50%;
+    transform: translateX(-50%);
 }
