@@ -27,15 +27,57 @@ div.yafowil_slider > .slider .slider-value-track {
 
 div.yafowil_slider > .slider .slider-handle {
     position: absolute;
-    background: black;
+    background: gray;
     border-radius: 50%;
     transform: translateX(-50%);
 }
 
 div.yafowil_slider > .slider .slider-handle-end {
     position: absolute;
-    left: 200px;
-    background: orange;
+    left: 0;
+    background: gray;
     border-radius: 50%;
     transform: translateX(-50%);
+}
+
+div.yafowil_slider > .slider.slider-vertical {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 20px;
+    margin-top: 10px;
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-bg {
+    width: 15px;
+    position: absolute;
+    background: lightgray;
+    height: 100%;
+    border-radius: 15px;
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-value-track {
+    height:0;
+    width: 15px;
+    position: absolute;
+    top: 0;
+    background: lightskyblue;
+    border-radius: 15px;
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-handle {
+    position: absolute;
+    top: 0;
+    background: gray;
+    border-radius: 50%;
+    transform: translateY(-50%);
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-handle-end {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: gray;
+    border-radius: 50%;
+    transform: translateY(-50%);
 }

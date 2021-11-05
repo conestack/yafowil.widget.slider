@@ -16,21 +16,17 @@ export class Slider {
 
     constructor(elem) {
         this.elem = elem;
+        this.options = this.elem.data();
+        this.bind_options();
+        this.slider_handle_dim = 20;
+
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
 
-        this.slider_width = this.elem.width();
-        this.offset = this.elem.offset().left;
-        this.slider_handle_width = 20;
-        this.value = 0;
-
-        this.options = this.elem.data();
-        this.binder();
-
         let slider_handle_elem = this.slider_handle_elem = $(`
             <div class="slider-handle" 
-                 style="width:${this.slider_handle_width}px;
-                        height:${this.slider_handle_width}px"/>
+                 style="width:${this.slider_handle_dim}px;
+                        height:${this.slider_handle_dim}px"/>
         `);
         let slider_value_track = this.slider_value_track = $(`
             <div class="slider-value-track" />
@@ -38,10 +34,10 @@ export class Slider {
         let slider_bg = $(`
             <div class="slider-bg" />
         `);
-
-        this.slider_elem.append(slider_bg);
-        this.slider_elem.append(slider_value_track);
-        this.slider_elem.append(slider_handle_elem);
+        this.slider_elem
+            .append(slider_bg)
+            .append(slider_value_track)
+            .append(slider_handle_elem);
 
         this.handle_mousedown = this.handle_mousedown.bind(this);
         this.handle_drag = this.handle_drag.bind(this);
@@ -49,46 +45,79 @@ export class Slider {
         if (this.options.range == true) {
             let slider_handle_elem_end = this.slider_handle_elem_end = $(`
                 <div class="slider-handle-end"
-                     style="width:${this.slider_handle_width}px;
-                            height:${this.slider_handle_width}px"/>
+                     style="width:${this.slider_handle_dim}px;
+                            height:${this.slider_handle_dim}px"/>
             `);
             this.slider_elem.append(slider_handle_elem_end);
-            this.slider_handle_elem.on('mousedown', this.handle_range_slider.bind(this));
-            this.slider_handle_elem_end.on('mousedown', this.handle_range_slider.bind(this));
+
+            this.handle_drag_range = this.handle_drag_range.bind(this);
+            this.slider_handle_elem.on('mousedown', this.handle_drag_range);
+            this.slider_handle_elem_end.on('mousedown', this.handle_drag_range);
         } else {
             this.slider_handle_elem
             .off('mousedown')
             .on('mousedown', this.handle_mousedown);
         }
+
+        this.init_position();
     }
 
-    binder() {
+    bind_options() {
         let elements = {};
         if (this.options.range === true) {
             elements.lower_display = $('span.lower_value', this.elem);
             elements.upper_display = $('span.upper_value', this.elem);
             elements.lower_value = $('input.lower_value', this.elem);
             elements.upper_value = $('input.upper_value', this.elem);
-            this.options.values = [elements.lower_value.val(),
-                                   elements.upper_value.val()];
+            this.options.values = [
+                elements.lower_value.val(),
+                elements.upper_value.val()
+            ];
         } else {
             elements.display = $('span.slider_value', this.elem);
             elements.value = $('input.slider_value', this.elem);
             this.options.value = elements.value.val();
         }
-        if (this.options.slide) {
-            var path = this.options.slide;
-            this.options.slide = this.lookup_callback(path);
-        } else {
-            this.options.slide = this.callback;
-        }
-        if (this.options.change) {
-            var path = this.options.change;
-            this.options.change = this.lookup_callback(path);
-        } else {
-            this.options.change = this.callback;
-        }
         this.elem.data('slider_elements', elements);
+    }
+
+    init_position() {
+        if (!this.options.min && !this.options.max) {
+            this.options.min = 0;
+            this.options.max = 100;
+        }
+        if (this.options.orientation === 'vertical') {
+            this.slider_elem.addClass('slider-vertical');
+            this.slider_dim = this.slider_elem.height();
+            this.offset = this.slider_elem.offset().top;
+        } else {
+            this.slider_dim = this.elem.width();
+            this.offset = this.elem.offset().left;
+        }
+
+        if (this.options.range === true) {
+            let val1 = this.options.values[0];
+            let val2 = this.options.values[1];
+
+            let val_disp_1 = this.transform_to_display(val1);
+            let val_disp_2 = this.transform_to_display(val2);
+            let values = [val_disp_1, val_disp_2];
+            this.set_position(values);
+        } else
+        if (this.options.value) {
+            let value_transformed = this.options.value;
+            let value_display = this.transform_to_display(value_transformed);
+            this.set_position(value_display);
+        }
+        if (this.options.range === 'max') {
+            if (this.options.orientation === 'vertical') {
+                this.slider_value_track
+                    .css('bottom', 0)
+                    .css('top', 'unset');
+            } else {
+                this.slider_value_track.css('right', 0);
+            }
+        }
     }
 
     handle_mousedown(e) {
@@ -99,24 +128,61 @@ export class Slider {
     handle_drag(e) {
         e.preventDefault();
         e.stopPropagation();
-        let mouse_x = e.clientX;
-        let value_width = mouse_x - this.offset;
-        let val;
-
-        value_width = this.prevent_overflow(value_width);
-
-        if (this.options.min && this.options.max) {
-            val = this.transform_to_range(value_width);
+        let mouse_pos;
+        if (this.options.orientation === 'vertical') {
+            mouse_pos = e.pageY;
+        } else {
+            mouse_pos = e.pageX;
         }
+        let value_display = this.prevent_overflow(mouse_pos - this.offset);
+        let value_range = this.transform_to_range(value_display);
         if (this.options.step) {
-            let value_to_transform = this.transform_to_range(value_width);
-            val = this.transform_to_step_value(value_to_transform);
-            value_width = this.transform_to_display(val);
+            value_range = this.transform_to_step_value(value_range);
+            value_display = this.transform_to_display(value_range);
         }
+        this.set_position(value_display);
+        $('span.slider_value', this.elem).text(value_range);
 
-        $('span.slider_value', this.elem).text(val);
-        this.slider_value_track.css('width', value_width);
-        this.slider_handle_elem.css('left', value_width + 'px');
+        $(window).on('mouseup', () => {
+            this.elem.off('mousemove');
+        });
+    }
+
+    handle_drag_range(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        let target = $(e.target);
+
+        $(this.elem).off('mousemove').on('mousemove', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            let mouse_pos, values = [];
+
+            if (this.options.orientation === 'vertical') {
+                values[0] = parseInt(this.slider_handle_elem.css('top'));
+                values[1] = parseInt(this.slider_handle_elem_end.css('top'));
+                mouse_pos = e.pageY;
+            } else {
+                values[0] = parseInt(this.slider_handle_elem.css('left'));
+                values[1] = parseInt(this.slider_handle_elem_end.css('left'));
+                mouse_pos = e.pageX;
+            }
+
+            let offset = this.prevent_overflow(mouse_pos - this.offset);
+            offset = parseInt(offset);
+            let value_range = this.transform_to_range(offset);
+            let elem = target.attr('class');
+
+            if (elem === 'slider-handle') {
+                values[0] = offset;
+                $('.lower_value').text(value_range);
+            } else if (elem === 'slider-handle-end') {
+                values[1] = offset;
+                $('.upper_value').text(value_range);
+            }
+
+            this.set_position(values);
+        });
 
         $(window).on('mouseup', () => {
             this.elem.off('mousemove');
@@ -124,121 +190,78 @@ export class Slider {
     }
 
     prevent_overflow(value) {
-        if (value >= this.slider_width) {
-            value = this.slider_width;
+        if (value >= this.slider_dim) {
+            value = this.slider_dim;
         } else if (value <= 0) {
             value = 0;
         }
         return value;
     }
 
-    handle_range_slider(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    set_position(value_display) {
+        let orientation = this.options.orientation;
+        let range = this.options.range;
 
-        let target = $(e.target);
-
-        $(this.elem).off('mousemove').on('mousemove', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            let start = parseFloat(this.slider_handle_elem.css('left'));
-            let end = parseFloat(this.slider_handle_elem_end.css('left'));
-
-            let elem_offset = this.prevent_overflow(e.clientX - this.offset);
-
-            let elem = target.attr('class');
-            if (elem === 'slider-handle') {
-                start = parseInt(elem_offset);
-                let start_transformed = this.transform_to_range(start);
-                $('.lower_value').text(start_transformed);
-            } else if (elem === 'slider-handle-end') {
-                end = parseInt(elem_offset);
-                let end_transformed = this.transform_to_range(end);
-                $('.upper_value').text(end_transformed);
+        if (orientation === 'vertical') {
+            if (range === 'max') {
+                this.slider_value_track.css(
+                    'height', this.slider_dim - value_display
+                );
+                this.slider_handle_elem.css('top', value_display + 'px');
+            } else if (range === true) {
+                this.slider_handle_elem.css('top', value_display[0]);
+                this.slider_handle_elem_end.css('top', value_display[1]);
+                let width = value_display[1] - value_display[0];
+                this.slider_value_track
+                    .css('height', width + 'px')
+                    .css('top', value_display[0] + 'px');
+            } else {
+                this.slider_value_track.css('height', value_display);
+                this.slider_handle_elem.css('top', value_display + 'px');
             }
-
-            target.css('left', elem_offset + 'px');
-            let value_track_width = end - start;
-            this.slider_value_track.css('width', value_track_width + 'px').css('left', start + 'px');
-        });
-
-        $(window).on('mouseup', () => {
-            this.elem.off('mousemove');
-        });
+        } else {
+            if (range === 'max') {
+                this.slider_value_track.css(
+                    'width', this.slider_dim - value_display
+                );
+                this.slider_handle_elem.css('left', value_display + 'px');
+            } else if (range === true) {
+                this.slider_handle_elem.css('left', value_display[0]);
+                this.slider_handle_elem_end.css('left', value_display[1]);
+                let width = value_display[1] - value_display[0];
+                this.slider_value_track
+                    .css('width', width + 'px')
+                    .css('left', value_display[0] + 'px');
+            } else {
+                this.slider_value_track.css('width', value_display);
+                this.slider_handle_elem.css('left', value_display + 'px');
+            }
+        }
     }
 
-    transform_to_step_value(value_transformed) {
-        let value = value_transformed;
+    transform_to_step_value(val) {
         let step = this.options.step;
         let range_max = this.options.max;
-
-        if (value >= range_max - step/2) {
-            value = range_max
+        if (val >= range_max - step/2) {
+            val = range_max
         } else {
-            value = step * parseInt(value/step)
+            val = step * parseInt(val/step)
         }
-
-        return value
+        return val
     }
 
     transform_to_display(value) {
-        let self_min = 0;
-        let self_max = this.slider_width;
-        let value_transformed = value;
-
-        let range_min = this.options.min;
-        let range_max = this.options.max;
-
-        let val = (self_max - self_min) *
-        ((value_transformed - range_min) / (range_max - range_min))
-        + self_min;
-
+        let val =
+            this.slider_dim *
+            ((value - this.options.min) / (this.options.max - this.options.min));
         val = parseInt(val);
         return val;
     }
 
     transform_to_range(value) {
-        let self_min = 0;
-        let self_max = this.slider_width;
-
-        let range_min = this.options.min;
-        let range_max = this.options.max;
-
-        let val = (range_max - range_min) *
-        ((value - self_min) / (self_max - self_min))
-        + range_min;
+        let val = (this.options.max - this.options.min) *
+                  (value / this.slider_dim) + this.options.min;
         val = parseInt(val);
-
         return val;
-    }
-
-    lookup_callback(p) {
-        source = p.split('.');
-        var cb = window;
-        var name;
-        for (var idx in source) {
-            name = source[idx];
-            if (typeof(cb[name]) == "undefined") {
-                throw "'" + name + "' not found.";
-            }
-            cb = cb[name];
-        }
-        return cb;
-    }
-
-    callback(e, ui) {
-        var widget = $(e.target).parents('.yafowil_slider');
-        var options = widget.data();
-        var elements = widget.data('slider_elements');
-        if (options.range === true) {
-            elements.lower_value.attr('value', ui.values[0]);
-            elements.upper_value.attr('value', ui.values[1]);
-            elements.lower_display.html(ui.values[0]);
-            elements.upper_display.html(ui.values[1]);
-        } else {
-            elements.value.attr('value', ui.value);
-            elements.display.html(ui.value);
-        }
     }
 }
