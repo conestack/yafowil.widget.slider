@@ -49,6 +49,7 @@ export class Slider {
         this.handle_touch = this.handle_touch.bind(this);
         this.handle_drag = this.handle_drag.bind(this);
         this.handle_touch_range = this.handle_touch_range.bind(this);
+        this.handle_singletouch = this.handle_singletouch.bind(this);
 
         if (this.options.range == true) {
             let slider_handle_elem_end = this.slider_handle_elem_end = $(`
@@ -72,7 +73,7 @@ export class Slider {
             this.slider_handle_elem
             .off('mousedown')
             .on('mousedown', this.handle_mousedown);
-
+            this.slider_elem.on('click', this.handle_singletouch);
             if (this.supports_touch) {
                 this.slider_handle_elem[0]
                     .addEventListener('touchstart', this.handle_touch, false);
@@ -141,6 +142,10 @@ export class Slider {
         if (this.supports_touch) {
             this.elem.addClass('touch-support');
         }
+    }
+
+    handle_singletouch(e) {
+        console.log('singleeeee')
     }
 
     handle_mousedown(e) {
