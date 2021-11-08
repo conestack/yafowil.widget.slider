@@ -1,7 +1,6 @@
 /*
  * yafowil slider widget
  *
- * Requires: jquery.ui.slider
  * Optional: bdajax
  */
 
@@ -18,7 +17,14 @@ export class Slider {
         this.elem = elem;
         this.options = this.elem.data();
         this.bind_options();
-        this.slider_handle_dim = 20;
+        let slider_handle_dim = 20;
+
+        this.supports_touch = 
+            'ontouchstart' in window ||
+            navigator.msMaxTouchPoints;
+        this.slider_handle_dim = 
+            this.supports_touch ?
+            slider_handle_dim + 10 : slider_handle_dim;
 
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
@@ -40,7 +46,9 @@ export class Slider {
             .append(slider_handle_elem);
 
         this.handle_mousedown = this.handle_mousedown.bind(this);
+        this.handle_touch = this.handle_touch.bind(this);
         this.handle_drag = this.handle_drag.bind(this);
+        this.handle_touch_range = this.handle_touch_range.bind(this);
 
         if (this.options.range == true) {
             let slider_handle_elem_end = this.slider_handle_elem_end = $(`
@@ -53,10 +61,22 @@ export class Slider {
             this.handle_drag_range = this.handle_drag_range.bind(this);
             this.slider_handle_elem.on('mousedown', this.handle_drag_range);
             this.slider_handle_elem_end.on('mousedown', this.handle_drag_range);
+
+            if (this.supports_touch) {
+                this.slider_handle_elem[0]
+                    .addEventListener('touchstart', this.handle_touch_range, false);
+                this.slider_handle_elem_end[0]
+                    .addEventListener('touchstart', this.handle_touch_range, false);
+            }
         } else {
             this.slider_handle_elem
             .off('mousedown')
             .on('mousedown', this.handle_mousedown);
+
+            if (this.supports_touch) {
+                this.slider_handle_elem[0]
+                    .addEventListener('touchstart', this.handle_touch, false);
+            }
         }
 
         this.init_position();
@@ -118,11 +138,92 @@ export class Slider {
                 this.slider_value_track.css('right', 0);
             }
         }
+        if (this.supports_touch) {
+            this.elem.addClass('touch-support');
+        }
     }
 
     handle_mousedown(e) {
         e.preventDefault();
         this.elem.off('mousemove').on('mousemove', this.handle_drag);
+    }
+
+    handle_touch() {
+        let handle_move = handle_touchmove.bind(this);
+        document.addEventListener('touchmove', handle_move, {passive:false});
+
+        function handle_touchmove(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            let touch_pos;
+            if (this.options.orientation === 'vertical') {
+                touch_pos = event.touches[0].pageY;
+            } else {
+                touch_pos = event.touches[0].pageX;
+            }
+
+            let value_display = this.prevent_overflow(touch_pos - this.offset);
+            let value_range = this.transform_to_range(value_display);
+            if (this.options.step) {
+                value_range = this.transform_to_step_value(value_range);
+                value_display = this.transform_to_display(value_range);
+            }
+            this.set_position(value_display);
+            $('span.slider_value', this.elem).text(value_range);
+            document.addEventListener('touchend', handle_touchend.bind(this), false);
+
+            function handle_touchend() {
+                document.removeEventListener('touchmove', handle_move);
+            }
+        }
+    }
+
+    handle_touch_range(event) {
+        let target = event.target;
+        let handle_move = handle_touchmove.bind(this);
+
+        document.addEventListener('touchmove', handle_move, {passive:false});
+
+        function handle_touchmove(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            let touch_pos, values = [];
+
+            if (this.options.orientation === 'vertical') {
+                values[0] = parseInt(this.slider_handle_elem.css('top'));
+                values[1] = parseInt(this.slider_handle_elem_end.css('top'));
+                touch_pos = event.touches[0].pageY;
+            } else {
+                values[0] = parseInt(this.slider_handle_elem.css('left'));
+                values[1] = parseInt(this.slider_handle_elem_end.css('left'));
+                touch_pos = event.touches[0].pageX;
+            }
+
+            let offset = this.prevent_overflow(touch_pos - this.offset);
+            offset = parseInt(offset);
+            let value_range = this.transform_to_range(offset);
+            let elem = $(target).attr('class');
+
+            if (elem === 'slider-handle') {
+                if (touch_pos - this.offset > values[1] - this.slider_handle_dim + 10) {
+                    return;
+                }
+                values[0] = offset;
+                $('.lower_value').text(value_range);
+            } else if (elem === 'slider-handle-end') {
+                if (touch_pos - this.offset < values[0] + this.slider_handle_dim - 10) {
+                    return;
+                }
+                values[1] = offset;
+                $('.upper_value').text(value_range);
+            }
+            this.set_position(values);
+        }
+        document.addEventListener('touchend', handle_touchend.bind(this), false);
+        function handle_touchend() {
+            document.removeEventListener('touchmove', handle_move);
+        }
     }
 
     handle_drag(e) {
@@ -174,9 +275,15 @@ export class Slider {
             let elem = target.attr('class');
 
             if (elem === 'slider-handle') {
+                if (mouse_pos - this.offset > values[1] - this.slider_handle_dim) {
+                    return;
+                }
                 values[0] = offset;
                 $('.lower_value').text(value_range);
             } else if (elem === 'slider-handle-end') {
+                if (mouse_pos - this.offset < values[0] + this.slider_handle_dim) {
+                    return;
+                }
                 values[1] = offset;
                 $('.upper_value').text(value_range);
             }

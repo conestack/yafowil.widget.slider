@@ -253,7 +253,6 @@ def vertical_slider():
         'title': 'Vertical slider',
     }
 
-
 def get_example():
     return [
         default_slider(),
@@ -261,5 +260,5 @@ def get_example():
         fixed_maximum_range(),
         range_slider(),
         step_slider(),
-        vertical_slider(),
+        vertical_slider()
     ]

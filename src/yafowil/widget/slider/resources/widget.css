@@ -81,3 +81,24 @@ div.yafowil_slider > .slider.slider-vertical .slider-handle-end {
     border-radius: 50%;
     transform: translateY(-50%);
 }
+
+/* for mobile */
+div.yafowil_slider.touch-support .slider-handle,
+div.yafowil_slider.touch-support .slider-handle-end,
+div.yafowil_slider.touch-support .slider-vertical .slider-handle,
+div.yafowil_slider.touch-support .slider-vertical .slider-handle-end {
+    background: transparent;
+}
+
+div.yafowil_slider.touch-support .slider-handle::after,
+div.yafowil_slider.touch-support .slider-handle-end::after,
+div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle::after,
+div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle-end::after {
+    content: '';
+    width: 70%;
+    height: 70%;
+    position: absolute;
+    background: gray;
+    border-radius: 50%;
+    transform: translate(20%, 20%);
+}
