@@ -16,50 +16,40 @@ export class Slider {
     constructor(elem) {
         this.elem = elem;
         this.options = this.elem.data();
-        this.bind_options();
+        this.init_options();
         let handle_dim = this.slider_handle_dim = 20;
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
-
-        let slider_handle_elem = this.slider_handle_elem = $(`
-            <div class="slider-handle" 
-                style="width:${handle_dim}px; height:${handle_dim}px"/>
-        `);
-        let slider_handle_elem_end = this.slider_handle_elem_end = $(`
-            <div class="slider-handle-end"
-                style="width:${handle_dim}px; height:${handle_dim}px"/>
-        `);
-        let slider_value_track = this.slider_value_track = $(`
-            <div class="slider-value-track" />
-        `);
-        let slider_bg = $(`
-            <div class="slider-bg" />
-        `);
-
+        this.handle_elem = $('<div></div>')
+            .addClass('slider-handle')
+            .width(handle_dim)
+            .height(handle_dim);
+        this.slider_value_track = $('<div></div>')
+            .addClass('slider-value-track');
         this.slider_elem
-            .append(slider_bg)
-            .append(slider_value_track)
-            .append(slider_handle_elem);
-
+            .append($('<div></div>').addClass('slider-bg'))
+            .append(this.slider_value_track)
+            .append(this.handle_elem);
         this.handle_singletouch = this.handle_singletouch.bind(this);
         this.handle_start = this.mousedown_touchstart.bind(this);
         this.handle_range = this.handle_range.bind(this);
-
         if (this.options.range === true) {
-            this.slider_elem.append(slider_handle_elem_end);
-
-            this.slider_handle_elem.on('mousedown touchstart', this.handle_range);
-            this.slider_handle_elem_end.on('mousedown touchstart', this.handle_range);
+            this.handle_elem_end = $('<div></div>')
+                .addClass('slider-handle-end')
+                .width(handle_dim)
+                .height(handle_dim);
+            this.slider_elem.append(this.handle_elem_end);
+            this.handle_elem.on('mousedown touchstart', this.handle_range);
+            this.handle_elem_end.on('mousedown touchstart', this.handle_range);
             this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
         } else {
-            this.slider_handle_elem.on('mousedown touchstart', this.handle_start);
+            this.handle_elem.on('mousedown touchstart', this.handle_start);
             this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
         }
-
         this.init_position();
     }
 
-    bind_options() {
+    init_options() {
         let elements = {};
         if (this.options.range === true) {
             elements.lower_display = $('span.lower_value', this.elem);
@@ -135,8 +125,8 @@ export class Slider {
         if (this.options.range === true) {
             let dir = vertical ? 'top' : 'left',
                 values = [
-                    parseInt(this.slider_handle_elem.css(dir)),
-                    parseInt(this.slider_handle_elem_end.css(dir))
+                    parseInt(this.handle_elem.css(dir)),
+                    parseInt(this.handle_elem_end.css(dir))
                 ],
                 isLeft = value < values[0] || value < (values[0] + values[1])/2,
                 value_target = isLeft ? '.lower_value' : '.upper_value';
@@ -148,6 +138,10 @@ export class Slider {
             this.set_position(value);
             this.set_values(value_transformed);
         }
+    }
+
+    get vertical() {
+        return this.options.orientation === 'vertical';
     }
 
     mousedown_touchstart(event) {
@@ -202,7 +196,7 @@ export class Slider {
         let target = event.target,
             vertical = this.options.orientation === 'vertical',
             dir = vertical ? 'top' : 'left',
-            handles = [this.slider_handle_elem, this.slider_handle_elem_end],
+            handles = [this.handle_elem, this.handle_elem_end],
             handle_move = handle_moving.bind(this),
             isMouse = event.type === 'mousedown';
 
@@ -263,8 +257,8 @@ export class Slider {
         let vertical = this.options.orientation === 'vertical',
             range = this.options.range,
             track = this.slider_value_track,
-            handle = this.slider_handle_elem,
-            handle_end = this.slider_handle_elem_end;
+            handle = this.handle_elem,
+            handle_end = this.handle_elem_end;
 
         if (vertical) {
             if (range === 'max') {
@@ -311,7 +305,7 @@ export class Slider {
             step = this.options.step;
 
         if (type === "step") {
-            val = val > max - step/2 ? max : step * parseInt(val/step);
+            val = val > max - step / 2 ? max : step * parseInt(val/step);
         } else if (type === "display") {
             val = parseInt(this.slider_dim * ((val - min) / (max - min)));
         } else if (type === "range") {
