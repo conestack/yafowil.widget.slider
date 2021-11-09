@@ -16,6 +16,7 @@ div.yafowil_slider > .slider .slider-bg {
     background: lightgray;
     width: 100%;
     border-radius: 15px;
+    box-shadow: inset 1px 1px 2px rgb(0 0 0 / 15%);
 }
 
 div.yafowil_slider > .slider .slider-value-track {
@@ -30,6 +31,7 @@ div.yafowil_slider > .slider .slider-handle {
     background: gray;
     border-radius: 50%;
     transform: translateX(-50%);
+    border: 1px solid rgb(0 0 0 / 20%);
 }
 
 div.yafowil_slider > .slider .slider-handle-end {
@@ -38,6 +40,7 @@ div.yafowil_slider > .slider .slider-handle-end {
     background: gray;
     border-radius: 50%;
     transform: translateX(-50%);
+    border: 1px solid rgb(0 0 0 / 20%);
 }
 
 div.yafowil_slider > .slider.slider-vertical {
@@ -54,6 +57,7 @@ div.yafowil_slider > .slider.slider-vertical .slider-bg {
     background: lightgray;
     height: 100%;
     border-radius: 15px;
+    box-shadow: inset 0px 1px 2px rgb(0 0 0 / 15%);
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-value-track {
@@ -71,6 +75,7 @@ div.yafowil_slider > .slider.slider-vertical .slider-handle {
     background: gray;
     border-radius: 50%;
     transform: translateY(-50%);
+    border: 1px solid rgb(0 0 0 / 20%);
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-handle-end {
@@ -80,6 +85,7 @@ div.yafowil_slider > .slider.slider-vertical .slider-handle-end {
     background: gray;
     border-radius: 50%;
     transform: translateY(-50%);
+    border: 1px solid rgb(0 0 0 / 20%);
 }
 
 /* for mobile */

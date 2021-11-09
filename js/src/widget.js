@@ -17,14 +17,8 @@ export class Slider {
         this.elem = elem;
         this.options = this.elem.data();
         this.bind_options();
-        let slider_handle_dim = 20;
 
-        this.supports_touch = 
-            'ontouchstart' in window ||
-            navigator.msMaxTouchPoints;
-        this.slider_handle_dim = 
-            this.supports_touch ?
-            slider_handle_dim + 10 : slider_handle_dim;
+        this.slider_handle_dim = 20;
 
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
@@ -45,11 +39,9 @@ export class Slider {
             .append(slider_value_track)
             .append(slider_handle_elem);
 
-        this.handle_mousedown = this.handle_mousedown.bind(this);
-        this.handle_touch = this.handle_touch.bind(this);
-        this.handle_drag = this.handle_drag.bind(this);
-        this.handle_touch_range = this.handle_touch_range.bind(this);
         this.handle_singletouch = this.handle_singletouch.bind(this);
+        this.handle_start = this.mousedown_touchstart.bind(this);
+        this.handle_range = this.handle_range.bind(this);
 
         if (this.options.range === true) {
             let slider_handle_elem_end = this.slider_handle_elem_end = $(`
@@ -59,26 +51,12 @@ export class Slider {
             `);
             this.slider_elem.append(slider_handle_elem_end);
 
-            this.handle_drag_range = this.handle_drag_range.bind(this);
-            this.slider_handle_elem.on('mousedown', this.handle_drag_range);
-            this.slider_handle_elem_end.on('mousedown', this.handle_drag_range);
-
-            if (this.supports_touch) {
-                this.slider_handle_elem[0]
-                    .addEventListener('touchstart', this.handle_touch_range, false);
-                this.slider_handle_elem_end[0]
-                    .addEventListener('touchstart', this.handle_touch_range, false);
-            }
+            this.slider_handle_elem.on('mousedown touchstart', this.handle_range);
+            this.slider_handle_elem_end.on('mousedown touchstart', this.handle_range);
+            this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
         } else {
-            this.slider_handle_elem
-            .off('mousedown')
-            .on('mousedown', this.handle_mousedown);
-            this.slider_elem.on('click', this.handle_singletouch);
-            if (this.supports_touch) {
-                this.slider_handle_elem[0]
-                    .addEventListener('touchstart', this.handle_touch, false);
-                this.slider_elem[0].addEventListener('touchstart', this.handle_singletouch, false);
-            }
+            this.slider_handle_elem.on('mousedown touchstart', this.handle_start);
+            this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
         }
 
         this.init_position();
@@ -137,10 +115,6 @@ export class Slider {
                 this.slider_value_track.css('right', 0);
             }
         }
-
-        if (this.supports_touch) {
-            this.elem.addClass('touch-support');
-        }
     }
 
     handle_singletouch(e) {
@@ -152,145 +126,124 @@ export class Slider {
             value_transformed = this.transform(value_transformed, 'step');
             value = this.transform(value_transformed, 'display');
         }
+
+        if (this.options.range === true) {
+            let dir = vertical ? 'top' : 'left',
+                values = [
+                    parseInt(this.slider_handle_elem.css(dir)),
+                    parseInt(this.slider_handle_elem_end.css(dir))
+                ],
+                isLeft = value < values[0] || value < (values[0] + values[1])/2,
+                value_target = isLeft ? '.lower_value' : '.upper_value';
+
+            values = isLeft ? [value, values[1]]  : [values[0], value];
+            this.set_position(values);
+            this.set_values(value_transformed, value_target);
+            return;
+        }
         this.set_position(value);
-        $('span.slider_value', this.elem).text(value_transformed);
+        this.set_values(value_transformed);
     }
 
-    handle_mousedown(e) {
+    mousedown_touchstart(e) {
         e.preventDefault();
-        this.elem.off('mousemove').on('mousemove', this.handle_drag);
-    }
+        e.stopPropagation();
 
-    handle_touch() {
-        let handle_move = handle_touchmove.bind(this);
-        document.addEventListener('touchmove', handle_move, {passive:false});
+        let vertical = this.options.orientation === "vertical",
+            step = this.options.step,
+            handle = handle_drag.bind(this);
 
-        function handle_touchmove(event) {
+        if (e.pageY) { // find better way
+            this.elem.off('mousemove').on('mousemove', handle);
+        } else {
+            document.addEventListener('touchmove', handle, {passive:false});
+        }
+
+        function handle_drag(event){
             event.preventDefault();
             event.stopPropagation();
+            let pos;
+            if (event.pageY) { // mouse
+                pos = (vertical ? event.pageY : event.pageX) - this.offset;
+                $(window).on('mouseup', () => {
+                    this.elem.off('mousemove');
+                });
+            } else { // touch
+                pos = (vertical ? event.touches[0].pageY : 
+                       event.touches[0].pageX)
+                       - this.offset;
+                document.addEventListener('touchend', () => {
+                    document.removeEventListener('touchmove', handle);
+                }, false);
+            }
 
-            let vertical = this.options.orientation === 'vertical';
-            let pos = vertical ? event.touches[0].pageY : event.touches[0].pageX;
+            let value_display = this.prevent_overflow(pos),
+                value_range = this.transform(value_display, 'range');
 
-            let value_display = this.prevent_overflow(pos - this.offset);
-            let value_range = this.transform(value_display, 'range');
-            if (this.options.step) {
+            if (step) {
                 value_range = this.transform(value_range, 'step');
                 value_display = this.transform(value_range, 'display');
             }
-            this.set_position(value_display);
-            $('span.slider_value', this.elem).text(value_range);
-            document.addEventListener('touchend', handle_touchend.bind(this), false);
 
-            function handle_touchend() {
-                document.removeEventListener('touchmove', handle_move);
-            }
+            this.set_position(value_display);
+            this.set_values(value_range);
         }
     }
 
-    handle_touch_range(event) {
-        let target = event.target,
-            handle_move = handle_touchmove.bind(this),
-            vertical = this.options.orientation === 'vertical',
-            handles = [this.slider_handle_elem, this.slider_handle_elem_end];
+    handle_range(event) {
+        event.preventDefault();
+        event.stopPropagation();
 
-        document.addEventListener('touchmove', handle_move, {passive:false});
-        function handle_touchmove(event) {
+        let target = event.target;
+        let vertical = this.options.orientation === 'vertical';
+        let dir = vertical ? 'top' : 'left';
+        let handles = [this.slider_handle_elem, this.slider_handle_elem_end];
+        let handle_move = handle_moving.bind(this);
+
+        if (event.pageY) { // betterway
+            $(this.elem).off('mousemove').on('mousemove', handle_move);
+            $(window).on('mouseup', () => {
+                this.elem.off('mousemove');
+            });
+        } else {
+            document.addEventListener('touchmove', handle_move, {passive:false});
+            document.addEventListener('touchend', () => {
+                document.removeEventListener('touchmove', handle_move);
+            }, false);
+        }
+
+        function handle_moving(event) {
             event.preventDefault();
             event.stopPropagation();
-            let touch = vertical ? event.touches[0].pageY : event.touches[0].pageX;
-            let dir = vertical ? 'top' : 'left';
+            let pos;
+            if (event.pageY) { // betterway
+                pos = vertical ? event.pageY : event.pageX;
+            } else {
+                pos = vertical ? event.touches[0].pageY : event.touches[0].pageX;
+            }
+            pos = this.prevent_overflow(pos - this.offset);
+            let value_range = this.transform(pos, 'range');
+
             let values = [
                 parseInt(handles[0].css(dir)),
                 parseInt(handles[1].css(dir))
             ];
 
-            let offset = parseInt(this.prevent_overflow(touch - this.offset));
-            let value_range = this.transform(offset, 'range');
-
             if (target === handles[0][0]) {
-                if (touch_pos - this.offset > values[1] - this.slider_handle_dim + 10) {
-                    return;
-                }
-                values[0] = offset;
-                $('.lower_value').text(value_range);
-            } else if (target === handles[1][0]) {
-                if (touch_pos - this.offset < values[0] + this.slider_handle_dim - 10) {
-                    return;
-                }
-                values[1] = offset;
-                $('.upper_value').text(value_range);
-            }
-            this.set_position(values);
-        }
-        document.addEventListener('touchend', handle_touchend.bind(this), false);
-        function handle_touchend() {
-            document.removeEventListener('touchmove', handle_move);
-        }
-    }
-
-    handle_drag(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        let orientation = this.options.orientation === "vertical",
-            step = this.options.step,
-            pos = (orientation ? e.pageY : e.pageX) - this.offset,
-            value_display = this.prevent_overflow(pos),
-            value_range = this.transform(value_display, 'range');
-
-        if (step) {
-            value_range = this.transform(value_range, 'step');
-            value_display = this.transform(value_range, 'display');
-        }
-        this.set_position(value_display);
-        $('span.slider_value', this.elem).text(value_range);
-
-        $(window).on('mouseup', () => {
-            this.elem.off('mousemove');
-        });
-    }
-
-    handle_drag_range(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        let target = e.target;
-        let vertical = this.options.orientation === 'vertical';
-        let handles = [this.slider_handle_elem, this.slider_handle_elem_end];
-
-        $(this.elem).off('mousemove').on('mousemove', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            let dir = vertical ? e.pageY : e.pageX,
-                pos = this.prevent_overflow(dir - this.offset),
-                value_range = this.transform(pos, 'range'),
-                val_dir = vertical ? 'top' : 'left',
-                values = [
-                    parseInt(handles[0].css(val_dir)),
-                    parseInt(handles[1].css(val_dir))
-                ];
-
-            if (target === handles[0][0]) {
-                if (pos > values[1] - this.slider_handle_dim) {
+                if (pos >= values[1]) {
                     return;
                 }
                 values[0] = pos;
-                $('.lower_value').text(value_range);
+                this.set_values(value_range, '.lower_value');
             } else if (target === handles[1][0]) {
-                if (pos < values[0] + this.slider_handle_dim) {
+                if (pos <= values[0]) {
                     return;
                 }
                 values[1] = pos;
-                $('.upper_value').text(value_range);
+                this.set_values(value_range, '.upper_value');
             }
-
             this.set_position(values);
-        });
-
-        $(window).on('mouseup', () => {
-            this.elem.off('mousemove');
-        });
+        }
     }
 
     prevent_overflow(value) {
@@ -335,6 +288,16 @@ export class Slider {
                 track.css('width', val);
                 handle.css('left', val + 'px');
             }
+        }
+    }
+
+    set_values(value, target) {
+        if (this.options.range === true) {
+            $(`span${target}`).text(value);
+            $(`input${target}`).attr('value', value);
+        } else {
+            $('span.slider_value', this.elem).text(value);
+            this.input.attr('value', value);
         }
     }
 

@@ -7,4 +7,12 @@
 [X] - vertical slider
     [X] - fix issue with page scroll and mouse position (range)
 
-[ ] - touch events
+[X] - touch events
+
+[ ] - slider able to drag completely together
+
+[X] - click on range: closer handle gets selected
+
+[X] - combine mousedown & touchstart functions
+
+[X] - remove supportsTouch
