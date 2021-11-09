@@ -9,7 +9,7 @@
 
 [X] - touch events
 
-[ ] - slider able to drag completely together
+[X] - slider able to drag completely together
 
 [X] - click on range: closer handle gets selected
 

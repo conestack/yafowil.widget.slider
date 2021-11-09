@@ -17,16 +17,17 @@ export class Slider {
         this.elem = elem;
         this.options = this.elem.data();
         this.bind_options();
-
-        this.slider_handle_dim = 20;
-
+        let handle_dim = this.slider_handle_dim = 20;
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
 
         let slider_handle_elem = this.slider_handle_elem = $(`
             <div class="slider-handle" 
-                 style="width:${this.slider_handle_dim}px;
-                        height:${this.slider_handle_dim}px"/>
+                style="width:${handle_dim}px; height:${handle_dim}px"/>
+        `);
+        let slider_handle_elem_end = this.slider_handle_elem_end = $(`
+            <div class="slider-handle-end"
+                style="width:${handle_dim}px; height:${handle_dim}px"/>
         `);
         let slider_value_track = this.slider_value_track = $(`
             <div class="slider-value-track" />
@@ -34,6 +35,7 @@ export class Slider {
         let slider_bg = $(`
             <div class="slider-bg" />
         `);
+
         this.slider_elem
             .append(slider_bg)
             .append(slider_value_track)
@@ -44,11 +46,6 @@ export class Slider {
         this.handle_range = this.handle_range.bind(this);
 
         if (this.options.range === true) {
-            let slider_handle_elem_end = this.slider_handle_elem_end = $(`
-                <div class="slider-handle-end"
-                     style="width:${this.slider_handle_dim}px;
-                            height:${this.slider_handle_dim}px"/>
-            `);
             this.slider_elem.append(slider_handle_elem_end);
 
             this.slider_handle_elem.on('mousedown touchstart', this.handle_range);
@@ -102,8 +99,8 @@ export class Slider {
             ];
             this.set_position(values);
         } else if (options.value) {
-            let value_display = this.transform(options.value, 'display');
-            this.set_position(value_display);
+            let value = this.transform(options.value, 'display');
+            this.set_position(value);
         }
 
         if (options.range === 'max') {
@@ -119,9 +116,17 @@ export class Slider {
 
     handle_singletouch(e) {
         let vertical = this.options.orientation === 'vertical',
-            pos = vertical ? e.pageY : e.pageX,
-            value = pos - this.offset,
+            pos;
+
+        if (e.type === 'mousedown') {
+            pos = vertical ? e.pageY : e.pageX;
+        } else {
+            pos = vertical ? e.touches[0].pageY : e.touches[0].pageX;
+        }
+
+        let value = pos - this.offset,
             value_transformed = this.transform(value, 'range');
+
         if (this.options.step) {
             value_transformed = this.transform(value_transformed, 'step');
             value = this.transform(value_transformed, 'display');
@@ -139,21 +144,22 @@ export class Slider {
             values = isLeft ? [value, values[1]]  : [values[0], value];
             this.set_position(values);
             this.set_values(value_transformed, value_target);
-            return;
+        } else {
+            this.set_position(value);
+            this.set_values(value_transformed);
         }
-        this.set_position(value);
-        this.set_values(value_transformed);
     }
 
-    mousedown_touchstart(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    mousedown_touchstart(event) {
+        event.preventDefault();
+        event.stopPropagation();
 
         let vertical = this.options.orientation === "vertical",
             step = this.options.step,
-            handle = handle_drag.bind(this);
+            handle = handle_drag.bind(this),
+            isMouse = event.type === 'mousedown';
 
-        if (e.pageY) { // find better way
+        if (isMouse) {
             this.elem.off('mousemove').on('mousemove', handle);
         } else {
             document.addEventListener('touchmove', handle, {passive:false});
@@ -163,14 +169,13 @@ export class Slider {
             event.preventDefault();
             event.stopPropagation();
             let pos;
-            if (event.pageY) { // mouse
+            if (isMouse) {
                 pos = (vertical ? event.pageY : event.pageX) - this.offset;
                 $(window).on('mouseup', () => {
                     this.elem.off('mousemove');
                 });
-            } else { // touch
-                pos = (vertical ? event.touches[0].pageY : 
-                       event.touches[0].pageX)
+            } else {
+                pos = (vertical ? event.touches[0].pageY : event.touches[0].pageX)
                        - this.offset;
                 document.addEventListener('touchend', () => {
                     document.removeEventListener('touchmove', handle);
@@ -194,17 +199,16 @@ export class Slider {
         event.preventDefault();
         event.stopPropagation();
 
-        let target = event.target;
-        let vertical = this.options.orientation === 'vertical';
-        let dir = vertical ? 'top' : 'left';
-        let handles = [this.slider_handle_elem, this.slider_handle_elem_end];
-        let handle_move = handle_moving.bind(this);
+        let target = event.target,
+            vertical = this.options.orientation === 'vertical',
+            dir = vertical ? 'top' : 'left',
+            handles = [this.slider_handle_elem, this.slider_handle_elem_end],
+            handle_move = handle_moving.bind(this),
+            isMouse = event.type === 'mousedown';
 
-        if (event.pageY) { // betterway
+        if (isMouse) {
             $(this.elem).off('mousemove').on('mousemove', handle_move);
-            $(window).on('mouseup', () => {
-                this.elem.off('mousemove');
-            });
+            $(window).on('mouseup', () => {this.elem.off('mousemove');});
         } else {
             document.addEventListener('touchmove', handle_move, {passive:false});
             document.addEventListener('touchend', () => {
@@ -216,13 +220,13 @@ export class Slider {
             event.preventDefault();
             event.stopPropagation();
             let pos;
-            if (event.pageY) { // betterway
+            if (isMouse) {
                 pos = vertical ? event.pageY : event.pageX;
             } else {
                 pos = vertical ? event.touches[0].pageY : event.touches[0].pageX;
             }
             pos = this.prevent_overflow(pos - this.offset);
-            let value_range = this.transform(pos, 'range');
+            let value = this.transform(pos, 'range');
 
             let values = [
                 parseInt(handles[0].css(dir)),
@@ -234,13 +238,13 @@ export class Slider {
                     return;
                 }
                 values[0] = pos;
-                this.set_values(value_range, '.lower_value');
+                this.set_values(value, '.lower_value');
             } else if (target === handles[1][0]) {
                 if (pos <= values[0]) {
                     return;
                 }
                 values[1] = pos;
-                this.set_values(value_range, '.upper_value');
+                this.set_values(value, '.upper_value');
             }
             this.set_position(values);
         }
