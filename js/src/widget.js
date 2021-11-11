@@ -231,6 +231,10 @@ export class Slider {
                 parseInt(handles[1].css(dir))
             ];
 
+            if (this.step) {
+                value = this.transform(value, 'step');
+                pos = this.transform(value, 'display');
+            }
             if (target === handles[0][0]) {
                 if (pos >= values[1]) {
                     return;
@@ -293,8 +297,8 @@ export class Slider {
 
     set_values(value, target) {
         if (this.range_true) {
-            $(`span${target}`).text(value);
-            $(`input${target}`).attr('value', value);
+            $(`span${target}`, this.elem).text(value);
+            $(`input${target}`, this.elem).attr('value', value);
         } else {
             $('span.slider_value', this.elem).text(value);
             this.input.attr('value', value);
@@ -307,7 +311,11 @@ export class Slider {
             step = this.options.step;
 
         if (type === "step") {
-            val = val > max - step / 2 ? max : step * parseInt(val/step);
+            let condition = min === 0 ? max - step / 2 : max - min / 2;
+            val = val > condition ? max : step * parseInt(val/step);
+            if (val <= min) {
+                val = min;
+            }
         } else if (type === "display") {
             val = parseInt(this.slider_dim * ((val - min) / (max - min)));
         } else if (type === "range") {

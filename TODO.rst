@@ -16,3 +16,7 @@
 [X] - combine mousedown & touchstart functions
 
 [X] - remove supportsTouch
+
+[ ] - fix prevent overflow with min and max values
+
+[ ] - cap min/max with step
