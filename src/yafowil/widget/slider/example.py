@@ -243,7 +243,7 @@ def vertical_slider():
             'label': 'Vertical slider',
             'orientation': 'vertical',
             'show_value': True,
-            'height': 200,
+            'height': 500,
             'unit': 'mmHg',
         }
     )
