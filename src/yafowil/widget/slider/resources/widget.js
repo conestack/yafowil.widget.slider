@@ -14,6 +14,9 @@
             this.slider_handle_dim = 20;
             this.input = $('input.slider_value', this.elem);
             this.slider_elem = $('div.slider', this.elem);
+            this.vertical = this.options.orientation === 'vertical';
+            this.dim = this.vertical ? 'height' : 'width';
+            this.dir = this.vertical ? 'top' : 'left';
             this.slider_value_track = $('<div></div>')
                 .addClass('slider-value-track');
             this.slider_elem
@@ -21,12 +24,12 @@
                 .append(this.slider_value_track);
             this.handles = [];
             if (this.range_true) {
-                let handle1 = new SliderHandle(this.slider_elem, this.options, this.options.values[0]);
-                let handle2 = new SliderHandle(this.slider_elem, this.options, this.options.values[1]);
+                let handle1 = new SliderHandle(this, this.options.values[0]);
+                let handle2 = new SliderHandle(this, this.options.values[1]);
                 this.handles.push(handle1);
                 this.handles.push(handle2);
             } else {
-                let handle = new SliderHandle(this.slider_elem, this.options);
+                let handle = new SliderHandle(this);
                 this.handles.push(handle);
             }
             this.handle_singletouch = this.handle_singletouch.bind(this);
@@ -35,17 +38,7 @@
             this.set_value_track();
             this.slider_elem.on('drag', this.set_value_track.bind(this));
             this.slider_elem.on('drag', this.set_values.bind(this));
-            this.resize_handle = this.resize_handle.bind(this);
-            $(window).on('resize', this.resize_handle);
-        }
-        get vertical() {
-            return this.options.orientation === 'vertical';
-        }
-        get dim() {
-            return this.vertical ? 'height' : 'width';
-        }
-        get dir() {
-            return this.vertical ? 'top' : 'left';
+            $(window).on('resize', this.set_value_track.bind(this));
         }
         get range_max() {
             return this.options.range === 'max';
@@ -112,22 +105,28 @@
                 }
             }
         }
-        resize_handle() {
-            if (this.range !== true) {
-                this.value_screen = this.transform(this.value, 'display');
-                this.set_position(this.value_screen);
-            }
-        }
         handle_singletouch(e) {
-            let pos;
+            let value,
+                target;
             if (e.type === 'mousedown') {
-                pos = this.vertical ? e.pageY : e.pageX;
+                value = (this.vertical ? e.pageY : e.pageX) - this.offset;
             } else {
-                pos = this.vertical ? e.touches[0].pageY : e.touches[0].pageX;
+                value =
+                    (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
+                    - this.offset;
             }
-            let value = pos - this.offset;
-            this.handles[0].elem.css('left', value);
-            this.slider_value_track.css('width', value);
+            if (this.range_true){
+                let values = [this.handles[0].value_screen, this.handles[1].value_screen];
+                let isFirst = value < values[0] || value < (values[0] + values[1])/2;
+                target = isFirst ? this.handles[0] : this.handles[1];
+            } else {
+                target = this.handles[0];
+            }
+            target.value_screen = value;
+            target.value = target.transform(value, 'range');
+            target.set_position();
+            this.set_value_track();
+            this.set_values();
         }
         set_values() {
             if (this.range_true) {
@@ -145,48 +144,39 @@
         }
     }
     class SliderHandle {
-        constructor(slider, options, value) {
+        constructor(slider, value) {
             this.slider = slider;
             this.elem = $('<div></div>')
                 .addClass('slider-handle')
                 .width(20)
                 .height(20);
-            this.slider.append(this.elem);
-            if(value) {
-                this.value = value;
-            } else {
-                this.value = options.value;
-            }
-            this.min = options.min;
-            this.max = options.max;
-            this.step = options.step;
+            this.slider.slider_elem.append(this.elem);
+            this.value = value ?? this.slider.options.value;
             this.value_screen = this.transform(this.value, 'screen');
-            this.vertical = options.orientation === 'vertical';
-            this.dir = this.vertical ? 'top' : 'left';
-            this.elem.css(`${this.dir}`, this.value_screen);
+            this.vertical = this.slider.vertical;
+            this.elem.css(`${this.slider.dir}`, this.value_screen);
             this.slide_start = this.slide_start.bind(this);
             this.handle = this.handle_drag.bind(this);
             this.elem.on('mousedown touchstart', this.slide_start);
+            $(window).on('resize', this.resize.bind(this));
         }
-        get slider_dim() {
-            let dim = this.vertical ? this.slider.height() : this.slider.width();
-            return dim;
+        get offset() {
+            return this.slider.offset;
         }
         get value_screen() {
             return this._value_screen;
         }
         set value_screen(value) {
-            if (value >= this.slider_dim) {
-                value = this.slider_dim;
+            if (value >= this.slider.slider_dim) {
+                value = this.slider.slider_dim;
             } else if (value <= 0) {
                 value = 0;
             }
             this._value_screen = value;
         }
-        get offset() {
-            let offset = this.vertical ? this.slider.offset().top :
-                         this.slider.offset().left;
-            return offset;
+        resize() {
+            this.value_screen = this.transform(this.value, 'screen');
+            this.set_position();
         }
         slide_start(event) {
             event.preventDefault();
@@ -202,7 +192,6 @@
             );
         }
         handle_drag(e){
-            console.log('handle drag');
             e.preventDefault();
             e.stopPropagation();
             if (e.type === 'mousemove') {
@@ -213,28 +202,32 @@
                     - this.offset;
             }
             this.value = this.transform(this.value_screen, 'range');
-            if (this.step) {
+            if (this.slider.options.step) {
                 this.value = this.transform(this.value, 'step');
                 this.value_screen = this.transform(this.value, 'screen');
             }
-            this.elem.css(`${this.dir}`, this.value_screen + 'px');
+            if (this.slider.options.range === true &&
+                this.slider.handles[0].value >=this.slider.handles[1].value)
+                {return;}
+            this.set_position();
             const event = new $.Event('drag');
-            this.slider.trigger(event);
+            this.slider.slider_elem.trigger(event);
+        }
+        set_position() {
+            this.elem.css(`${this.slider.dir}`, this.value_screen + 'px');
         }
         transform(val, type) {
-            let min = this.min,
-                max = this.max,
-                step = this.step;
+            let min = this.slider.options.min,
+                max = this.slider.options.max,
+                step = this.slider.options.step;
             if (type === 'step') {
                 let condition = min === 0 ? max - step / 2 : max - min / 2;
                 val = val > condition ? max : step * parseInt(val/step);
-                if (val <= min) {
-                    val = min;
-                }
+                val = val <= min ? min : val;
             } else if (type === 'screen') {
-                val = parseInt(this.slider_dim * ((val - min) / (max - min)));
+                val = parseInt(this.slider.slider_dim * ((val - min) / (max - min)));
             } else if (type === 'range') {
-                val = parseInt((max - min) * (val / this.slider_dim) + min);
+                val = parseInt((max - min) * (val / this.slider.slider_dim) + min);
             }
             return val;
         }

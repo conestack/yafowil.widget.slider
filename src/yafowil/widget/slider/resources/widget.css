@@ -34,15 +34,6 @@ div.yafowil_slider > .slider .slider-handle {
     border: 1px solid rgb(0 0 0 / 20%);
 }
 
-div.yafowil_slider > .slider .slider-handle-end {
-    position: absolute;
-    left: 0;
-    background: #6c7788;
-    border-radius: 50%;
-    transform: translateX(-50%);
-    border: 1px solid rgb(0 0 0 / 20%);
-}
-
 div.yafowil_slider > .slider.slider-vertical {
     position: relative;
     display: flex;
@@ -78,28 +69,14 @@ div.yafowil_slider > .slider.slider-vertical .slider-handle {
     border: 1px solid rgb(0 0 0 / 20%);
 }
 
-div.yafowil_slider > .slider.slider-vertical .slider-handle-end {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #6c7788;
-    border-radius: 50%;
-    transform: translateY(-50%);
-    border: 1px solid rgb(0 0 0 / 20%);
-}
-
 /* for mobile */
 div.yafowil_slider.touch-support .slider-handle,
-div.yafowil_slider.touch-support .slider-handle-end,
-div.yafowil_slider.touch-support .slider-vertical .slider-handle,
-div.yafowil_slider.touch-support .slider-vertical .slider-handle-end {
+div.yafowil_slider.touch-support .slider-vertical .slider-handle {
     background: transparent;
 }
 
 div.yafowil_slider.touch-support .slider-handle::after,
-div.yafowil_slider.touch-support .slider-handle-end::after,
-div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle::after,
-div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle-end::after {
+div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle::after {
     content: '';
     width: 70%;
     height: 70%;

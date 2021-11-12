@@ -20,3 +20,13 @@
 [ ] - fix prevent overflow with min and max values
 
 [ ] - cap min/max with step
+
+[ ] - fix range slider stopping when touching
+
+[X] - fix vertical slider
+
+[X] - fix handle_singletouch
+
+[X] - add resize handling
+
+[X] - restructure
