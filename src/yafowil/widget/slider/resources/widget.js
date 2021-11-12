@@ -12,7 +12,7 @@
             this.options = this.elem.data();
             this.min = this.options.min ?? 0;
             this.max = this.options.max ?? 100;
-            this.step = this.options.step;
+            this.step = this.options.step ?? 1;
             this.slider_handle_dim = 20;
             this.input = $('input.slider_value', this.elem);
             this.slider_elem = $('div.slider', this.elem);
@@ -74,9 +74,7 @@
         set_value_track(e) {
             let value = this.handles[0].pos;
             if (this.range_true) {
-                let dimension =
-                    this.handles[1].pos -
-                    this.handles[0].pos;
+                let dimension = this.handles[1].pos - this.handles[0].pos;
                 this.slider_value_track
                     .css(`${this.dim}`, dimension)
                     .css(`${this.dir}`, `${value}px`);
@@ -101,8 +99,7 @@
             }
         }
         handle_singletouch(e) {
-            let value,
-                target;
+            let value, target;
             if (e.type === 'mousedown') {
                 value = (this.vertical ? e.pageY : e.pageX) - this.offset;
             } else {

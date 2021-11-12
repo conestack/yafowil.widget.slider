@@ -7,6 +7,7 @@
 import $ from 'jquery';
 
 export class SliderWidget {
+
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             new SliderWidget($(this));
@@ -22,7 +23,6 @@ export class SliderWidget {
         this.slider_handle_dim = 20;
         this.input = $('input.slider_value', this.elem);
         this.slider_elem = $('div.slider', this.elem);
-
         this.vertical = this.options.orientation === 'vertical';
         this.dim = this.vertical ? 'height' : 'width';
         this.dir = this.vertical ? 'top' : 'left';
@@ -65,7 +65,6 @@ export class SliderWidget {
         this.init_position();
         this.set_value_track();
         this.slider_elem.on('drag', this.set_value_track.bind(this));
-        // this.slider_elem.on('drag', this.set_values.bind(this));
         $(window).on('resize', this.set_value_track.bind(this));
     }
 
@@ -91,9 +90,7 @@ export class SliderWidget {
     set_value_track(e) {
         let value = this.handles[0].pos;
         if (this.range_true) {
-            let dimension =
-                this.handles[1].pos -
-                this.handles[0].pos;
+            let dimension = this.handles[1].pos - this.handles[0].pos;
             this.slider_value_track
                 .css(`${this.dim}`, dimension)
                 .css(`${this.dir}`, `${value}px`);
@@ -120,8 +117,7 @@ export class SliderWidget {
     }
 
     handle_singletouch(e) {
-        let value,
-            target;
+        let value, target;
         if (e.type === 'mousedown') {
             value = (this.vertical ? e.pageY : e.pageX) - this.offset;
         } else {
@@ -224,7 +220,6 @@ class SliderHandle {
                 (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
                 - this.offset;
         }
-
         if (this.slider.options.range === true) {
             let handle1 = this.slider.handles[0],
                 handle2 = this.slider.handles[1];
@@ -234,15 +229,12 @@ class SliderHandle {
                 return;
             }
         }
-
         this.pos = pos;
         this.value = this.transform(this.pos, 'range');
-
         if (this.slider.step) {
             this.value = this.transform(this.value, 'step');
             this.pos = this.transform(this.value, 'screen');
         }
-
         const event = new $.Event('drag');
         this.slider.slider_elem.trigger(event);
     }
