@@ -14,15 +14,14 @@
             this.max = this.options.max ?? 100;
             this.step = this.options.step ?? 1;
             this.slider_handle_dim = 20;
-            this.input = $('input.slider_value', this.elem);
             this.slider_elem = $('div.slider', this.elem);
             this.vertical = this.options.orientation === 'vertical';
             this.dim = this.vertical ? 'height' : 'width';
             this.dir = this.vertical ? 'top' : 'left';
-            this.slider_value_track = $('<div></div>')
+            this.slider_value_track = $('<div />')
                 .addClass('slider-value-track');
             this.slider_elem
-                .append($('<div></div>').addClass('slider-bg'))
+                .append($('<div />').addClass('slider-bg'))
                 .append(this.slider_value_track);
             this.handles = [];
             if (this.range_true) {
@@ -59,7 +58,7 @@
         get range_max() {
             return this.options.range === 'max';
         }
-        get range_true(){
+        get range_true() {
             return this.options.range === true;
         }
         get offset() {
@@ -107,9 +106,9 @@
                     (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
                     - this.offset;
             }
-            if (this.range_true){
+            if (this.range_true) {
                 let values = [this.handles[0].pos, this.handles[1].pos];
-                let isFirst = value < values[0] || value < (values[0] + values[1])/2;
+                let isFirst = value < values[0] || value < (values[0] + values[1]) / 2;
                 target = isFirst ? this.handles[0] : this.handles[1];
             } else {
                 target = this.handles[0];
@@ -122,7 +121,7 @@
     class SliderHandle {
         constructor(slider, input, span) {
             this.slider = slider;
-            this.elem = $('<div></div>')
+            this.elem = $('<div />')
                 .addClass('slider-handle')
                 .width(20)
                 .height(20);
@@ -152,14 +151,28 @@
         get pos() {
             return this._pos;
         }
-        set pos(value) {
-            if (value >= this.slider.slider_dim) {
-                value = this.slider.slider_dim;
-            } else if (value <= 0) {
-                value = 0;
+        set pos(pos) {
+            if (pos >= this.slider.slider_dim) {
+                pos = this.slider.slider_dim;
+            } else if (pos <= 0) {
+                pos = 0;
+            } else if (this.slider.options.range === true) {
+                let index = this.slider.handles.indexOf(this);
+                for (let i in this.slider.handles) {
+                    let handle = this.slider.handles[i];
+                    if (handle !== this) {
+                        if (
+                            (pos > handle.pos && i > index) ||
+                            (pos < handle.pos && i < index)
+                        ) {
+                            pos = handle.pos;
+                            this.value = handle.value;
+                        }
+                    }
+                }
             }
-            this.elem.css(`${this.slider.dir}`, `${value}px`);
-            this._pos = value;
+            this.elem.css(`${this.slider.dir}`, `${pos}px`);
+            this._pos = pos;
         }
         resize() {
             this.pos = this.transform(this.value, 'screen');
@@ -167,6 +180,8 @@
         slide_start(event) {
             event.preventDefault();
             event.stopPropagation();
+            $('.slider-handle').css('z-index', 1);
+            this.elem.css('z-index', 10);
             ['mousemove','touchmove'].forEach( evt =>
                 document.addEventListener(evt, this.handle_drag, {passive:false})
             );
@@ -177,27 +192,16 @@
                 }, false)
             );
         }
-        handle_drag(e){
+        handle_drag(e) {
             e.preventDefault();
             e.stopPropagation();
-            let pos;
             if (e.type === 'mousemove') {
-                pos = (this.vertical ? e.pageY : e.pageX) - this.offset;
+                this.pos = (this.vertical ? e.pageY : e.pageX) - this.offset;
             } else {
-                pos =
+                this.pos =
                     (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
                     - this.offset;
             }
-            if (this.slider.options.range === true) {
-                let handle1 = this.slider.handles[0],
-                    handle2 = this.slider.handles[1];
-                if (this === handle1 && pos >= handle2.pos ||
-                    this === handle2 && pos <= handle1.pos
-                ){
-                    return;
-                }
-            }
-            this.pos = pos;
             this.value = this.transform(this.pos, 'range');
             if (this.slider.step) {
                 this.value = this.transform(this.value, 'step');
@@ -212,7 +216,7 @@
                 step = this.slider.step;
             if (type === 'step') {
                 let condition = min === 0 ? max - step / 2 : max - min / 2;
-                val = val > condition ? max : step * parseInt(val/step);
+                val = val > condition ? max : step * parseInt(val / step);
                 val = val <= min ? min : val;
             } else if (type === 'screen') {
                 val = parseInt(this.slider.slider_dim * ((val - min) / (max - min)));
