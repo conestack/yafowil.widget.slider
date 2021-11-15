@@ -18,11 +18,9 @@
             this.vertical = this.options.orientation === 'vertical';
             this.dim = this.vertical ? 'height' : 'width';
             this.dir = this.vertical ? 'top' : 'left';
-            this.slider_value_track = $('<div />')
-                .addClass('slider-value-track');
-            this.slider_elem
-                .append($('<div />').addClass('slider-bg'))
-                .append(this.slider_value_track);
+            if (this.vertical) {
+                this.slider_elem.addClass('slider-vertical');
+            }
             this.handles = [];
             if (this.range_true) {
                 this.handles.push(
@@ -48,12 +46,9 @@
                     )
                 );
             }
+            this.slider_track = new SliderTrack(this);
             this.handle_singletouch = this.handle_singletouch.bind(this);
             this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
-            this.init_position();
-            this.set_value_track();
-            this.slider_elem.on('drag', this.set_value_track.bind(this));
-            $(window).on('resize', this.set_value_track.bind(this));
         }
         get range_max() {
             return this.options.range === 'max';
@@ -70,33 +65,6 @@
             let dim = this.vertical ? this.slider_elem.height() : this.elem.width();
             return dim;
         }
-        set_value_track(e) {
-            let value = this.handles[0].pos;
-            if (this.range_true) {
-                let dimension = this.handles[1].pos - this.handles[0].pos;
-                this.slider_value_track
-                    .css(`${this.dim}`, dimension)
-                    .css(`${this.dir}`, `${value}px`);
-            } else if (this.range_max) {
-                this.slider_value_track.css(`${this.dim}`, this.slider_dim - value);
-            } else {
-                this.slider_value_track.css(`${this.dim}`, value);
-            }
-        }
-        init_position() {
-            if (this.vertical) {
-                this.slider_elem.addClass('slider-vertical');
-            }
-            if (this.range_max) {
-                if (this.vertical) {
-                    this.slider_value_track
-                        .css('bottom', 0)
-                        .css('top', 'unset');
-                } else {
-                    this.slider_value_track.css('right', 0);
-                }
-            }
-        }
         handle_singletouch(e) {
             let value, target;
             if (e.type === 'mousedown') {
@@ -107,15 +75,67 @@
                     - this.offset;
             }
             if (this.range_true) {
-                let values = [this.handles[0].pos, this.handles[1].pos];
-                let isFirst = value < values[0] || value < (values[0] + values[1]) / 2;
-                target = isFirst ? this.handles[0] : this.handles[1];
+                let distances = [];
+                for (let handle of this.handles) {
+                    let distance = Math.hypot(
+                        handle.elem.offset().left - parseInt(e.clientX),
+                        handle.elem.offset().top - parseInt(e.clientY)
+                    );
+                    distances.push(parseInt(distance));
+                }
+                let closest = distances.indexOf(Math.min(...distances));
+                target = this.handles[closest];
             } else {
                 target = this.handles[0];
             }
-            target.pos = value;
-            target.value = target.transform(value, 'range');
-            this.set_value_track();
+            if (this.step) {
+                value = target.transform(value, 'range');
+                target.value = target.transform(value, 'step');
+                target.pos = target.transform(target.value, 'screen');
+            } else {
+                target.pos = value;
+                target.value = target.transform(value, 'range');
+            }
+            this.slider_track.set_value(e);
+        }
+    }
+    class SliderTrack {
+        constructor(slider) {
+            this.slider = slider;
+            this.track = $('<div />')
+                .addClass('slider-value-track');
+            this.slider.slider_elem
+                .append($('<div />').addClass('slider-bg'))
+                .append(this.track);
+            if (this.slider.range_max) {
+                if (this.slider.vertical) {
+                    this.track
+                        .css('bottom', 0)
+                        .css('top', 'unset');
+                } else {
+                    this.track.css('right', 0);
+                }
+            }
+            this.set_value();
+            this.set_value = this.set_value.bind(this);
+            this.slider.slider_elem.on('drag', this.set_value);
+            $(window).on('resize', this.set_value);
+        }
+        unload() {
+            $(window).off('resize', this.set_value);
+        }
+        set_value(e) {
+            let value = this.slider.handles[0].pos;
+            if (this.slider.range_true) {
+                let dimension = this.slider.handles[1].pos - this.slider.handles[0].pos;
+                this.track
+                    .css(`${this.slider.dim}`, dimension)
+                    .css(`${this.slider.dir}`, `${value}px`);
+            } else if (this.slider.range_max) {
+                this.track.css(`${this.slider.dim}`, this.slider.slider_dim - value);
+            } else {
+                this.track.css(`${this.slider.dim}`, value);
+            }
         }
     }
     class SliderHandle {
@@ -131,11 +151,13 @@
             this.value = this.input_elem.val();
             this.pos = this.transform(this.value, 'screen');
             this.vertical = this.slider.vertical;
+            this.step = this.slider.step;
             this.elem.css(`${this.slider.dir}`, this.pos);
             this.slide_start = this.slide_start.bind(this);
             this.handle_drag = this.handle_drag.bind(this);
             this.elem.on('mousedown touchstart', this.slide_start);
-            $(window).on('resize', this.resize.bind(this));
+            this.resize_handle = this.resize_handle.bind(this);
+            $(window).on('resize', this.resize_handle);
         }
         get offset() {
             return this.slider.offset;
@@ -152,29 +174,30 @@
             return this._pos;
         }
         set pos(pos) {
+            let index = this.slider.handles.indexOf(this);
+            if (this.slider.range_true && index >= 0) {
+                for (let i in this.slider.handles) {
+                    let handle = this.slider.handles[i];
+                    if (i !== index && (
+                        (pos >= handle.pos && i > index) ||
+                        (pos <= handle.pos && i < index))
+                    ) {
+                        pos = handle.pos + 1;
+                    }
+                }
+            }
             if (pos >= this.slider.slider_dim) {
                 pos = this.slider.slider_dim;
             } else if (pos <= 0) {
                 pos = 0;
-            } else if (this.slider.options.range === true) {
-                let index = this.slider.handles.indexOf(this);
-                for (let i in this.slider.handles) {
-                    let handle = this.slider.handles[i];
-                    if (handle !== this) {
-                        if (
-                            (pos > handle.pos && i > index) ||
-                            (pos < handle.pos && i < index)
-                        ) {
-                            pos = handle.pos;
-                            this.value = handle.value;
-                        }
-                    }
-                }
             }
             this.elem.css(`${this.slider.dir}`, `${pos}px`);
             this._pos = pos;
         }
-        resize() {
+        unload() {
+            $(window).off('resize', this.resize_handle);
+        }
+        resize_handle() {
             this.pos = this.transform(this.value, 'screen');
         }
         slide_start(event) {
