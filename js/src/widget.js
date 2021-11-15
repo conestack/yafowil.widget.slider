@@ -6,8 +6,8 @@ class SliderHandle {
         this.slider = slider;
         this.elem = $('<div />')
             .addClass('slider-handle')
-            .width(this.slider.options.handle_diameter)
-            .height(this.slider.options.handle_diameter);
+            .width(this.slider.handle_diameter)
+            .height(this.slider.handle_diameter);
 
         this.slider.slider_elem.append(this.elem);
         this.input_elem = input;
@@ -136,28 +136,28 @@ class SliderTrack {
 
     constructor(slider) {
         this.slider = slider;
-        this.track = $('<div />')
+        this.track_elem = $('<div />')
             .addClass('slider-value-track')
-        this.bg = $('<div />')
+        this.bg_elem = $('<div />')
             .addClass('slider-bg');
         this.slider.slider_elem
-            .append(this.bg)
-            .append(this.track);
+            .append(this.bg_elem)
+            .append(this.track_elem);
 
         if (this.slider.vertical) {
-            this.track.css('width', this.slider.options.thickness);
-            this.bg.css('width', this.slider.options.thickness);
+            this.track_elem.css('width', this.slider.thickness);
+            this.bg_elem.css('width', this.slider.thickness);
         } else {
-            this.track.css('height', this.slider.options.thickness);
-            this.bg.css('height', this.slider.options.thickness);
+            this.track_elem.css('height', this.slider.thickness);
+            this.bg_elem.css('height', this.slider.thickness);
         }
         if (this.slider.range_max) {
             if (this.slider.vertical) {
-                this.track
+                this.track_elem
                     .css('bottom', 0)
                     .css('top', 'unset');
             } else {
-                this.track.css('right', 0);
+                this.track_elem.css('right', 0);
             }
         }
 
@@ -175,13 +175,13 @@ class SliderTrack {
         let value = this.slider.handles[0].pos;
         if (this.slider.range_true) {
             let dimension = this.slider.handles[1].pos - this.slider.handles[0].pos;
-            this.track
+            this.track_elem
                 .css(`${this.slider.dim_attr}`, dimension)
                 .css(`${this.slider.dir_attr}`, `${value}px`);
         } else if (this.slider.range_max) {
-            this.track.css(`${this.slider.dim_attr}`, this.slider.slider_dim - value);
+            this.track_elem.css(`${this.slider.dim_attr}`, this.slider.slider_dim - value);
         } else {
-            this.track.css(`${this.slider.dim_attr}`, value);
+            this.track_elem.css(`${this.slider.dim_attr}`, value);
         }
     }
 }
@@ -201,21 +201,21 @@ export class SliderWidget {
 
     constructor(elem, options) {
         this.elem = elem;
-        this.options = options;
-        this.options.handle_diameter = this.options.handle_diameter ?? 20;
-        this.options.thickness = this.options.thickness ?? 15;
-        this.min = this.options.min ?? 0;
-        this.max = this.options.max ?? 100;
-        this.step = this.options.step ?? 1;
+        this.range = options.range;
+        this.handle_diameter = options.handle_diameter ?? 20;
+        this.thickness = options.thickness ?? 15;
+        this.min = options.min ?? 0;
+        this.max = options.max ?? 100;
+        this.step = options.step ?? 1;
         this.slider_elem = $('div.slider', this.elem);
-        this.vertical = this.options.orientation === 'vertical';
+        this.vertical = options.orientation === 'vertical';
         this.dim_attr = this.vertical ? 'height' : 'width';
         this.dir_attr = this.vertical ? 'top' : 'left';
         if (this.vertical) {
             this.slider_elem.addClass('slider-vertical');
-            this.slider_elem.css('width', this.options.handle_diameter);
+            this.slider_elem.css('width', this.handle_diameter);
         } else {
-            this.slider_elem.css('height', this.options.handle_diameter);
+            this.slider_elem.css('height', this.handle_diameter);
         }
 
         this.handles = [];
@@ -251,11 +251,11 @@ export class SliderWidget {
     }
 
     get range_max() {
-        return this.options.range === 'max';
+        return this.range === 'max';
     }
 
     get range_true() {
-        return this.options.range === true;
+        return this.range === true;
     }
 
     get offset() {
