@@ -200,12 +200,12 @@ export class SliderWidget {
 
     constructor(elem, options) {
         this.elem = elem;
-        this.range = options.range;
+        this.range = options.range ? options.range : false;
         this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
         this.thickness = options.thickness ? options.thickness : 15;
         this.min = options.min ? options.min : 0;
         this.max = options.max ? options.max : 100;
-        this.step = options.step ? options.step : 1;
+        this.step = options.step ? options.step : false;
         this.slider_elem = $('div.slider', this.elem);
         this.vertical = options.orientation === 'vertical';
         this.dim_attr = this.vertical ? 'height' : 'width';
@@ -213,6 +213,7 @@ export class SliderWidget {
         if (this.vertical) {
             this.slider_elem.addClass('slider-vertical');
             this.slider_elem.css('width', this.handle_diameter);
+            this.slider_elem.css('height', options.height);
         } else {
             this.slider_elem.css('height', this.handle_diameter);
         }

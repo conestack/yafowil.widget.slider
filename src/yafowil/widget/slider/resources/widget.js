@@ -69,10 +69,10 @@
             event.stopPropagation();
             $('.slider-handle').css('z-index', 1);
             this.elem.css('z-index', 10);
-            ['mousemove','touchmove'].forEach( evt =>
+            ['mousemove', 'touchmove'].forEach( evt =>
                 document.addEventListener(evt, this.handle_drag, {passive:false})
             );
-            ['mouseup','touchend'].forEach( evt =>
+            ['mouseup', 'touchend'].forEach( evt =>
                 document.addEventListener(evt, () => {
                     document.removeEventListener('touchmove', this.handle_drag);
                     document.removeEventListener('mousemove', this.handle_drag);
@@ -171,12 +171,12 @@
         }
         constructor(elem, options) {
             this.elem = elem;
-            this.range = options.range;
-            this.handle_diameter = options.handle_diameter ?? 20;
-            this.thickness = options.thickness ?? 15;
-            this.min = options.min ?? 0;
-            this.max = options.max ?? 100;
-            this.step = options.step ?? 1;
+            this.range = options.range ? options.range : false;
+            this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
+            this.thickness = options.thickness ? options.thickness : 15;
+            this.min = options.min ? options.min : 0;
+            this.max = options.max ? options.max : 100;
+            this.step = options.step ? options.step : false;
             this.slider_elem = $('div.slider', this.elem);
             this.vertical = options.orientation === 'vertical';
             this.dim_attr = this.vertical ? 'height' : 'width';
