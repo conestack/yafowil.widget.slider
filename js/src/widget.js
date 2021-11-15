@@ -216,6 +216,7 @@ class SliderHandle {
                     (pos <= handle.pos && i < index))
                 ) {
                     pos = handle.pos + 1;
+                    this.value = handle.value;
                 }
             }
         }
