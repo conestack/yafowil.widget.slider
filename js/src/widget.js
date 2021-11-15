@@ -81,10 +81,10 @@ class SliderHandle {
         event.stopPropagation();
         $('.slider-handle').css('z-index', 1);
         this.elem.css('z-index', 10);
-        ['mousemove','touchmove'].forEach( evt =>
+        ['mousemove', 'touchmove'].forEach( evt =>
             document.addEventListener(evt, this.handle_drag, {passive:false})
         );
-        ['mouseup','touchend'].forEach( evt =>
+        ['mouseup', 'touchend'].forEach( evt =>
             document.addEventListener(evt, () => {
                 document.removeEventListener('touchmove', this.handle_drag);
                 document.removeEventListener('mousemove', this.handle_drag);
@@ -130,7 +130,6 @@ class SliderHandle {
         return val;
     }
 }
-
 
 class SliderTrack {
 
@@ -186,13 +185,13 @@ class SliderTrack {
     }
 }
 
-
 export class SliderWidget {
 
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
             let options = elem.data();
+            // XXX: from data
             // options.handle_diameter = 15;
             // options.thickness = 10;
             new SliderWidget(elem, options);
@@ -202,11 +201,11 @@ export class SliderWidget {
     constructor(elem, options) {
         this.elem = elem;
         this.range = options.range;
-        this.handle_diameter = options.handle_diameter ?? 20;
-        this.thickness = options.thickness ?? 15;
-        this.min = options.min ?? 0;
-        this.max = options.max ?? 100;
-        this.step = options.step ?? 1;
+        this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
+        this.thickness = options.thickness ? options.thickness : 15;
+        this.min = options.min ? options.min : 0;
+        this.max = options.max ? options.max : 100;
+        this.step = options.step ? options.step : 1;
         this.slider_elem = $('div.slider', this.elem);
         this.vertical = options.orientation === 'vertical';
         this.dim_attr = this.vertical ? 'height' : 'width';
