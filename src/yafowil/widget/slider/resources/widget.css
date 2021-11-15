@@ -7,12 +7,10 @@ div.yafowil_slider > .slider {
     position: relative;
     display: flex;
     align-items: center;
-    height: 20px;
 }
 
 div.yafowil_slider > .slider .slider-bg {
     position: absolute;
-    height: 15px;
     width: 100%;
     border-radius: 15px;
     background: lightgray;
@@ -21,7 +19,6 @@ div.yafowil_slider > .slider .slider-bg {
 
 div.yafowil_slider > .slider .slider-value-track {
     position: absolute;
-    height: 15px;
     border-radius: 15px;
     background: #8fcdfb;
 }
@@ -36,13 +33,11 @@ div.yafowil_slider > .slider .slider-handle {
 }
 
 div.yafowil_slider > .slider.slider-vertical {
-    width: 20px;
     margin-top: 10px;
     justify-content: center;
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-bg {
-    width: 15px;
     height: 100%;
     box-shadow: inset 0px 1px 2px rgb(0 0 0 / 15%);
 }
@@ -50,7 +45,6 @@ div.yafowil_slider > .slider.slider-vertical .slider-bg {
 div.yafowil_slider > .slider.slider-vertical .slider-value-track {
     top: 0;
     height: 0;
-    width: 15px;
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-handle {
