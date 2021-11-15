@@ -11,78 +11,49 @@ div.yafowil_slider > .slider {
 }
 
 div.yafowil_slider > .slider .slider-bg {
-    height: 15px;
     position: absolute;
-    background: lightgray;
+    height: 15px;
     width: 100%;
     border-radius: 15px;
+    background: lightgray;
     box-shadow: inset 1px 1px 2px rgb(0 0 0 / 15%);
 }
 
 div.yafowil_slider > .slider .slider-value-track {
-    height: 15px;
     position: absolute;
-    background: #8fcdfb;
+    height: 15px;
     border-radius: 15px;
+    background: #8fcdfb;
 }
 
 div.yafowil_slider > .slider .slider-handle {
     position: absolute;
     background: #6c7788;
-    border-radius: 50%;
     transform: translateX(-50%);
+    border-radius: 50%;
     border: 1px solid rgb(0 0 0 / 20%);
     z-index: 1000;
 }
 
 div.yafowil_slider > .slider.slider-vertical {
-    position: relative;
-    display: flex;
-    justify-content: center;
     width: 20px;
     margin-top: 10px;
+    justify-content: center;
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-bg {
     width: 15px;
-    position: absolute;
-    background: lightgray;
     height: 100%;
-    border-radius: 15px;
     box-shadow: inset 0px 1px 2px rgb(0 0 0 / 15%);
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-value-track {
-    height:0;
-    width: 15px;
-    position: absolute;
     top: 0;
-    background: #8fcdfb;
-    border-radius: 15px;
+    height: 0;
+    width: 15px;
 }
 
 div.yafowil_slider > .slider.slider-vertical .slider-handle {
-    position: absolute;
     top: 0;
-    background: #6c7788;
-    border-radius: 50%;
     transform: translateY(-50%);
-    border: 1px solid rgb(0 0 0 / 20%);
-}
-
-/* for mobile */
-div.yafowil_slider.touch-support .slider-handle,
-div.yafowil_slider.touch-support .slider-vertical .slider-handle {
-    background: transparent;
-}
-
-div.yafowil_slider.touch-support .slider-handle::after,
-div.yafowil_slider.touch-support .slider.slider-vertical .slider-handle::after {
-    content: '';
-    width: 70%;
-    height: 70%;
-    position: absolute;
-    background: #6c7788;
-    border-radius: 50%;
-    transform: translate(20%, 20%);
 }
