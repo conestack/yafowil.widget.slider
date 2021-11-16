@@ -24,6 +24,9 @@ QUnit.module('horizontal slider', hooks => {
         slider = null;
         container.empty();
     });
+    hooks.after(assert => {
+        container.remove();
+    });
 
     QUnit.test('constructor', assert => {
         assert.deepEqual(slider.elem, elem);
@@ -61,18 +64,34 @@ QUnit.module('horizontal slider', hooks => {
         let slider_dim = slider.elem.width();
         assert.strictEqual(slider.slider_dim, slider_dim);
     });
-    QUnit.test('handle_singletouch()', assert => {
-        let handle = slider.handles[0];
-        let x = 100;
-        let evt = new $.Event('mousedown', {pageY: false, pageX: x});
-        slider.slider_elem.trigger(evt);
+    QUnit.module('handle_singletouch()', () => {
+        QUnit.test('mousedown', assert => {
+            let handle = slider.handles[0];
+            let x = 100;
+            let evt = new $.Event('mousedown', {pageY: false, pageX: x});
+            slider.slider_elem.trigger(evt);
 
-        let offset = slider.elem.offset().left;
-        let pos = x - offset;
-        let val = transform(pos, 'range', width, 0, 100);
-        assert.strictEqual(handle.pos, pos);
-        assert.strictEqual(handle.value, val);
-        assert.strictEqual(slider.slider_track.track_elem.css('width'), pos + 'px');
+            let offset = slider.elem.offset().left;
+            let pos = x - offset;
+            let val = transform(pos, 'range', width, 0, 100);
+            assert.strictEqual(handle.pos, pos);
+            assert.strictEqual(handle.value, val);
+            assert.strictEqual(slider.slider_track.track_elem.css('width'), pos + 'px');
+        });
+        QUnit.test('touch', assert => {
+            let handle = slider.handles[0];
+            let x = 100;
+            let evt = new $.Event('touchstart');
+            evt.touches = [{pageX: x, pageY: 0}];
+            slider.slider_elem.trigger(evt);
+
+            let offset = slider.elem.offset().left;
+            let pos = x - offset;
+            let val = transform(pos, 'range', width, 0, 100);
+            assert.strictEqual(handle.pos, pos);
+            assert.strictEqual(handle.value, val);
+            assert.strictEqual(slider.slider_track.track_elem.css('width'), pos + 'px');
+        });
     });
 });
 
@@ -97,6 +116,9 @@ QUnit.module('vertical slider', hooks => {
     hooks.afterEach(assert => {
         slider = null;
         container.empty();
+    });
+    hooks.after(assert => {
+        container.remove();
     });
 
     QUnit.test('constructor', assert => {
@@ -141,7 +163,125 @@ QUnit.module('vertical slider', hooks => {
             parseInt(slider.slider_track.track_elem.css('height')),
             parseInt(pos));
     });
+    QUnit.module.skip('handle_singletouch()', () => { ////////
+        QUnit.test('mousedown', assert => {
+            let handle = slider.handles[0];
+            let y = 150;
+            let evt = new $.Event('mousedown', {pageY: y, pageX: false});
+            slider.slider_elem.trigger(evt);
+
+            let offset = slider.elem.offset().top;
+            let pos = y - offset;
+            let val = transform(pos, 'range', height, 0, 100);
+            assert.strictEqual(handle.pos, pos);
+            assert.strictEqual(handle.value, val);
+            assert.strictEqual(slider.slider_track.track_elem.css('height'), pos + 'px');
+        });
+        QUnit.test('touch', assert => {
+            let handle = slider.handles[0];
+            let y = 150;
+            let evt = new $.Event('touchstart');
+            evt.touches = [{pageX: false, pageY: y}];
+            slider.slider_elem.trigger(evt);
+
+            let offset = slider.elem.offset().top;
+            let pos = y - offset;
+            let val = transform(pos, 'range', height, 0, 100);
+            assert.strictEqual(handle.pos, pos);
+            assert.strictEqual(handle.value, val);
+            assert.strictEqual(slider.slider_track.track_elem.css('height'), pos + 'px');
+        });
+    });
 });
+
+QUnit.module('range max slider', hooks => {
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let width = 200;
+
+    hooks.before(assert => {
+        $('body').append(container);
+    });
+    hooks.beforeEach(assert => {
+        create_elem(width);
+        elem = $('#test-slider');
+    });
+    hooks.afterEach(assert => {
+        slider = null;
+        container.empty();
+    });
+    hooks.after(assert => {
+        container.remove();
+    });
+
+    QUnit.module('range max', hooks => {
+        let options = {
+            range: 'max'
+        };
+        QUnit.test('constructor', assert => {
+            slider = new SliderWidget(elem, options);
+            assert.deepEqual(slider.elem, elem);
+            assert.strictEqual(slider.range, 'max');
+            assert.strictEqual(slider.range_max, true);
+            assert.strictEqual(slider.handles.length, 1);
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('right'),
+                '0px'
+            );
+        });
+        QUnit.test('set value', assert => {
+            slider = new SliderWidget(elem, options);
+            let start_val = slider.handles[0].value;
+            let new_val = 40;
+            let new_pos = transform(new_val, 'screen', width, 0, 100);
+            slider.handles[0].pos = new_pos;
+
+            assert.notStrictEqual(start_val, new_val);
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('width'),
+                (width - new_val) + 'px'
+            );
+        });
+    });
+
+    QUnit.module('range true', hooks => {
+        let options = {
+            range: true,
+            values: [
+                50,
+                100
+            ]
+        };
+        let lower_val_elem = $(`<input class="lower_value" />`);
+        let lower_span_elem = $(`<span class="lower_value" />`);
+        let upper_val_elem = $(`<input class="upper_value" />`);
+        let upper_span_elem = $(`<input class="upper_value" />`);
+
+        QUnit.test('constructor', assert => {
+            slider = new SliderWidget(elem, options);
+            assert.deepEqual(slider.elem, elem);
+            assert.strictEqual(slider.range, true);
+            assert.strictEqual(slider.range_true, true);
+            assert.strictEqual(slider.handles.length, 2);
+        });
+        QUnit.test('set value', assert => {
+            assert.ok(true)
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            slider = new SliderWidget(elem, options);
+            console.log(slider.handles[0].value)
+        });
+    });
+});
+
+
+///// outsource to helpers
 
 function transform(val, type, dim, min, max, step) {
     if (type === 'step') {

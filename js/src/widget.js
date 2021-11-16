@@ -270,7 +270,7 @@ export class SliderWidget {
     }
 
     handle_singletouch(e) {
-        let value, target;
+        let value, target, evt_val;
         if (e.type === 'mousedown') {
             value = (this.vertical ? e.pageY : e.pageX) - this.offset;
         } else {
@@ -281,9 +281,11 @@ export class SliderWidget {
         if (this.range_true) {
             let distances = [];
             for (let handle of this.handles) {
+                let evt_x = (e.type === 'mousedown') ? e.pageX : e.touches[0].pageX;
+                let evt_y = (e.type === 'mousedown') ? e.pageY : e.touches[0].pageY;
                 let distance = Math.hypot(
-                    handle.elem.offset().left - parseInt(e.clientX),
-                    handle.elem.offset().top - parseInt(e.clientY)
+                    handle.elem.offset().left - parseInt(evt_x),
+                    handle.elem.offset().top - parseInt(evt_y)
                 );
                 distances.push(parseInt(distance));
             }
