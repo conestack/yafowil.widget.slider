@@ -184,6 +184,7 @@
             if (this.vertical) {
                 this.slider_elem.addClass('slider-vertical');
                 this.slider_elem.css('width', this.handle_diameter);
+                this.slider_elem.css('height', options.height);
             } else {
                 this.slider_elem.css('height', this.handle_diameter);
             }
@@ -243,9 +244,11 @@
             if (this.range_true) {
                 let distances = [];
                 for (let handle of this.handles) {
+                    let evt_x = (e.type === 'mousedown') ? e.pageX : e.touches[0].pageX;
+                    let evt_y = (e.type === 'mousedown') ? e.pageY : e.touches[0].pageY;
                     let distance = Math.hypot(
-                        handle.elem.offset().left - parseInt(e.clientX),
-                        handle.elem.offset().top - parseInt(e.clientY)
+                        handle.elem.offset().left - parseInt(evt_x),
+                        handle.elem.offset().top - parseInt(evt_y)
                     );
                     distances.push(parseInt(distance));
                 }
