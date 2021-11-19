@@ -1,5 +1,18 @@
 import $ from 'jquery';
 
+export function transform(val, type, dim, min, max, step) {
+    if (type === 'step') {
+        let condition = min === 0 ? max - step / 2 : max - min / 2;
+        val = val > condition ? max : step * parseInt(val / step);
+        val = val <= min ? min : val;
+    } else if (type === 'screen') {
+        val = parseInt(dim * ((val - min) / (max - min)));
+    } else if (type === 'range') {
+        val = parseInt((max - min) * (val / dim) + min);
+    }
+    return val;
+}
+
 class SliderHandle {
 
     constructor(slider, input, span) {
@@ -13,7 +26,8 @@ class SliderHandle {
         this.input_elem = input;
         this.span_elem = span;
 
-        this.value = this.input_elem.val();
+        this.value = this.input_elem.val() !== 'undefined' ? 
+                     this.input_elem.val() : 0;
         this.pos = this.transform(this.value, 'screen');
         this.vertical = this.slider.vertical;
         this.step = this.slider.step;
@@ -117,17 +131,10 @@ class SliderHandle {
     transform(val, type) {
         let min = this.slider.min,
             max = this.slider.max,
-            step = this.slider.step;
-        if (type === 'step') {
-            let condition = min === 0 ? max - step / 2 : max - min / 2;
-            val = val > condition ? max : step * parseInt(val / step);
-            val = val <= min ? min : val;
-        } else if (type === 'screen') {
-            val = parseInt(this.slider.slider_dim * ((val - min) / (max - min)));
-        } else if (type === 'range') {
-            val = parseInt((max - min) * (val / this.slider.slider_dim) + min);
-        }
-        return val;
+            step = this.slider.step,
+            dim = this.slider.slider_dim;
+        let value = transform(val, type, dim, min, max, step);
+        return value;
     }
 }
 
