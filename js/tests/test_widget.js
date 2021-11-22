@@ -362,6 +362,37 @@ QUnit.module('handle_singletouch', hooks => {
     });
 });
 
+QUnit.module('resize_handle', hooks => {
+    let options = {};
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let dim = 200;
+
+    hooks.before(() => {
+        $('body').append(container);
+    });
+    hooks.afterEach(() => {
+        elem = null;
+        slider = null;
+        options = {};
+        container.empty();
+    });
+    hooks.after(() => {
+        container.remove();
+    });
+
+    QUnit.test.skip('horizontal', assert => {
+        elem = create_elem(dim);
+        slider = new SliderWidget(elem, options);
+
+        let dim_before = slider.slider_dim;
+        console.log(dim_before)
+        viewport.set(320)
+        $(window).trigger('resize');
+    });
+});
+
 QUnit.module('SliderHandle.handle_drag', hooks => {
     let options = {};
     let elem;
@@ -382,6 +413,100 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
         container.remove();
     });
 
+    QUnit.module('range true', () => {
+        QUnit.test('horizontal', assert => {
+            options.range = true;
+            options.values = [
+                50,
+                100
+            ];
+            
+            elem = create_elem(dim);
+
+            let vals = options.values;
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            slider = new SliderWidget(elem, options);
+
+            let start_val = vals[0];
+            let new_val = 60;
+            let new_pos = transform(new_val, 'screen', dim, 0, 100);
+            slider.handles[0].pos = new_pos;
+            let new_dim = slider.handles[1].pos - slider.handles[0].pos;
+
+            const event = new $.Event('drag');
+            slider.slider_elem.trigger(event);
+
+            assert.notStrictEqual(start_val, new_val);
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('width'),
+                (new_dim) + 'px'
+            );
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('left'),
+                (new_pos) + 'px'
+            );
+
+            // handles will meet
+            move_handle(assert, slider.handles[0], 100, 92, false, false);
+            // try to move right handle beyond left handle
+            move_handle(assert, slider.handles[1], 0, 93, false, false);
+
+            assert.strictEqual(slider.handles[0].value, slider.handles[1].value - 1);
+        });
+        QUnit.test('vertical', assert => {
+            options.range = true;
+            let vals = options.values = [
+                50,
+                100
+            ];
+            options.orientation = 'vertical';
+            options.height = dim;
+
+            elem = create_elem(dim, 0, true);
+
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            slider = new SliderWidget(elem, options);
+
+            let start_val = vals[0];
+            let new_val = 60;
+            let new_pos = transform(new_val, 'screen', dim, 0, 100);
+            slider.handles[0].pos = new_pos;
+            let new_dim = slider.handles[1].pos - slider.handles[0].pos;
+
+            const event = new $.Event('drag');
+            slider.slider_elem.trigger(event);
+
+            assert.notStrictEqual(start_val, new_val);
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('height'),
+                (new_dim) + 'px'
+            );
+            assert.strictEqual(
+                slider.slider_track.track_elem.css('top'),
+                (new_pos) + 'px'
+            );
+        });
+    });
     QUnit.module('default', hooks => {
         hooks.beforeEach(() => {
             elem = create_elem(dim);
@@ -400,9 +525,29 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             let assertion_value = 0;
             move_handle(assert, handle, drag_end, assertion_value, false);
         });
+        QUnit.test('touch move to end', assert => {
+            let handle = slider.handles[0];
+            let drag_end =  dim + 10;
+            let target = handle.elem;
+
+            sendTouchEvent(0, 0, target[0], 'touchstart');
+            sendTouchEvent(drag_end, 0, document, 'touchmove');
+            sendTouchEvent(drag_end, 0, document, 'touchend');
+            assert.strictEqual(handle.pos, dim);
+        });
+        QUnit.test('touch move to start', assert => {
+            let handle = slider.handles[0];
+            let drag_end =  slider.offset - 10;
+            let target = handle.elem;
+
+            sendTouchEvent(0, 0, target[0], 'touchstart');
+            sendTouchEvent(drag_end, 0, document, 'touchmove');
+            sendTouchEvent(drag_end, 0, document, 'touchend');
+            assert.strictEqual(handle.pos, 0);
+        });
 
         for (let i = 0; i <= 5; i++) {
-            QUnit.test.todo('random move', assert => {
+            QUnit.test.skip('random move', assert => {
                 let num = parseInt(Math.random() * (dim));
                 console.log(num)
                 let handle = slider.handles[0];
@@ -420,16 +565,6 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
                 move_handle(assert, handle, drag_end, num, dir);
             });
         }
-
-        // QUnit.test.only('move', assert => {
-        //     let handle = slider.handles[0];
-        //     let drag_end =  slider.offset + 122;
-        //     let assertion_value = 122;
-        //     move_handle(assert, handle, drag_end, assertion_value, true);
-        // });
-
-        QUnit.test.skip('touch', assert => {
-        });
     });
 
     QUnit.module('vertical', hooks => {
@@ -452,129 +587,42 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             let assertion_value = 0;
             move_handle(assert, handle, drag_end, assertion_value, false, true);
         });
+        QUnit.test('touch move to end', assert => {
+            let handle = slider.handles[0];
+            let drag_end = slider.offset + dim + 10;
+            let target = handle.elem;
 
-        QUnit.test.skip('touch', assert => {
+            sendTouchEvent(0, 0, target[0], 'touchstart');
+            sendTouchEvent(0, drag_end, document, 'touchmove');
+            sendTouchEvent(0, drag_end, document, 'touchend');
+            assert.strictEqual(handle.pos, dim);
+        });
+        QUnit.test('touch move to start', assert => {
+            let handle = slider.handles[0];
+            let drag_end =  slider.offset - 10;
+            let target = handle.elem;
+
+            sendTouchEvent(0, 0, target[0], 'touchstart');
+            sendTouchEvent(0, drag_end, document, 'touchmove');
+            sendTouchEvent(0, drag_end, document, 'touchend');
+            assert.strictEqual(handle.pos, 0);
         });
     });
 
-    QUnit.module.skip('step', hooks => {
+    QUnit.module('step', hooks => {
         hooks.beforeEach(() => {
+            options.step = 10;
             elem = create_elem(dim);
             slider = new SliderWidget(elem, options);
         });
 
-        QUnit.test('move to end', assert => {
+        QUnit.test('move', assert => {
             let handle = slider.handles[0];
-            let drag_end =  dim + 10;
-            let assertion_value = dim;
-            move_handle(assert, handle, drag_end, assertion_value, true);
-        });
-        QUnit.test('move to start', assert => {
-            let handle = slider.handles[0];
-            let drag_end =  slider.offset - 10;
-            let assertion_value = 0;
-            move_handle(assert, handle, drag_end, assertion_value, false);
-        });
-
-        QUnit.test.skip('touch', assert => {
-        });
-    });
-});
-
-
-QUnit.module.skip('horizontal range slider', hooks => {
-    let elem;
-    let slider;
-    let container = $('<div id="container" />');
-    let width = 200;
-
-    hooks.before(assert => {
-        $('body').append(container);
-    });
-    hooks.beforeEach(assert => {
-        create_elem(width);
-        elem = $('#test-slider');
-    });
-    hooks.afterEach(assert => {
-        slider = null;
-        container.empty();
-    });
-    hooks.after(assert => {
-        container.remove();
-    });
-
-    QUnit.module('range max', hooks => {
-        let options = {
-            range: 'max'
-        };
-        QUnit.test('constructor', assert => {
-            slider = new SliderWidget(elem, options);
-            // helpers.test_constructor_widget(assert, slider, options, elem);
-        });
-        QUnit.test('set value', assert => {
-            slider = new SliderWidget(elem, options);
-            let start_val = slider.handles[0].value;
-            let new_val = 40;
-            let new_pos = transform(new_val, 'screen', width, 0, 100);
-            slider.handles[0].pos = new_pos;
-
-            assert.notStrictEqual(start_val, new_val);
-            assert.strictEqual(
-                slider.slider_track.track_elem.css('width'),
-                (width - new_val) + 'px'
-            );
-        });
-    });
-
-    QUnit.module('range true', hooks => {
-        let options = {
-            range: true,
-            values: [
-                50,
-                100
-            ]
-        };
-        let vals = options.values;
-        let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
-        let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
-        let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
-        let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
-
-        QUnit.test('constructor', assert => {
-            $('.yafowil_slider')
-                .append(lower_span_elem)
-                .append(lower_val_elem)
-                .append(upper_span_elem)
-                .append(upper_val_elem);
-            slider = new SliderWidget(elem, options);
-            // helpers.test_constructor_widget(assert, slider, options, elem);
-        });
-        QUnit.test('set value', assert => {
-            $('.yafowil_slider')
-                .append(lower_span_elem)
-                .append(lower_val_elem)
-                .append(upper_span_elem)
-                .append(upper_val_elem);
-
-            slider = new SliderWidget(elem, options);
-            let start_val = vals[0];
-            let new_val = 60;
-            let new_pos = transform(new_val, 'screen', width, 0, 100);
-            slider.handles[0].pos = new_pos;
-            let new_dim = slider.handles[1].pos - slider.handles[0].pos;
-
-            const event = new $.Event('drag');
-            slider.slider_elem.trigger(event);
-
-            assert.notStrictEqual(start_val, new_val);
-            assert.strictEqual(
-                slider.slider_track.track_elem.css('width'),
-                (new_dim) + 'px'
-            );
-            assert.strictEqual(
-                slider.slider_track.track_elem.css('left'),
-                (new_pos) + 'px'
-            );
+            // add 5 to test rounding step
+            let drag_end =  slider.offset + slider.slider_dim / 2 + 5;
+            // assertion value will be actual rounded value
+            let assertion_value = slider.slider_dim / 2;
+            move_handle(assert, handle, drag_end, assertion_value, true, false);
         });
     });
 });
@@ -652,52 +700,26 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
     move();
 }
 
+function sendTouchEvent(x, y, element, eventType) {
+    const touchObj = new Touch({
+        identifier: Date.now(),
+        target: element,
+        pageX: x,
+        pageY: y,
+        radiusX: 2.5,
+        radiusY: 2.5,
+        rotationAngle: 10,
+        force: 0.5,
+    });
 
-function old_move_handle(assert, handle, drag_end, assertion_value, type, vertical) {
-    /* 
-        type=true for increase,
-        type=false for decrease
-    */
+    const touchEvent = new TouchEvent(eventType, {
+        cancelable: true,
+        bubbles: true,
+        touches: [touchObj],
+        targetTouches: [],
+        changedTouches: [touchObj],
+        shiftKey: true,
+    });
 
-    let target = handle.elem;
-    let changed_coord = handle.pos;
-    let coord_fixed = 0;
-
-    let coordX = handle.pos; // start pos is handle.pos
-    let coordY = window.innerHeight / 2; // Moving in the center
-
-    let done = assert.async();
-
-    function move() {
-        if (type) {
-            coordX += 10;
-        } else {
-            coordX -= 10;
-        }
-        let isMoving = type ? (coordX < drag_end) : (coordX > drag_end);
-        let ev = new MouseEvent("mousemove", {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-            clientX: coordX,
-            clientY: coordY
-        });
-        target[0].dispatchEvent(ev);
-
-        if (isMoving) {
-            setTimeout(() => {
-                move();
-            }, 10);
-        } else {
-            let ev = new MouseEvent("mouseup", {
-            });
-            document.dispatchEvent(ev);
-            done();
-
-            // assert here
-            assert.strictEqual(handle.pos, assertion_value);
-        }
-    }
-    target.trigger('mousedown');
-    move();
+    element.dispatchEvent(touchEvent);
 }
