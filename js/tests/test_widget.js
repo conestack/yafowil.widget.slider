@@ -5,6 +5,10 @@ import { transform } from '../src/widget';
 let base_width = $(window).width();
 let base_height = $(window).height();
 
+////////////////////////////////////////////////////////////////////////////////
+// yafowil slider widget tests
+////////////////////////////////////////////////////////////////////////////////
+
 QUnit.module('constructor cases', hooks => {
     let options = {};
     let elem;
@@ -27,6 +31,7 @@ QUnit.module('constructor cases', hooks => {
         container.empty();
     });
 
+    /* slider without additional options given */
     QUnit.test('default slider', assert => {
         elem = create_elem(dim);
         slider = new SliderWidget(elem, options);
@@ -57,8 +62,10 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.dir_attr, 'left');
     });
 
+    /* slider with vertical orientation */
     QUnit.test('vertical', assert => {
         options.orientation = 'vertical';
+        // on vertical orientation, height has to be specified
         options.height = dim;
         elem = create_elem(dim, 0, true);
         slider = new SliderWidget(elem, options);
@@ -70,10 +77,15 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.slider_elem.css('width'), '20px');
         assert.strictEqual(slider.offset, slider.slider_elem.offset().top);
     });
+
+    /* range slider - two handles */
     QUnit.test('slider with range', assert => {
         options.range = true;
+        // set initial values for the two handles
         options.values = [50, 100];
         elem = create_elem(dim);
+
+        // append corresponding input and span elements to slider - done in widget.py
         let lower_val_elem = $(`<input class="lower_value"/>`).val(options.values[0]);
         let lower_span_elem = $(`<span class="lower_value"/>`).val(options.values[0]);
         let upper_val_elem = $(`<input class="upper_value"/>`).val(options.values[1]);
@@ -82,6 +94,8 @@ QUnit.module('constructor cases', hooks => {
             .append(lower_val_elem)
             .append(upper_span_elem)
             .append(upper_val_elem);
+
+        // create slider object
         slider = new SliderWidget(elem, options);
 
         assert.strictEqual(slider.handles.length, 2);
@@ -90,6 +104,8 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.handles[0].value, String(options.values[0]));
         assert.strictEqual(slider.handles[1].value, String(options.values[1]));
     });
+
+    /* slider with range set to max - user can only choose a maximum value */
     QUnit.test('slider with max range', assert => {
         options.range = 'max';
         elem = create_elem(dim);
@@ -98,11 +114,28 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.handles.length, 1);
         assert.strictEqual(slider.range, 'max');
         assert.strictEqual(slider.range_max, true);
+        // track has to start at right edge instead of left
         assert.strictEqual(
             slider.slider_track.track_elem.css('right'),
             '0px'
         );
     });
+
+    /* vertical slider with range set to max */
+    QUnit.test('range_max & vertical', assert => {
+        options.orientation = 'vertical';
+        options.range = 'max';
+        elem = create_elem(dim);
+        slider = new SliderWidget(elem, options);
+
+        // track has to start at bottom edge instead of top
+        assert.strictEqual(slider.slider_track.track_elem.css('bottom'), '0px');
+        assert.strictEqual(slider.slider_track.track_elem.css('top'), '0px');
+    });
+
+    /* slider with minimum and maximum value,
+        to be rounded to a step value,
+        and an initial value */
     QUnit.test('min/max/step/value', assert => {
         value = 50;
         options.min = 30;
@@ -116,12 +149,15 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.step, options.step);
         assert.strictEqual(parseInt(slider.handles[0].value), value);
     });
+
+    /* slider with custom handle diameter and track thickness */
     QUnit.test('handle_diameter/thickness', assert => {
         options.handle_diameter = 30;
         options.thickness = 50;
         elem = create_elem(dim);
         slider = new SliderWidget(elem, options);
 
+        // default dimensions get overriden by options parameters
         assert.strictEqual(slider.handle_diameter, options.handle_diameter);
         assert.strictEqual(slider.thickness, options.thickness);
         assert.strictEqual(slider.handles[0].elem.css('width'),
@@ -131,16 +167,11 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.slider_track.track_elem.css('height'),
                            options.thickness + 'px');
     });
-    QUnit.test('range_max & vertical', assert => {
-        options.orientation = 'vertical';
-        options.range = 'max';
-        elem = create_elem(dim);
-        slider = new SliderWidget(elem, options);
-
-        assert.strictEqual(slider.slider_track.track_elem.css('bottom'), '0px');
-        assert.strictEqual(slider.slider_track.track_elem.css('top'), '0px');
-    });
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// SliderWidget.handle_singletouch()
+////////////////////////////////////////////////////////////////////////////////
 
 QUnit.module('handle_singletouch', hooks => {
     let options = {};
@@ -162,6 +193,7 @@ QUnit.module('handle_singletouch', hooks => {
         container.remove();
     });
 
+    /* default slider with no additional options given */
     QUnit.module('default', hooks => {
         hooks.beforeEach(() => {
             elem = create_elem(dim);
@@ -176,6 +208,8 @@ QUnit.module('handle_singletouch', hooks => {
             let offset = slider.elem.offset().left;
             let pos = x - offset;
             let val = transform(pos, 'range', dim, 0, 100);
+
+            // actual position equals calculated position
             assert.strictEqual(handle.pos, pos);
             assert.strictEqual(handle.value, val);
             assert.strictEqual(slider.slider_track.track_elem.css('width'), pos + 'px');
@@ -190,14 +224,18 @@ QUnit.module('handle_singletouch', hooks => {
             let offset = slider.elem.offset().left;
             let pos = x - offset;
             let val = transform(pos, 'range', dim, 0, 100);
+
+            // actual position equals calculated position
             assert.strictEqual(handle.pos, pos);
             assert.strictEqual(handle.value, val);
             assert.strictEqual(slider.slider_track.track_elem.css('width'), pos + 'px');
         });
     });
 
+    /* vertical slider with no additional options given */
     QUnit.module('vertical', hooks => {
         hooks.beforeEach(() => {
+            // with a vertical slider, height has to be specified
             options.orientation = 'vertical';
             options.height = dim;
             elem = create_elem(dim, 0, true);
@@ -212,8 +250,11 @@ QUnit.module('handle_singletouch', hooks => {
             let offset = slider.slider_elem.offset().top;
             let pos = y - offset;
             let val = transform(pos, 'range', dim, 0, 100);
+
+            // actual position equals calculated position
             assert.strictEqual(handle.pos, pos);
             assert.strictEqual(handle.value, val);
+            // actual track height equals calculated height
             assert.strictEqual(
                 parseInt(slider.slider_track.track_elem.css('height')), 
                 parseInt(pos + 'px')
@@ -238,11 +279,13 @@ QUnit.module('handle_singletouch', hooks => {
         });
     });
 
+    /* vertical slider with two handles */
     QUnit.module('range_true', hooks => {
         hooks.beforeEach(() => {
             options.range = true;
             options.values = [50, 100];
             elem = create_elem(dim);
+            // append elements - done in widget.py
             let lower_val_elem = $(`<input class="lower_value"/>`).val(options.values[0]);
             let lower_span_elem = $(`<span class="lower_value"/>`).val(options.values[0]);
             let upper_val_elem = $(`<input class="upper_value"/>`).val(options.values[1]);
@@ -251,6 +294,8 @@ QUnit.module('handle_singletouch', hooks => {
                 .append(lower_val_elem)
                 .append(upper_span_elem)
                 .append(upper_val_elem);
+
+            // create slider object
             slider = new SliderWidget(elem, options);
         });
         QUnit.test('mousedown', assert => {
@@ -325,6 +370,7 @@ QUnit.module('handle_singletouch', hooks => {
         });
     });
 
+    /* slider with specified step */
     QUnit.module('step', hooks => {
         hooks.beforeEach(() => {
             options.step = 10;
@@ -365,10 +411,15 @@ QUnit.module('handle_singletouch', hooks => {
     });
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// various window resize functionality
+////////////////////////////////////////////////////////////////////////////////
+
 QUnit.module('resize_handle', hooks => {
     let options = {};
     let elem;
     let slider;
+    // set width and dim property to 100% to allow for container dimension change
     let container = $('<div id="container" style="width:100%"/>');
     let dim = '100%';
 
@@ -380,6 +431,7 @@ QUnit.module('resize_handle', hooks => {
         slider = null;
         options = {};
         container.empty();
+        // reset viewport to initial value after tests
         viewport.set(base_width, base_height);
     });
     hooks.after(() => {
@@ -392,6 +444,7 @@ QUnit.module('resize_handle', hooks => {
         slider = new SliderWidget(elem, options);
         let handle = slider.handles[0];
 
+        // variables before resize
         let dim_before = slider.slider_dim;
         let pos_before = handle.pos;
         let track_val_before = slider.slider_track.track_elem.css('width');
@@ -400,6 +453,8 @@ QUnit.module('resize_handle', hooks => {
         let new_window_width = 320;
         viewport.set(new_window_width);
         $(window).trigger('resize');
+
+        // variables and positions after resize
         assert.notStrictEqual(pos_before, handle.pos);
         assert.notStrictEqual(dim_before, slider.slider_dim);
         assert.notStrictEqual(
@@ -417,7 +472,7 @@ QUnit.module('resize_handle', hooks => {
         let pos_before = handle.pos;
         let track_val_before = slider.slider_track.track_elem.css('width');
 
-        // unload
+        // trigger unload
         slider.slider_track.unload();
         slider.handles[0].unload();
 
@@ -425,6 +480,8 @@ QUnit.module('resize_handle', hooks => {
         let new_window_width = 320;
         viewport.set(new_window_width);
         $(window).trigger('resize');
+
+        // resize event is unbound
         assert.strictEqual(pos_before, handle.pos);
         assert.strictEqual(
             track_val_before,
@@ -432,6 +489,10 @@ QUnit.module('resize_handle', hooks => {
         );
     });
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// SliderHandle.handle_drag()
+////////////////////////////////////////////////////////////////////////////////
 
 QUnit.module('SliderHandle.handle_drag', hooks => {
     let options = {};
@@ -453,6 +514,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
         container.remove();
     });
 
+    /* range slider with two handles */
     QUnit.module('range true', () => {
         QUnit.test('horizontal', assert => {
             options.range = true;
@@ -463,6 +525,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             
             elem = create_elem(dim);
 
+            // append elements - done in init.py
             let vals = options.values;
             let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
@@ -475,14 +538,17 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
                 .append(upper_span_elem)
                 .append(upper_val_elem);
 
+            // create slider object
             slider = new SliderWidget(elem, options);
 
+            // value of first handle
             let start_val = vals[0];
             let new_val = 60;
             let new_pos = transform(new_val, 'screen', dim, 0, 100);
             slider.handles[0].pos = new_pos;
             let new_dim = slider.handles[1].pos - slider.handles[0].pos;
 
+            // create and trigger custom drag event
             const event = new $.Event('drag');
             slider.slider_elem.trigger(event);
 
@@ -496,9 +562,9 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
                 (new_pos) + 'px'
             );
 
-            // handles will meet
+            // move first handle to center
             move_handle(assert, slider.handles[0], 100, 92, false, false);
-            // try to move right handle beyond left handle
+            // attempt to move right handle beyond left handle - stops at left handle
             move_handle(assert, slider.handles[1], 0, 93, false, false);
 
             assert.strictEqual(slider.handles[0].value, slider.handles[1].value - 1);
@@ -514,6 +580,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
 
             elem = create_elem(dim, 0, true);
 
+            // append elements - done in init.py
             let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
             let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
@@ -525,14 +592,17 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
                 .append(upper_span_elem)
                 .append(upper_val_elem);
 
+            // create slider object
             slider = new SliderWidget(elem, options);
 
+            // value of first handle
             let start_val = vals[0];
             let new_val = 60;
             let new_pos = transform(new_val, 'screen', dim, 0, 100);
             slider.handles[0].pos = new_pos;
             let new_dim = slider.handles[1].pos - slider.handles[0].pos;
 
+            // create and trigger custom drag event
             const event = new $.Event('drag');
             slider.slider_elem.trigger(event);
 
@@ -547,6 +617,8 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             );
         });
     });
+
+    /* default slider with no additional options */
     QUnit.module('default', hooks => {
         hooks.beforeEach(() => {
             elem = create_elem(dim);
@@ -555,13 +627,13 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
 
         QUnit.test('move to end', assert => {
             let handle = slider.handles[0];
-            let drag_end =  dim + 10;
+            let drag_end =  dim + 10; // 10px over end of slider
             let assertion_value = dim;
             move_handle(assert, handle, drag_end, assertion_value, true);
         });
         QUnit.test('move to start', assert => {
             let handle = slider.handles[0];
-            let drag_end =  slider.offset - 10;
+            let drag_end =  slider.offset - 10; // 10px less than start of slider
             let assertion_value = 0;
             move_handle(assert, handle, drag_end, assertion_value, false);
         });
@@ -588,6 +660,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
 
         for (let i = 0; i <= 5; i++) {
             QUnit.test.skip('random move', assert => {
+                // random movement tests - wip
                 let num = parseInt(Math.random() * (dim));
                 console.log(num)
                 let handle = slider.handles[0];
@@ -607,6 +680,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
         }
     });
 
+    /* vertical slider with no additional options */
     QUnit.module('vertical', hooks => {
         hooks.beforeEach(() => {
             options.orientation = 'vertical';
@@ -649,6 +723,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
         });
     });
 
+    /* slider with specified step */
     QUnit.module('step', hooks => {
         hooks.beforeEach(() => {
             options.step = 10;
@@ -658,7 +733,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
 
         QUnit.test('move', assert => {
             let handle = slider.handles[0];
-            // add 5 to test rounding step
+            // add Integer 5 to test the value rounding to step
             let drag_end =  slider.offset + slider.slider_dim / 2 + 5;
             // assertion value will be actual rounded value
             let assertion_value = slider.slider_dim / 2;
@@ -667,7 +742,17 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
     });
 });
 
+
+////////////////////////////////////////////////////////////////////////////////
+// helper functions
+////////////////////////////////////////////////////////////////////////////////
+
 function create_elem(dim, value, vertical) {
+    /* 
+    create the base element
+    SliderWidget reads input value as initial value, so we have to set in
+    certain cases, else it defaults to 0
+    */
     let slider_elem = $(`
         <div class="yafowil_slider" id="test-slider">
           <input class="slider_value" type="text" value="${value}">
@@ -676,6 +761,8 @@ function create_elem(dim, value, vertical) {
     `);
 
     $('#container').append(slider_elem);
+
+    /* specify the height or width of the element */
     if (vertical) {
         slider_elem.css("height", `${dim}px`);
     } else {
@@ -686,28 +773,32 @@ function create_elem(dim, value, vertical) {
 
 function move_handle(assert, handle, drag_end, assertion_value, type, vertical) {
     /* 
-        type=true for increase,
-        type=false for decrease
+        type=true for value increase,
+        type=false for value decrease
     */
 
     let target = handle.elem;
-    let changed_coord = handle.pos;
-    let done = assert.async();
+    let changed_coord = handle.pos; // the coordinate (x or y) which is going to be changed
+    let done = assert.async(); // we need asynchronous testing for mousemove
 
     function move() {
+        // if type is increase, increase value
         if (type) {
             changed_coord += 1;
         } else {
             changed_coord -= 1;
         }
+        // check if handle has already met the given drag end point
         let isMoving = type ? (changed_coord < drag_end) : (changed_coord > drag_end);
 
+        // options are required to create a MouseEvent
         let options  = {
             view: window,
             bubbles: true,
             cancelable: true
         };
 
+        // set coordinates
         if (vertical) {
             options.clientX = 0;
             options.clientY = changed_coord;
@@ -716,31 +807,39 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
             options.clientY = 0;
         }
 
+        // create MouseEvent and dispatch to handle element (native js)
         let ev = new MouseEvent("mousemove", options);
         target[0].dispatchEvent(ev);
 
+        // if handle has not met drag end, continue moving
         if (isMoving) {
             setTimeout(() => {
                 move();
             }, 10);
         } else {
-            let ev = new MouseEvent("mouseup", {
-            });
+            // create and trigger mouseup event
+            let ev = new MouseEvent("mouseup", {});
             document.dispatchEvent(ev);
             done();
 
-            // assert here
+            // assert here:
+            // position of handle equals given value
             assert.strictEqual(
                 parseInt(handle.pos),
                 parseInt(assertion_value)
             );
         }
     }
+
+    // trigger mousedown and start moving process
     target.trigger('mousedown');
     move();
 }
 
 function sendTouchEvent(x, y, element, eventType) {
+    /* dispatch a TouchEvent with given options */
+
+    // create the touch - options are required!
     const touchObj = new Touch({
         identifier: Date.now(),
         target: element,
@@ -752,6 +851,7 @@ function sendTouchEvent(x, y, element, eventType) {
         force: 0.5,
     });
 
+    // create the touch event - options are required!
     const touchEvent = new TouchEvent(eventType, {
         cancelable: true,
         bubbles: true,
@@ -761,5 +861,6 @@ function sendTouchEvent(x, y, element, eventType) {
         shiftKey: true,
     });
 
+    // dispatch touch event
     element.dispatchEvent(touchEvent);
 }
