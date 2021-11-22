@@ -6,7 +6,60 @@ let base_width = $(window).width();
 let base_height = $(window).height();
 
 ////////////////////////////////////////////////////////////////////////////////
-// yafowil slider widget tests
+// SliderWidget initialize() static function
+////////////////////////////////////////////////////////////////////////////////
+
+QUnit.module('initialize()', hooks => {
+    let options = {};
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let dim = 200;
+    let value;
+
+    hooks.before(() => {
+        $('body').append(container);
+        // create options and set as data attribute
+        options = {
+            handle_diameter: 11,
+            thickness: 9,
+            min : 3,
+            max: 231,
+            step: 5
+        }
+        elem = create_elem(dim).data(options);
+        // initialize SliderWidget - returns array of slider objects
+        let sliders = SliderWidget.initialize();
+        slider = sliders[0];
+    });
+    hooks.after(() => {
+        container.empty();
+        container.remove();
+        slider = null;
+        elem = null;
+        value = null;
+        options = null;
+    });
+
+    /* test initialize function */
+    QUnit.test('initialize', assert => {
+        // create object to compare given options
+        let slider_options = {
+            handle_diameter: slider.handle_diameter,
+            thickness: slider.thickness,
+            min: slider.min,
+            max: slider.max,
+            step: slider.step
+        };
+
+        // options and element are correct
+        assert.deepEqual(options, slider_options);
+        assert.deepEqual(elem, slider.elem);
+    });
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// SliderWidget constructor
 ////////////////////////////////////////////////////////////////////////////////
 
 QUnit.module('constructor cases', hooks => {
@@ -657,27 +710,6 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             sendTouchEvent(drag_end, 0, document, 'touchend');
             assert.strictEqual(handle.pos, 0);
         });
-
-        for (let i = 0; i <= 5; i++) {
-            QUnit.test.skip('random move', assert => {
-                // random movement tests - wip
-                let num = parseInt(Math.random() * (dim));
-                console.log(num)
-                let handle = slider.handles[0];
-                handle.pos = 100;
-                let drag_end = slider.offset + num;
-    
-                let dir;
-                if (num < handle.pos) {
-                    console.log('decrease')
-                    dir = false;
-                } else if (num > handle.pos) {
-                    console.log('increase')
-                    dir = true;
-                }
-                move_handle(assert, handle, drag_end, num, dir);
-            });
-        }
     });
 
     /* vertical slider with no additional options */
@@ -740,6 +772,40 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             move_handle(assert, handle, drag_end, assertion_value, true, false);
         });
     });
+
+    /* slider with minimum and maximum value and step */
+    QUnit.module('min/max/step', hooks => {
+        hooks.beforeEach(() => {
+            options.min = 30;
+            options.max = 500;
+            options.step = 25;
+            elem = create_elem(dim);
+            slider = new SliderWidget(elem, options);
+        });
+
+        QUnit.test('move to end', assert => {
+            let handle = slider.handles[0];
+            let drag_end =  dim + 10; // 10px over end of slider
+            let assertion_value = dim;
+
+            // move handle to end
+            move_handle(assert, handle, drag_end, assertion_value, true, false);
+
+            let done2 = assert.async();
+            setTimeout( () => {
+                assert.strictEqual(handle.value, 500)
+                done2();
+                // move handle to start
+                move_handle(assert, handle, slider.offset - 10, 0, false, false);
+            }, 300);
+
+            let done3 = assert.async();
+            setTimeout( () => {
+                assert.strictEqual(handle.value, 30)
+                done3();
+            }, 600);
+        });
+    });
 });
 
 
@@ -784,9 +850,9 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
     function move() {
         // if type is increase, increase value
         if (type) {
-            changed_coord += 1;
+            changed_coord += 5;
         } else {
-            changed_coord -= 1;
+            changed_coord -= 5;
         }
         // check if handle has already met the given drag end point
         let isMoving = type ? (changed_coord < drag_end) : (changed_coord > drag_end);
@@ -815,7 +881,7 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
         if (isMoving) {
             setTimeout(() => {
                 move();
-            }, 10);
+            }, 1);
         } else {
             // create and trigger mouseup event
             let ev = new MouseEvent("mouseup", {});
