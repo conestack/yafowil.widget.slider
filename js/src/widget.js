@@ -195,20 +195,18 @@ class SliderTrack {
 export class SliderWidget {
 
     static initialize(context) {
-        let sliders = [];
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
             let options = elem.data();
             // XXX: from data
             // options.handle_diameter = 15;
             // options.thickness = 10;
-            let slider = new SliderWidget(elem, options);
-            sliders.push(slider);
+            new SliderWidget(elem, options);
         });
-        return sliders;
     }
 
     constructor(elem, options) {
+        elem.data('slider_widget', this);
         this.elem = elem;
         this.range = options.range ? options.range : false;
         this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;

@@ -29,8 +29,7 @@ QUnit.module('initialize()', hooks => {
         }
         elem = create_elem(dim).data(options);
         // initialize SliderWidget - returns array of slider objects
-        let sliders = SliderWidget.initialize();
-        slider = sliders[0];
+        SliderWidget.initialize();
     });
     hooks.after(() => {
         container.empty();
@@ -43,6 +42,7 @@ QUnit.module('initialize()', hooks => {
 
     /* test initialize function */
     QUnit.test('initialize', assert => {
+        let slider = elem.data('slider_widget');
         // create object to compare given options
         let slider_options = {
             handle_diameter: slider.handle_diameter,
@@ -52,7 +52,7 @@ QUnit.module('initialize()', hooks => {
             step: slider.step
         };
 
-        // options and element are correct
+        // options and element are correctly initialized
         assert.deepEqual(options, slider_options);
         assert.deepEqual(elem, slider.elem);
     });
@@ -849,6 +849,7 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
 
     function move() {
         // if type is increase, increase value
+        // mention: increase/decrease by 5px for performance
         if (type) {
             changed_coord += 5;
         } else {
