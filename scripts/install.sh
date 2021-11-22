@@ -16,6 +16,7 @@ npm --save-dev install \
     karma-qunit \
     karma-coverage \
     karma-chrome-launcher \
+    karma-viewport \
     karma-module-resolver-preprocessor \
     rollup \
     rollup-plugin-cleanup \

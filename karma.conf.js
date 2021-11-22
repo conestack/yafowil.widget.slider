@@ -6,12 +6,13 @@ module.exports = function(config) {
     config.set({
         basePath: 'karma',
         frameworks: [
-            'qunit'
+            'qunit',
+            'viewport'
         ],
         files: [{
             pattern: '../node_modules/jquery/src/**/*.js',
             type: 'module',
-            included: false
+            included: true
         }, {
             pattern: '../js/src/*.js',
             type: 'module',
@@ -26,6 +27,21 @@ module.exports = function(config) {
         browsers: [
             'ChromeHeadless'
         ],
+        viewport: {
+            breakpoints: [{
+                name: "mobile",
+                size: {
+                    width: 400,
+                    height: 480
+                }
+            }, {
+                name: "medium",
+                size: {
+                    width: 1000,
+                    height: 900
+                }
+            }]
+        },
         singlerun: true,
         reporters: [
             'progress',
