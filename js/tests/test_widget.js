@@ -24,7 +24,7 @@ QUnit.module('constructor cases', hooks => {
         container.empty();
     });
 
-    QUnit.test('default slider', assert => {
+    QUnit.test.only('default slider', assert => {
         elem = create_elem(dim);
         slider = new SliderWidget(elem, options);
 

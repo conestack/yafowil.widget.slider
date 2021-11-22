@@ -20,9 +20,6 @@ module.exports = function(config) {
             pattern: '../js/tests/test_*.js',
             type: 'module'
         }, {
-            pattern: '../js/tests/helper_functions.js',
-            type: 'module'
-        },{
             pattern: '../src/yafowil/widget/slider/resources/widget.css',
             included: true
         }],
