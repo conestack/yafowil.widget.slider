@@ -214,6 +214,8 @@ export class SliderWidget {
         this.min = options.min ? options.min : 0;
         this.max = options.max ? options.max : 100;
         this.step = options.step ? options.step : false;
+        let scroll_step = options.scroll_step ? options.scroll_step : 1;
+        this.scroll_step = options.step ? options.step : scroll_step;
         this.slider_elem = $('div.slider', this.elem);
         this.vertical = options.orientation === 'vertical';
         this.dim_attr = this.vertical ? 'height' : 'width';
@@ -256,6 +258,11 @@ export class SliderWidget {
 
         this.handle_singletouch = this.handle_singletouch.bind(this);
         this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
+
+        // this.scroll_handle = this.scroll_handle.bind(this);
+
+        this.mouseover_handle = this.mouseover_handle.bind(this);
+        this.elem.on('mouseover', this.mouseover_handle);
     }
 
     get range_max() {
@@ -311,5 +318,61 @@ export class SliderWidget {
             target.value = target.transform(value, 'range');
         }
         this.slider_track.set_value(e);
+    }
+
+    mouseover_handle(e) {
+        let target;
+        console.log('mouseover');
+        if (this.range_true) {
+            let distances = [];
+            for (let handle of this.handles) {
+                let distance = Math.hypot(
+                    handle.elem.offset().left - parseInt(e.pageX),
+                    handle.elem.offset().top - parseInt(e.pageY)
+                );
+                distances.push(parseInt(distance));
+            }
+            let closest = distances.indexOf(Math.min(...distances));
+            target = this.handles[closest];
+            console.log(target)
+        } else {
+            target = this.handles[0];
+        }
+
+        this.elem.off('mousewheel wheel').on('mousewheel wheel', scroll_handle.bind(this));
+        this.elem.on('keydown keyup', keydown_handle.bind(this));
+        this.elem.on('mouseleave', () => {
+            this.elem.off('mousewheel wheel');
+            this.elem.off('keydown');
+        });
+
+        function keydown_handle(e) {
+            e.preventDefault();
+            console.log('AAAAAAAAAA');
+        }
+        function scroll_handle(e) {
+            e.preventDefault();
+            let evt = e.originalEvent;
+
+            let value = target.value;
+            let step = parseInt(this.scroll_step);
+            if (typeof evt.deltaY === 'number') {
+                // down
+                if(evt.deltaY > 0) {
+                    value = parseInt(target.value) + step;
+                }
+                // up
+                else if(evt.deltaY < 0) {
+                    value = parseInt(target.value) - step;
+                }
+            }
+
+            if (value < this.min || value > this.max) {
+                return;
+            }
+            target.pos = target.transform(value, 'screen');
+            target.value = value;
+            this.slider_track.set_value(e);
+        }
     }
 }
