@@ -2,6 +2,9 @@ import $ from 'jquery';
 import { SliderWidget } from "../src/widget";
 import { transform } from '../src/widget';
 
+let base_width = $(window).width();
+let base_height = $(window).height();
+
 QUnit.module('constructor cases', hooks => {
     let options = {};
     let elem;
@@ -24,7 +27,7 @@ QUnit.module('constructor cases', hooks => {
         container.empty();
     });
 
-    QUnit.test.only('default slider', assert => {
+    QUnit.test('default slider', assert => {
         elem = create_elem(dim);
         slider = new SliderWidget(elem, options);
 
@@ -366,8 +369,8 @@ QUnit.module('resize_handle', hooks => {
     let options = {};
     let elem;
     let slider;
-    let container = $('<div id="container" />');
-    let dim = 200;
+    let container = $('<div id="container" style="width:100%"/>');
+    let dim = '100%';
 
     hooks.before(() => {
         $('body').append(container);
@@ -377,19 +380,56 @@ QUnit.module('resize_handle', hooks => {
         slider = null;
         options = {};
         container.empty();
+        viewport.set(base_width, base_height);
     });
     hooks.after(() => {
         container.remove();
     });
 
-    QUnit.test.skip('horizontal', assert => {
-        elem = create_elem(dim);
+    QUnit.test('resize', assert => {
+        options.value = 50;
+        elem = create_elem(dim, options.value);
         slider = new SliderWidget(elem, options);
+        let handle = slider.handles[0];
 
         let dim_before = slider.slider_dim;
-        console.log(dim_before)
-        viewport.set(320)
+        let pos_before = handle.pos;
+        let track_val_before = slider.slider_track.track_elem.css('width');
+
+        // resize viewport
+        let new_window_width = 320;
+        viewport.set(new_window_width);
         $(window).trigger('resize');
+        assert.notStrictEqual(pos_before, handle.pos);
+        assert.notStrictEqual(dim_before, slider.slider_dim);
+        assert.notStrictEqual(
+            track_val_before,
+            slider.slider_track.track_elem.css('width')
+        );
+    });
+
+    QUnit.test('unload', assert => {
+        options.value = 50;
+        elem = create_elem(dim, options.value);
+        slider = new SliderWidget(elem, options);
+        let handle = slider.handles[0];
+
+        let pos_before = handle.pos;
+        let track_val_before = slider.slider_track.track_elem.css('width');
+
+        // unload
+        slider.slider_track.unload();
+        slider.handles[0].unload();
+
+        // resize viewport
+        let new_window_width = 320;
+        viewport.set(new_window_width);
+        $(window).trigger('resize');
+        assert.strictEqual(pos_before, handle.pos);
+        assert.strictEqual(
+            track_val_before,
+            slider.slider_track.track_elem.css('width')
+        );
     });
 });
 
