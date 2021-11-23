@@ -86,7 +86,7 @@ QUnit.module('constructor cases', hooks => {
 
     /* slider without additional options given */
     QUnit.test('default slider', assert => {
-        elem = create_elem(dim);
+        elem = create_elem(dim, 0);
         slider = new SliderWidget(elem, options);
 
         // correct elements
@@ -100,7 +100,7 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.range, false);
         // default diameter and thickness applied
         assert.strictEqual(slider.handle_diameter, 20);
-        assert.strictEqual(slider.thickness, 15);
+        assert.strictEqual(slider.thickness, 8);
         assert.strictEqual(slider.slider_elem.css('height'), '20px');
         // default min/max applied
         assert.strictEqual(slider.min, 0);
@@ -154,8 +154,8 @@ QUnit.module('constructor cases', hooks => {
         assert.strictEqual(slider.handles.length, 2);
         assert.strictEqual(slider.range, true);
         assert.strictEqual(slider.range_true, true);
-        assert.strictEqual(slider.handles[0].value, String(options.values[0]));
-        assert.strictEqual(slider.handles[1].value, String(options.values[1]));
+        assert.strictEqual(slider.handles[0].value, options.values[0]);
+        assert.strictEqual(slider.handles[1].value, options.values[1]);
     });
 
     /* slider with range set to max - user can only choose a maximum value */
@@ -618,9 +618,9 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             // move first handle to center
             move_handle(assert, slider.handles[0], 100, 92, false, false);
             // attempt to move right handle beyond left handle - stops at left handle
-            move_handle(assert, slider.handles[1], 0, 93, false, false);
+            move_handle(assert, slider.handles[1], 0, 92, false, false);
 
-            assert.strictEqual(slider.handles[0].value, slider.handles[1].value - 1);
+            assert.strictEqual(slider.handles[0].value, slider.handles[1].value);
         });
         QUnit.test('vertical', assert => {
             options.range = true;
@@ -674,7 +674,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
     /* default slider with no additional options */
     QUnit.module('default', hooks => {
         hooks.beforeEach(() => {
-            elem = create_elem(dim);
+            elem = create_elem(dim, 0);
             slider = new SliderWidget(elem, options);
         });
 
@@ -759,7 +759,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
     QUnit.module('step', hooks => {
         hooks.beforeEach(() => {
             options.step = 10;
-            elem = create_elem(dim);
+            elem = create_elem(dim, 0);
             slider = new SliderWidget(elem, options);
         });
 
@@ -779,7 +779,7 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
             options.min = 30;
             options.max = 500;
             options.step = 25;
-            elem = create_elem(dim);
+            elem = create_elem(dim, 30);
             slider = new SliderWidget(elem, options);
         });
 
@@ -821,7 +821,7 @@ function create_elem(dim, value, vertical) {
     */
     let slider_elem = $(`
         <div class="yafowil_slider" id="test-slider">
-          <input class="slider_value" type="text" value="${value}">
+          <input class="slider_value" type="text" value=${value}>
           <div class="slider" />
         </div>
     `);

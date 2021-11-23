@@ -28,7 +28,7 @@ class SliderHandle {
         this.input_elem = input;
         this.span_elem = span;
 
-        this.value = this.input_elem.val() !== undefined ?
+        this.value = (this.input_elem.val() !== undefined) ?
                      parseInt(this.input_elem.val()) : 0;
         this.pos = this.transform(this.value, 'screen');
         this.vertical = this.slider.vertical;
