@@ -223,6 +223,43 @@ QUnit.module('constructor cases', hooks => {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+// SliderHandle value setter
+////////////////////////////////////////////////////////////////////////////////
+
+QUnit.module('set value', hooks => {
+    let options = {};
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let dim = 200;
+
+    hooks.before(() => {
+        $('body').append(container);
+    });
+    hooks.beforeEach(() => {
+        elem = create_elem(dim, 0);
+        slider = new SliderWidget(elem, options);
+    });
+    hooks.afterEach(() => {
+        elem = null;
+        slider = null;
+        options = {};
+        container.empty();
+    });
+    hooks.after(() => {
+        container.remove();
+    });
+
+    QUnit.test('return', assert => {
+        slider.handles[0].value = 300;
+        assert.strictEqual(slider.handles[0].value, 0);
+
+        slider.handles[0].value = -200;
+        assert.strictEqual(slider.handles[0].value, 0);
+    });
+});
+
+////////////////////////////////////////////////////////////////////////////////
 // SliderWidget.handle_singletouch()
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -808,6 +845,390 @@ QUnit.module('SliderHandle.handle_drag', hooks => {
     });
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// SliderHandle.scroll_handle()
+////////////////////////////////////////////////////////////////////////////////
+
+QUnit.module('SliderHandle.scroll_handle', hooks => {
+    let options = {};
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let dim = 200;
+    // create synthetic wheel events
+    let scroll_down = $.event.fix(new WheelEvent("mousewheel", {
+        "deltaY": 1,
+        "deltaMode": 0
+    }));
+    let scroll_up = $.event.fix(new WheelEvent("mousewheel", {
+        "deltaY": -1,
+        "deltaMode": 0
+    }));
+
+    hooks.before(() => {
+        $('body').append(container);
+    });
+    hooks.afterEach(() => {
+        elem = null;
+        slider = null;
+        options = {};
+        container.empty();
+    });
+    hooks.after(() => {
+        container.remove();
+    });
+
+    /* range slider with two handles */
+    QUnit.module('range true', () => {
+        QUnit.test('horizontal', assert => {
+            options.range = true;
+            options.values = [
+                50,
+                100
+            ];
+
+            elem = create_elem(dim);
+
+            // append elements - done in init.py
+            let vals = options.values;
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            // create slider object
+            slider = new SliderWidget(elem, options);
+
+            slider.handles[1].activate();
+
+            // trigger scroll upward
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_up);
+            }
+            assert.strictEqual(slider.handles[1].pos, slider.handles[0].pos);
+            assert.strictEqual(slider.handles[1].value, slider.handles[0].value);
+
+            // trigger scroll to end
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[1].pos, dim);
+            assert.strictEqual(slider.handles[1].value, slider.max);
+
+            slider.handles[0].activate();
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+        });
+        QUnit.test('vertical', assert => {
+            options.range = true;
+            let vals = options.values = [
+                50,
+                100
+            ];
+            options.orientation = 'vertical';
+            options.height = dim;
+
+            elem = create_elem(dim, 0, true);
+
+            // append elements - done in init.py
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            // create slider object
+            slider = new SliderWidget(elem, options);
+
+            slider.handles[1].activate();
+
+            // trigger scroll upward
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_up);
+            }
+            assert.strictEqual(slider.handles[1].pos, slider.handles[0].pos);
+            assert.strictEqual(slider.handles[1].value, slider.handles[0].value);
+
+            // trigger scroll to end
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[1].pos, dim);
+            assert.strictEqual(slider.handles[1].value, slider.max);
+
+            slider.handles[0].activate();
+            for (let i = 0; i < 50; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+        });
+    });
+
+    /* default slider with no additional options */
+    QUnit.module('default', hooks => {
+        hooks.beforeEach(() => {
+            elem = create_elem(dim, 0);
+            slider = new SliderWidget(elem, options);
+        });
+
+        QUnit.test('move to end/start', assert => {
+            slider.handles[0].activate();
+
+            // trigger scroll downward
+            for (let i = 0; i < 100; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+
+            // trigger scroll upward
+            for (let i = 0; i < 100; i++) {
+                slider.elem.trigger(scroll_up);
+            }
+            assert.strictEqual(slider.handles[0].pos, 0);
+            assert.strictEqual(slider.handles[0].value, slider.min);
+        });
+    });
+
+    /* vertical slider with no additional options */
+    QUnit.module('vertical', hooks => {
+        hooks.beforeEach(() => {
+            options.orientation = 'vertical';
+            options.height = dim;
+            elem = create_elem(dim, 0, true);
+            slider = new SliderWidget(elem, options);
+        });
+
+        QUnit.test('move to end/start', assert => {
+            slider.handles[0].activate();
+
+            // trigger scroll downward
+            for (let i = 0; i < 100; i++) {
+                slider.elem.trigger(scroll_down);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+
+            // trigger scroll upward
+            for (let i = 0; i < 100; i++) {
+                slider.elem.trigger(scroll_up);
+            }
+            assert.strictEqual(slider.handles[0].pos, 0);
+            assert.strictEqual(slider.handles[0].value, slider.min);
+        });
+    });
+
+    /* slider with specified step */
+    QUnit.module('step', hooks => {
+        hooks.beforeEach(() => {
+            options.step = 10;
+            elem = create_elem(dim, 0);
+            slider = new SliderWidget(elem, options);
+        });
+
+        QUnit.test('move', assert => {
+            slider.handles[0].activate();
+
+            // trigger scroll downward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_down);
+                assert.strictEqual(slider.handles[0].value, slider.scroll_step * i);
+            }
+            let val = slider.handles[0].value;
+            // trigger scroll upnward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_up);
+                assert.strictEqual(slider.handles[0].value, val - slider.scroll_step * i);
+            }
+        });
+    });
+
+    /* slider with specified scroll step */
+    QUnit.module('scroll step', hooks => {
+        hooks.beforeEach(() => {
+            options.scroll_step = 20;
+            elem = create_elem(dim, 0);
+            slider = new SliderWidget(elem, options);
+        });
+
+        QUnit.test('move', assert => {
+            slider.handles[0].activate();
+
+            // trigger scroll downward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_down);
+                assert.strictEqual(slider.handles[0].value, slider.scroll_step * i);
+            }
+            let val = slider.handles[0].value;
+            // trigger scroll upnward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_up);
+                assert.strictEqual(slider.handles[0].value, val - slider.scroll_step * i);
+            }
+        });
+    });
+});
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SliderHandle.key_handle()
+////////////////////////////////////////////////////////////////////////////////
+
+QUnit.module('SliderHandle.key_handle', hooks => {
+    let options = {};
+    let elem;
+    let slider;
+    let container = $('<div id="container" />');
+    let dim = 200;
+    // create synthetic key events
+    let key_left = new $.Event({
+        type: 'keydown',
+        key: 'ArrowLeft'
+    });
+
+    let arrow_left = new KeyboardEvent("keydown", {
+          key: "ArrowLeft"
+    });
+    let arrow_right = new KeyboardEvent("keydown", {
+        key: "ArrowRight"
+    });
+    let arrow_up = new KeyboardEvent("keydown", {
+        key: "ArrowUp"
+    });
+      let arrow_down = new KeyboardEvent("keydown", {
+        key: "ArrowDown"
+    });
+
+
+    hooks.before(() => {
+        $('body').append(container);
+    });
+    hooks.afterEach(() => {
+        elem = null;
+        slider = null;
+        options = {};
+        container.empty();
+    });
+    hooks.after(() => {
+        container.remove();
+    });
+
+    /* range slider with two handles */
+    QUnit.module('range true', () => {
+        QUnit.test('horizontal', assert => {
+            options.range = true;
+            options.values = [
+                50,
+                100
+            ];
+
+            elem = create_elem(dim);
+
+            // append elements - done in init.py
+            let vals = options.values;
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            // create slider object
+            slider = new SliderWidget(elem, options);
+
+            slider.handles[1].activate();
+
+            // trigger keyleft presses
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_left);
+            }
+            assert.strictEqual(slider.handles[1].pos, slider.handles[0].pos);
+            assert.strictEqual(slider.handles[1].value, slider.handles[0].value);
+
+            // trigger keyright presses
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_right);
+            }
+            assert.strictEqual(slider.handles[1].pos, dim);
+            assert.strictEqual(slider.handles[1].value, slider.max);
+
+            slider.handles[0].activate();
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_right);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+        });
+        QUnit.test('vertical', assert => {
+            options.range = true;
+            let vals = options.values = [
+                50,
+                100
+            ];
+            options.orientation = 'vertical';
+            options.height = dim;
+
+            elem = create_elem(dim, 0, true);
+
+            // append elements - done in init.py
+            let lower_val_elem = $(`<input class="lower_value" value="${vals[0]}"/>`);
+            let lower_span_elem = $(`<span class="lower_value" value="${vals[0]}"/>`);
+            let upper_val_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+            let upper_span_elem = $(`<input class="upper_value" value="${vals[1]}"/>`);
+
+            $('.yafowil_slider')
+                .append(lower_span_elem)
+                .append(lower_val_elem)
+                .append(upper_span_elem)
+                .append(upper_val_elem);
+
+            // create slider object
+            slider = new SliderWidget(elem, options);
+
+            slider.handles[1].activate();
+
+            // trigger keyup presses
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_up);
+            }
+            assert.strictEqual(slider.handles[1].pos, slider.handles[0].pos);
+            assert.strictEqual(slider.handles[1].value, slider.handles[0].value);
+
+            // trigger keydown presses
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_down);
+            }
+            assert.strictEqual(slider.handles[1].pos, dim);
+            assert.strictEqual(slider.handles[1].value, slider.max);
+
+            slider.handles[0].activate();
+            for (let i = 0; i < 50; i++) {
+                document.dispatchEvent(arrow_down);
+            }
+            assert.strictEqual(slider.handles[0].pos, dim);
+            assert.strictEqual(slider.handles[0].value, slider.max);
+        });
+    });
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // helper functions
