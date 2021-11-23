@@ -30,3 +30,10 @@
 [X] - add resize handling
 
 [X] - restructure
+
+[X] - scroll
+    [X] - overflow on range slider
+
+[X] - keypress (arrows)
+
+[X] - range slider - same number if dragged together - first drag

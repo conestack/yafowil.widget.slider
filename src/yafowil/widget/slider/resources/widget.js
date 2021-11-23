@@ -9,7 +9,8 @@
         } else if (type === 'screen') {
             val = parseInt(dim * ((val - min) / (max - min)));
         } else if (type === 'range') {
-            val = parseInt((max - min) * (val / dim) + min);
+            let value = Math.ceil((max - min) * (val / dim) + min);
+            val = parseInt(value);
         }
         return val;
     }
@@ -23,16 +24,21 @@
             this.slider.slider_elem.append(this.elem);
             this.input_elem = input;
             this.span_elem = span;
-            this.value = this.input_elem.val() !== 'undefined' ?
-                         this.input_elem.val() : 0;
+            this.value = this.input_elem.val() !== undefined ?
+                         parseInt(this.input_elem.val()) : 0;
             this.pos = this.transform(this.value, 'screen');
             this.vertical = this.slider.vertical;
             this.step = this.slider.step;
+            this.scroll_step = this.slider.scroll_step;
             this.elem.css(`${this.slider.dir_attr}`, this.pos);
             this.slide_start = this.slide_start.bind(this);
             this.handle_drag = this.handle_drag.bind(this);
-            this.elem.on('mousedown touchstart', this.slide_start);
             this.resize_handle = this.resize_handle.bind(this);
+            this.activate = this.activate.bind(this);
+            this.deactivate = this.deactivate.bind(this);
+            this.scroll_handle = this.scroll_handle.bind(this);
+            this.key_handle = this.key_handle.bind(this);
+            this.elem.on('mousedown touchstart', this.slide_start);
             $(window).on('resize', this.resize_handle);
         }
         get offset() {
@@ -42,6 +48,17 @@
             return this._value;
         }
         set value(value) {
+            if (value < this.slider.min || value > this.slider.max) return;
+            let index = this.slider.handles.indexOf(this);
+            if (this.slider.range_true && index >= 0) {
+                for (let i in this.slider.handles) {
+                    let handle = this.slider.handles[i];
+                    if (value >= handle.value && i > index ||
+                        value <= handle.value && i < index) {
+                            value = handle.value;
+                    }
+                }
+            }
             this.input_elem.attr('value', value);
             this.span_elem.text(value);
             this._value = value;
@@ -54,12 +71,9 @@
             if (this.slider.range_true && index >= 0) {
                 for (let i in this.slider.handles) {
                     let handle = this.slider.handles[i];
-                    if (i !== index && (
-                        (pos >= handle.pos && i > index) ||
-                        (pos <= handle.pos && i < index))
-                    ) {
-                        pos = handle.pos + 1;
-                        this.value = handle.value;
+                    if (pos >= handle.pos && i > index ||
+                        pos <= handle.pos && i < index) {
+                            pos = handle.pos;
                     }
                 }
             }
@@ -74,10 +88,26 @@
         unload() {
             $(window).off('resize', this.resize_handle);
         }
+        activate(e) {
+            $('.yafowil_slider').each(function() {
+                for (let handle of $(this).data('slider_widget').handles) {
+                    handle.deactivate();
+                }
+            });
+            this.elem.addClass('active');
+            this.slider.elem.on('mousewheel wheel', this.scroll_handle);
+            $(document).off('keydown').on('keydown', this.key_handle);
+        }
+        deactivate(e) {
+            this.elem.removeClass('active');
+            this.slider.elem.off('mousewheel wheel', this.scroll_handle);
+            $(document).off('keydown', this.key_handle);
+        }
         resize_handle() {
             this.pos = this.transform(this.value, 'screen');
         }
         slide_start(event) {
+            this.activate();
             event.preventDefault();
             event.stopPropagation();
             $('.slider-handle').css('z-index', 1);
@@ -91,6 +121,31 @@
                     document.removeEventListener('mousemove', this.handle_drag);
                 }, false)
             );
+        }
+        scroll_handle(e) {
+            e.preventDefault();
+            let evt = e.originalEvent,
+                value = this.value;
+            if (evt.deltaY > 0) value = parseInt(this.value) + this.scroll_step;
+            else if (evt.deltaY < 0) value = parseInt(this.value) - this.scroll_step;
+            this.pos = this.transform(value, 'screen');
+            this.value = value;
+            this.slider.slider_track.set_value(e);
+        }
+        key_handle(e) {
+            let value = this.value,
+                increase = this.vertical ? e.key === 'ArrowDown' : e.key === 'ArrowRight',
+                decrease = this.vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
+            if (increase) {
+                e.preventDefault();
+                value = parseInt(this.value) + this.scroll_step;
+            } else if (decrease) {
+                e.preventDefault();
+                value = parseInt(this.value) - this.scroll_step;
+            }
+            this.pos = this.transform(value, 'screen');
+            this.value = value;
+            this.slider.slider_track.set_value(e);
         }
         handle_drag(e) {
             e.preventDefault();
@@ -180,7 +235,7 @@
             this.elem = elem;
             this.range = options.range ? options.range : false;
             this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
-            this.thickness = options.thickness ? options.thickness : 15;
+            this.thickness = options.thickness ? options.thickness : 8;
             this.min = options.min ? options.min : 0;
             this.max = options.max ? options.max : 100;
             this.step = options.step ? options.step : false;
@@ -225,8 +280,6 @@
             this.slider_track = new SliderTrack(this);
             this.handle_singletouch = this.handle_singletouch.bind(this);
             this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
-            this.mouseover_handle = this.mouseover_handle.bind(this);
-            this.elem.on('mouseover', this.mouseover_handle);
         }
         get range_max() {
             return this.range === 'max';
@@ -245,13 +298,6 @@
         }
         handle_singletouch(e) {
             let value, target;
-            if (e.type === 'mousedown') {
-                value = (this.vertical ? e.pageY : e.pageX) - this.offset;
-            } else {
-                value =
-                    (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
-                    - this.offset;
-            }
             if (this.range_true) {
                 let distances = [];
                 for (let handle of this.handles) {
@@ -268,6 +314,14 @@
             } else {
                 target = this.handles[0];
             }
+            target.activate();
+            if (e.type === 'mousedown') {
+                value = (this.vertical ? e.pageY : e.pageX) - this.offset;
+            } else {
+                value =
+                    (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
+                    - this.offset;
+            }
             if (this.step) {
                 value = target.transform(value, 'range');
                 target.value = target.transform(value, 'step');
@@ -277,55 +331,6 @@
                 target.value = target.transform(value, 'range');
             }
             this.slider_track.set_value(e);
-        }
-        mouseover_handle(e) {
-            let target;
-            console.log('mouseover');
-            if (this.range_true) {
-                let distances = [];
-                for (let handle of this.handles) {
-                    let distance = Math.hypot(
-                        handle.elem.offset().left - parseInt(e.pageX),
-                        handle.elem.offset().top - parseInt(e.pageY)
-                    );
-                    distances.push(parseInt(distance));
-                }
-                let closest = distances.indexOf(Math.min(...distances));
-                target = this.handles[closest];
-                console.log(target);
-            } else {
-                target = this.handles[0];
-            }
-            this.elem.off('mousewheel wheel').on('mousewheel wheel', scroll_handle.bind(this));
-            this.elem.on('keydown keyup', keydown_handle.bind(this));
-            this.elem.on('mouseleave', () => {
-                this.elem.off('mousewheel wheel');
-                this.elem.off('keydown');
-            });
-            function keydown_handle(e) {
-                e.preventDefault();
-                console.log('AAAAAAAAAA');
-            }
-            function scroll_handle(e) {
-                e.preventDefault();
-                let evt = e.originalEvent;
-                let value = target.value;
-                let step = parseInt(this.scroll_step);
-                if (typeof evt.deltaY === 'number') {
-                    if(evt.deltaY > 0) {
-                        value = parseInt(target.value) + step;
-                    }
-                    else if(evt.deltaY < 0) {
-                        value = parseInt(target.value) - step;
-                    }
-                }
-                if (value < this.min || value > this.max) {
-                    return;
-                }
-                target.pos = target.transform(value, 'screen');
-                target.value = value;
-                this.slider_track.set_value(e);
-            }
         }
     }
 
