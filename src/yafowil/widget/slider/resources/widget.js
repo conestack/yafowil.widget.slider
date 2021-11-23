@@ -24,18 +24,17 @@
             this.slider.slider_elem.append(this.elem);
             this.input_elem = input;
             this.span_elem = span;
-            this.value = this.input_elem.val() !== undefined ?
+            this.value = (this.input_elem.val() !== undefined) ?
                          parseInt(this.input_elem.val()) : 0;
             this.pos = this.transform(this.value, 'screen');
             this.vertical = this.slider.vertical;
             this.step = this.slider.step;
             this.scroll_step = this.slider.scroll_step;
+            this.selected = false;
             this.elem.css(`${this.slider.dir_attr}`, this.pos);
             this.slide_start = this.slide_start.bind(this);
             this.handle_drag = this.handle_drag.bind(this);
             this.resize_handle = this.resize_handle.bind(this);
-            this.activate = this.activate.bind(this);
-            this.deactivate = this.deactivate.bind(this);
             this.scroll_handle = this.scroll_handle.bind(this);
             this.key_handle = this.key_handle.bind(this);
             this.elem.on('mousedown touchstart', this.slide_start);
@@ -46,6 +45,26 @@
         }
         get value() {
             return this._value;
+        }
+        get selected() {
+            return this._selected;
+        }
+        set selected(selected) {
+            if (selected) {
+                $('.yafowil_slider').each(function() {
+                    for (let handle of $(this).data('slider_widget').handles) {
+                        handle.selected = false;
+                    }
+                });
+                this.elem.addClass('active');
+                this.slider.elem.on('mousewheel wheel', this.scroll_handle);
+                $(document).off('keydown').on('keydown', this.key_handle);
+            } else {
+                this.elem.removeClass('active');
+                this.slider.elem.off('mousewheel wheel', this.scroll_handle);
+                $(document).off('keydown', this.key_handle);
+            }
+            this._selected = selected;
         }
         set value(value) {
             if (value < this.slider.min || value > this.slider.max) return;
@@ -87,27 +106,13 @@
         }
         unload() {
             $(window).off('resize', this.resize_handle);
-        }
-        activate(e) {
-            $('.yafowil_slider').each(function() {
-                for (let handle of $(this).data('slider_widget').handles) {
-                    handle.deactivate();
-                }
-            });
-            this.elem.addClass('active');
-            this.slider.elem.on('mousewheel wheel', this.scroll_handle);
-            $(document).off('keydown').on('keydown', this.key_handle);
-        }
-        deactivate(e) {
-            this.elem.removeClass('active');
-            this.slider.elem.off('mousewheel wheel', this.scroll_handle);
-            $(document).off('keydown', this.key_handle);
+            this.selected = false;
         }
         resize_handle() {
             this.pos = this.transform(this.value, 'screen');
         }
         slide_start(event) {
-            this.activate();
+            this.selected = true;
             event.preventDefault();
             event.stopPropagation();
             $('.slider-handle').css('z-index', 1);
@@ -296,6 +301,12 @@
             let dim = this.vertical ? this.slider_elem.height() : this.elem.width();
             return dim;
         }
+        unload() {
+            this.slider_track.unload();
+            for (let handle of this.handles) {
+                handle.unload();
+            }
+        }
         handle_singletouch(e) {
             let value, target;
             if (this.range_true) {
@@ -314,7 +325,7 @@
             } else {
                 target = this.handles[0];
             }
-            target.activate();
+            target.selected = true;
             if (e.type === 'mousedown') {
                 value = (this.vertical ? e.pageY : e.pageX) - this.offset;
             } else {

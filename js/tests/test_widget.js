@@ -96,6 +96,8 @@ QUnit.module('constructor cases', hooks => {
         assert.ok(slider.handle_singletouch);
         // only one handle exists
         assert.strictEqual(slider.handles.length, 1);
+        // handle is unselected
+        assert.false(slider.handles[0].selected);
         // no range specified
         assert.strictEqual(slider.range, false);
         // default diameter and thickness applied
@@ -563,15 +565,27 @@ QUnit.module('resize_handle', hooks => {
         let track_val_before = slider.slider_track.track_elem.css('width');
 
         // trigger unload
-        slider.slider_track.unload();
-        slider.handles[0].unload();
+        slider.unload();
 
         // resize viewport
         let new_window_width = 320;
         viewport.set(new_window_width);
         $(window).trigger('resize');
 
-        // resize event is unbound
+        // scroll events unbound
+        let scroll_down = $.event.fix(new WheelEvent("mousewheel", {
+            "deltaY": 1,
+            "deltaMode": 0
+        }));
+        slider.elem.trigger(scroll_down);
+
+        // key events unbound
+        let arrow_left = new KeyboardEvent("keydown", {
+            key: "ArrowLeft"
+        });
+        document.dispatchEvent(arrow_left);
+
+        // triggered events invoke no change
         assert.strictEqual(pos_before, handle.pos);
         assert.strictEqual(
             track_val_before,
@@ -905,7 +919,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
             // create slider object
             slider = new SliderWidget(elem, options);
 
-            slider.handles[1].activate();
+            slider.handles[1].selected = true;
 
             // trigger scroll upward
             for (let i = 0; i < 50; i++) {
@@ -921,7 +935,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
             assert.strictEqual(slider.handles[1].pos, dim);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
@@ -954,7 +968,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
             // create slider object
             slider = new SliderWidget(elem, options);
 
-            slider.handles[1].activate();
+            slider.handles[1].selected = true;
 
             // trigger scroll upward
             for (let i = 0; i < 50; i++) {
@@ -970,7 +984,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
             assert.strictEqual(slider.handles[1].pos, dim);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
@@ -987,7 +1001,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
         });
 
         QUnit.test('move to end/start', assert => {
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
 
             // trigger scroll downward
             for (let i = 0; i < 100; i++) {
@@ -1015,7 +1029,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
         });
 
         QUnit.test('move to end/start', assert => {
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
 
             // trigger scroll downward
             for (let i = 0; i < 100; i++) {
@@ -1042,7 +1056,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
         });
 
         QUnit.test('move', assert => {
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
 
             // trigger scroll downward
             for (let i = 1; i < 4; i++) {
@@ -1067,7 +1081,7 @@ QUnit.module('SliderHandle.scroll_handle', hooks => {
         });
 
         QUnit.test('move', assert => {
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
 
             // trigger scroll downward
             for (let i = 1; i < 4; i++) {
@@ -1096,11 +1110,6 @@ QUnit.module('SliderHandle.key_handle', hooks => {
     let container = $('<div id="container" />');
     let dim = 200;
     // create synthetic key events
-    let key_left = new $.Event({
-        type: 'keydown',
-        key: 'ArrowLeft'
-    });
-
     let arrow_left = new KeyboardEvent("keydown", {
           key: "ArrowLeft"
     });
@@ -1155,7 +1164,7 @@ QUnit.module('SliderHandle.key_handle', hooks => {
             // create slider object
             slider = new SliderWidget(elem, options);
 
-            slider.handles[1].activate();
+            slider.handles[1].selected = true;
 
             // trigger keyleft presses
             for (let i = 0; i < 50; i++) {
@@ -1171,7 +1180,7 @@ QUnit.module('SliderHandle.key_handle', hooks => {
             assert.strictEqual(slider.handles[1].pos, dim);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_right);
             }
@@ -1204,7 +1213,7 @@ QUnit.module('SliderHandle.key_handle', hooks => {
             // create slider object
             slider = new SliderWidget(elem, options);
 
-            slider.handles[1].activate();
+            slider.handles[1].selected = true;
 
             // trigger keyup presses
             for (let i = 0; i < 50; i++) {
@@ -1220,7 +1229,7 @@ QUnit.module('SliderHandle.key_handle', hooks => {
             assert.strictEqual(slider.handles[1].pos, dim);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
-            slider.handles[0].activate();
+            slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_down);
             }
