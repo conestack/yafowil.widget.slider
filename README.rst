@@ -13,9 +13,18 @@ The sources are in a GIT DVCS with its main branches at
 We'd be happy to see many forks and pull-requests to make YAFOWIL even better.
 
 
+TODO
+====
+
+* Expose ``handle_diameter``, ``thickness`` and ``scroll_step`` widget options
+  to slider blueprint.
+
+
 Contributors
 ============
 
 - Robert Niederreiter
 
 - Georg Bernhard
+
+- Lena Daxenbichler

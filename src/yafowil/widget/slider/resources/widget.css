@@ -1,3 +1,57 @@
 div.yafowil_slider {
     padding-top:0.65em;
+    width: 100%;
+}
+
+div.yafowil_slider > .slider {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+div.yafowil_slider > .slider .slider-bg {
+    position: absolute;
+    width: 100%;
+    border-radius: 15px;
+    background: lightgray;
+    box-shadow: inset 1px 1px 2px rgb(0 0 0 / 15%);
+}
+
+div.yafowil_slider > .slider .slider-value-track {
+    position: absolute;
+    border-radius: 15px;
+    background: #8fcdfb;
+}
+
+div.yafowil_slider > .slider .slider-handle {
+    position: absolute;
+    background: white;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    box-shadow: 0 0 2px 2px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+div.yafowil_slider > .slider .slider-handle.active {
+    border: 1px solid #8fcdfb;
+}
+
+div.yafowil_slider > .slider.slider-vertical {
+    margin-top: 10px;
+    justify-content: center;
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-bg {
+    height: 100%;
+    box-shadow: inset 0px 1px 2px rgb(0 0 0 / 15%);
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-value-track {
+    top: 0;
+    height: 0;
+}
+
+div.yafowil_slider > .slider.slider-vertical .slider-handle {
+    top: 0;
+    transform: translateY(-50%);
 }
