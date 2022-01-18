@@ -503,7 +503,7 @@ QUnit.module('slider_widget', hooks => {
             let new_dim = slider.handles[1].pos - slider.handles[0].pos;
 
             // create and trigger custom drag event
-            const event = new $.Event('drag');
+            const event = new $.Event('slide');
             slider.slider_elem.trigger(event);
 
             assert.notStrictEqual(start_val, new_val);
@@ -557,7 +557,7 @@ QUnit.module('slider_widget', hooks => {
             let new_dim = slider.handles[1].pos - slider.handles[0].pos;
 
             // create and trigger custom drag event
-            const event = new $.Event('drag');
+            const event = new $.Event('slide');
             slider.slider_elem.trigger(event);
 
             assert.notStrictEqual(start_val, new_val);

@@ -80,6 +80,14 @@
             }
             this.input_elem.attr('value', value);
             this.span_elem.text(value);
+            if (value !== this.value) {
+                let slidechange = new $.Event('slidechange', {
+                    handle: this.elem,
+                    handleIndex: index,
+                    value: value
+                });
+                this.slider.elem.trigger(slidechange);
+            }
             this._value = value;
         }
         get pos() {
@@ -117,6 +125,12 @@
             event.stopPropagation();
             $('.slider-handle').css('z-index', 1);
             this.elem.css('z-index', 10);
+            let slidestart = new $.Event('slidestart', {
+                handle: this.elem,
+                handleIndex: this.slider.handles.indexOf(this),
+                value: this.value
+            });
+            this.slider.elem.trigger(slidestart);
             ['mousemove', 'touchmove'].forEach( evt =>
                 document.addEventListener(evt, this.handle_drag, {passive:false})
             );
@@ -124,6 +138,12 @@
                 document.addEventListener(evt, () => {
                     document.removeEventListener('touchmove', this.handle_drag);
                     document.removeEventListener('mousemove', this.handle_drag);
+                    let slidestop = new $.Event('slidestop', {
+                        handle: this.elem,
+                        handleIndex: this.slider.handles.indexOf(this),
+                        value: this.value
+                    });
+                    this.slider.elem.trigger(slidestop);
                 }, false)
             );
         }
@@ -162,13 +182,23 @@
                     (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
                     - this.offset;
             }
-            this.value = this.transform(this.pos, 'range');
             if (this.slider.step) {
-                this.value = this.transform(this.value, 'step');
+                let val = this.transform(this.pos, 'range');
+                this.value = this.transform(val, 'step');
                 this.pos = this.transform(this.value, 'screen');
+            } else {
+                this.value = this.transform(this.pos, 'range');
             }
-            const event = new $.Event('drag');
-            this.slider.slider_elem.trigger(event);
+            const event = new $.Event('slide', {
+                handle: this.elem,
+                handleIndex: this.slider.handles.indexOf(this),
+                value: this.value,
+                values: [
+                    this.slider.handles[0].value,
+                    this.slider.handles[1] ? this.slider.handles[1].value : null
+                ]
+            });
+            this.slider.elem.trigger(event);
         }
         transform(val, type) {
             let min = this.slider.min,
@@ -207,7 +237,7 @@
             }
             this.set_value();
             this.set_value = this.set_value.bind(this);
-            this.slider.slider_elem.on('drag', this.set_value);
+            this.slider.elem.on('slide', this.set_value);
             $(window).on('resize', this.set_value);
         }
         unload() {
@@ -285,6 +315,7 @@
             this.slider_track = new SliderTrack(this);
             this.handle_singletouch = this.handle_singletouch.bind(this);
             this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
+            this.elem.trigger(new $.Event('slidecreate', {slider: this}));
         }
         get range_max() {
             return this.range === 'max';
