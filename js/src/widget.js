@@ -95,12 +95,11 @@ class SliderHandle {
         this.span_elem.text(value);
 
         if (value !== this.value) {
-            let slidechange = new $.Event('slidechange', {
+            this.slider.elem.trigger(new $.Event('slidechange', {
                 handle: this.elem,
                 handleIndex: index,
                 value: value
-            });
-            this.slider.elem.trigger(slidechange);
+            }));
         }
 
         this._value = value;
@@ -145,13 +144,11 @@ class SliderHandle {
         event.stopPropagation();
         $('.slider-handle').css('z-index', 1);
         this.elem.css('z-index', 10);
-
-        let slidestart = new $.Event('slidestart', {
+        this.slider.elem.trigger(new $.Event('slidestart', {
             handle: this.elem,
             handleIndex: this.slider.handles.indexOf(this),
             value: this.value
-        });
-        this.slider.elem.trigger(slidestart);
+        }));
 
         ['mousemove', 'touchmove'].forEach( evt =>
             document.addEventListener(evt, this.handle_drag, {passive:false})
@@ -160,14 +157,12 @@ class SliderHandle {
             document.addEventListener(evt, () => {
                 document.removeEventListener('touchmove', this.handle_drag);
                 document.removeEventListener('mousemove', this.handle_drag);
-
-                let slidestop = new $.Event('slidestop', {
+                this.slider.elem.trigger(new $.Event('slidestop', {
                     handle: this.elem,
                     handleIndex: this.slider.handles.indexOf(this),
                     value: this.value
-                });
-                this.slider.elem.trigger(slidestop);
-            }, false)
+                }));
+            }, { passive:false, once:true })
         );
     }
 
@@ -221,8 +216,7 @@ class SliderHandle {
         } else {
             this.value = this.transform(this.pos, 'range');
         }
-
-        const event = new $.Event('slide', {
+        this.slider.elem.trigger(new $.Event('slide', {
             handle: this.elem,
             handleIndex: this.slider.handles.indexOf(this),
             value: this.value,
@@ -230,8 +224,7 @@ class SliderHandle {
                 this.slider.handles[0].value,
                 this.slider.handles[1] ? this.slider.handles[1].value : null
             ]
-        });
-        this.slider.elem.trigger(event);
+        }));
     }
 
     transform(val, type) {

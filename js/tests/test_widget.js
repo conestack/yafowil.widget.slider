@@ -468,7 +468,6 @@ QUnit.module('slider_widget', hooks => {
     });
 
     QUnit.module('SliderHandle.handle_drag', () => {
-
         /* range slider with two handles */
         QUnit.test('horizontal', assert => {
             elem.css("width", `${dim}px`);
@@ -517,9 +516,19 @@ QUnit.module('slider_widget', hooks => {
             );
 
             // move first handle to center
-            move_handle(assert, slider.handles[0], 100, 92, false, false);
+            move_handle(assert, slider.handles[0], {
+                drag_end: 100,
+                assertion_value: 92,
+                type: false,
+                vertical: false
+            });
             // attempt to move right handle beyond left handle - stops at left handle
-            move_handle(assert, slider.handles[1], 0, 92, false, false);
+            move_handle(assert, slider.handles[1], {
+                drag_end: 0,
+                assertion_value: 92,
+                type: false,
+                vertical: false
+            });
 
             assert.strictEqual(slider.handles[0].value, slider.handles[1].value);
         });
@@ -579,9 +588,11 @@ QUnit.module('slider_widget', hooks => {
             slider = new SliderWidget(elem, options);
 
             let handle = slider.handles[0];
-            let drag_end = dim + 10; // 10px over end of slider
-            let assertion_value = dim;
-            move_handle(assert, handle, drag_end, assertion_value, true);
+            move_handle(assert, handle, {
+                drag_end: dim + 10, // 10px over end of slider
+                assertion_value: dim,
+                type: true
+            });
         });
         QUnit.test('default - move to start', assert => {
             elem.css("width", `${dim}px`);
@@ -591,9 +602,11 @@ QUnit.module('slider_widget', hooks => {
             slider = new SliderWidget(elem, options);
 
             let handle = slider.handles[0];
-            let drag_end = slider.offset - 10; // 10px less than start of slider
-            let assertion_value = 0;
-            move_handle(assert, handle, drag_end, assertion_value, false);
+            move_handle(assert, handle, {
+                drag_end: slider.offset - 10, // 10px less than start of slider
+                assertion_value: 0,
+                type: false
+            });
         });
         QUnit.test('default - touch move to end', assert => {
             elem.css("width", `${dim}px`);
@@ -639,15 +652,21 @@ QUnit.module('slider_widget', hooks => {
 
             QUnit.test('move to end', assert => {
                 let handle = slider.handles[0];
-                let drag_end = slider.offset + dim + 10;
-                let assertion_value = dim;
-                move_handle(assert, handle, drag_end, assertion_value, true, true);
+                move_handle(assert, handle, {
+                    drag_end: slider.offset + dim + 10,
+                    assertion_value: dim,
+                    type: true,
+                    vertical: true
+                });
             });
             QUnit.test('move to start', assert => {
                 let handle = slider.handles[0];
-                let drag_end = slider.offset - 10;
-                let assertion_value = 0;
-                move_handle(assert, handle, drag_end, assertion_value, false, true);
+                move_handle(assert, handle, {
+                    drag_end: slider.offset - 10,
+                    assertion_value: 0,
+                    type: false,
+                    vertical: true
+                });
             });
             QUnit.test('touch move to end', assert => {
                 let handle = slider.handles[0];
@@ -682,7 +701,12 @@ QUnit.module('slider_widget', hooks => {
             let drag_end = slider.offset + slider.slider_dim / 2 + 5;
             // assertion value will be actual rounded value
             let assertion_value = slider.slider_dim / 2;
-            move_handle(assert, handle, drag_end, assertion_value, true, false);
+            move_handle(assert, handle, {
+                drag_end: drag_end,
+                assertion_value: assertion_value,
+                type: true,
+                vertical: false
+            });
         });
 
         /* slider with minimum and maximum value and step */
@@ -695,18 +719,26 @@ QUnit.module('slider_widget', hooks => {
             slider = new SliderWidget(elem, options);
 
             let handle = slider.handles[0];
-            let drag_end = dim + 10; // 10px over end of slider
-            let assertion_value = dim;
 
             // move handle to end
-            move_handle(assert, handle, drag_end, assertion_value, true, false);
+            move_handle(assert, handle, {
+                drag_end: dim + 10, // 10px over end of slider,
+                assertion_value: dim,
+                type: true,
+                vertical: false
+            });
 
             let done2 = assert.async();
             setTimeout(() => {
                 assert.strictEqual(handle.value, 500)
                 done2();
                 // move handle to start
-                move_handle(assert, handle, slider.offset - 10, 0, false, false);
+                move_handle(assert, handle, {
+                    drag_end: slider.offset - 10,
+                    assertion_value: 0,
+                    type: false,
+                    vertical: false
+                });
             }, 300);
 
             let done3 = assert.async();
@@ -1027,6 +1059,144 @@ QUnit.module('slider_widget', hooks => {
             assert.strictEqual(slider.handles[0].value, slider.max);
         });
     });
+
+    QUnit.module('custom event dispatch', () =>{
+        QUnit.test('custom event dispatch', assert => {
+            elem.css("width", `${dim}px`);
+            $('.slider_value', elem).val(0);
+
+            // add event listeners for custom event
+            elem.on('slidestart', e => {
+                assert.step('slidestart');
+                assert.strictEqual(e.value, slider.handles[0].value);
+                assert.strictEqual(e.handleIndex, 0);
+                assert.strictEqual(e.handle, slider.handles[0].elem);
+            });
+            elem.on('slide', e => {
+                assert.step('slide');
+                assert.strictEqual(e.value, slider.handles[0].value);
+                assert.strictEqual(e.handleIndex, 0);
+                assert.strictEqual(e.handle, slider.handles[0].elem);
+            });
+            elem.off('slidestop').on('slidestop', e => {
+                assert.step('slidestop');
+                assert.strictEqual(e.value, slider.handles[0].value);
+                assert.strictEqual(e.handleIndex, 0);
+                assert.strictEqual(e.handle, slider.handles[0].elem);
+            });
+            elem.off('slidechange').on('slidechange', e => {
+                assert.step('change');
+            });
+            elem.on('slidecreate', e => {
+                assert.step('slidecreate');
+            });
+
+            // create slider object
+            slider = new SliderWidget(elem, options);
+            let handle = slider.handles[0];
+            let target = handle.elem;
+
+            // slidecreate on initialization
+            assert.verifySteps(['change', 'slidecreate']);
+
+            // invoke slidestart
+            target.trigger('mousedown');
+            assert.verifySteps(['slidestart']);
+
+            // invoke slidestop
+            document.dispatchEvent(new MouseEvent("mouseup", {}));
+            assert.verifySteps(['slidestop']);
+
+            // invoke move
+            move_handle(assert, handle, {
+                drag_end: slider.offset + 10, // 10px over start of slider,
+                assertion_value: 10,
+                type: true,
+                vertical: false,
+                verify: function() {
+                    let arr = ['slidestart'];
+                    for (let i = 0; i < 8; i++) {
+                        arr.push('slide');
+                    }
+                    for(let i = 0; i < 5; i++) {
+                        arr.push('change');
+                        arr.push('slide');
+                        arr.push('slide');
+                    }
+                    arr.push('slidestop');
+                    assert.verifySteps(arr);
+                },
+                movestep: 1
+            });
+        });
+
+        QUnit.test('custom event dispatch - scroll/step/key', assert => {
+            let scroll_down = $.event.fix(new WheelEvent("mousewheel", {
+                "deltaY": 1,
+                "deltaMode": 0
+            }));
+            let scroll_up = $.event.fix(new WheelEvent("mousewheel", {
+                "deltaY": -1,
+                "deltaMode": 0
+            }));
+            let arrow_left = new KeyboardEvent("keydown", {
+                key: "ArrowLeft"
+            });
+            let arrow_right = new KeyboardEvent("keydown", {
+                key: "ArrowRight"
+            });
+
+            elem.css("width", `${dim}px`);
+            $('.slider_value', elem).val(0);
+
+            // add event listeners for custom event
+            elem.on('slidestart', e => {
+                assert.step('slidestart');
+            });
+            elem.on('slide', e => {
+                assert.step('slide');
+            });
+            elem.on('slidestop', e => {
+                assert.step('slidestop');
+            });
+            elem.on('slidechange', e => {
+                assert.step('change');
+            });
+
+            // create slider object
+            options.step = 10;
+            slider = new SliderWidget(elem, options);
+            let handle = slider.handles[0];
+
+            // slidecreate on initialization
+            assert.verifySteps(['change']);
+
+            handle.selected = true;
+            // trigger scroll downward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_down);
+                assert.strictEqual(slider.handles[0].value, slider.scroll_step * i);
+                assert.verifySteps(['change']);
+            }
+            let val = handle.value;
+            // trigger scroll upward
+            for (let i = 1; i < 4; i++) {
+                slider.elem.trigger(scroll_up);
+                assert.strictEqual(slider.handles[0].value, val - slider.scroll_step * i);
+                assert.verifySteps(['change']);
+            }
+            // trigger keyright presses
+            for (let i = 0; i < 4; i++) {
+                document.dispatchEvent(arrow_right);
+                assert.verifySteps(['change']);
+            }
+            // trigger keyleft presses
+            for (let i = 0; i < 4; i++) {
+                document.dispatchEvent(arrow_left);
+                assert.verifySteps(['change']);
+            }
+        });
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1136,7 +1306,7 @@ QUnit.module('resize_handle', hooks => {
 // helper functions
 ////////////////////////////////////////////////////////////////////////////////
 
-function move_handle(assert, handle, drag_end, assertion_value, type, vertical) {
+function move_handle(assert, handle, specs) {
     /* 
         type=true for value increase,
         type=false for value decrease
@@ -1146,16 +1316,20 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
     let changed_coord = handle.pos; // the coordinate (x or y) which is going to be changed
     let done = assert.async(); // we need asynchronous testing for mousemove
 
+    if (!specs.movestep) {
+        // default increase/decrease by 5px for performance
+        specs.movestep = 5;
+    }
+
     function move() {
         // if type is increase, increase value
-        // mention: increase/decrease by 5px for performance
-        if (type) {
-            changed_coord += 5;
+        if (specs.type) {
+            changed_coord += specs.movestep;
         } else {
-            changed_coord -= 5;
+            changed_coord -= specs.movestep;
         }
         // check if handle has already met the given drag end point
-        let isMoving = type ? (changed_coord < drag_end) : (changed_coord > drag_end);
+        let isMoving = specs.type ? (changed_coord < specs.drag_end) : (changed_coord > specs.drag_end);
 
         // options are required to create a MouseEvent
         let options  = {
@@ -1165,7 +1339,7 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
         };
 
         // set coordinates
-        if (vertical) {
+        if (specs.vertical) {
             options.clientX = 0;
             options.clientY = changed_coord;
         } else {
@@ -1192,8 +1366,12 @@ function move_handle(assert, handle, drag_end, assertion_value, type, vertical) 
             // position of handle equals given value
             assert.strictEqual(
                 parseInt(handle.pos),
-                parseInt(assertion_value)
+                parseInt(specs.assertion_value)
             );
+
+            if (specs.verify) {
+                specs.verify();
+            }
         }
     }
 
