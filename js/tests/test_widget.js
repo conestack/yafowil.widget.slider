@@ -81,7 +81,7 @@ QUnit.module('slider_widget', hooks => {
             assert.deepEqual(slider.elem, elem);
             assert.ok(slider.slider_elem.is('div.slider'));
             // function exists
-            assert.ok(slider.handle_singletouch);
+            assert.ok(slider.on_singletouch);
             // only one handle exists
             assert.strictEqual(slider.handles.length, 1);
             // handle is unselected
@@ -243,7 +243,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(slider.handles[0].value, 0);
     });
 
-    QUnit.module('handle_singletouch', () => {
+    QUnit.module('on_singletouch', () => {
 
         /* default slider with no additional options given */
         QUnit.module('default', hooks => {
@@ -467,7 +467,7 @@ QUnit.module('slider_widget', hooks => {
         });
     });
 
-    QUnit.module('SliderHandle.handle_drag', () => {
+    QUnit.module('SliderHandle.on_move', () => {
         /* range slider with two handles */
         QUnit.test('horizontal', assert => {
             elem.css("width", `${dim}px`);
@@ -516,14 +516,14 @@ QUnit.module('slider_widget', hooks => {
             );
 
             // move first handle to center
-            move_handle(assert, slider.handles[0], {
+            do_move_handle(assert, slider.handles[0], {
                 drag_end: 100,
                 assertion_value: 92,
                 type: false,
                 vertical: false
             });
             // attempt to move right handle beyond left handle - stops at left handle
-            move_handle(assert, slider.handles[1], {
+            do_move_handle(assert, slider.handles[1], {
                 drag_end: 0,
                 assertion_value: 92,
                 type: false,
@@ -588,7 +588,7 @@ QUnit.module('slider_widget', hooks => {
             slider = new SliderWidget(elem, options);
 
             let handle = slider.handles[0];
-            move_handle(assert, handle, {
+            do_move_handle(assert, handle, {
                 drag_end: dim + 10, // 10px over end of slider
                 assertion_value: dim,
                 type: true
@@ -602,7 +602,7 @@ QUnit.module('slider_widget', hooks => {
             slider = new SliderWidget(elem, options);
 
             let handle = slider.handles[0];
-            move_handle(assert, handle, {
+            do_move_handle(assert, handle, {
                 drag_end: slider.offset - 10, // 10px less than start of slider
                 assertion_value: 0,
                 type: false
@@ -652,7 +652,7 @@ QUnit.module('slider_widget', hooks => {
 
             QUnit.test('move to end', assert => {
                 let handle = slider.handles[0];
-                move_handle(assert, handle, {
+                do_move_handle(assert, handle, {
                     drag_end: slider.offset + dim + 10,
                     assertion_value: dim,
                     type: true,
@@ -661,7 +661,7 @@ QUnit.module('slider_widget', hooks => {
             });
             QUnit.test('move to start', assert => {
                 let handle = slider.handles[0];
-                move_handle(assert, handle, {
+                do_move_handle(assert, handle, {
                     drag_end: slider.offset - 10,
                     assertion_value: 0,
                     type: false,
@@ -701,7 +701,7 @@ QUnit.module('slider_widget', hooks => {
             let drag_end = slider.offset + slider.slider_dim / 2 + 5;
             // assertion value will be actual rounded value
             let assertion_value = slider.slider_dim / 2;
-            move_handle(assert, handle, {
+            do_move_handle(assert, handle, {
                 drag_end: drag_end,
                 assertion_value: assertion_value,
                 type: true,
@@ -721,7 +721,7 @@ QUnit.module('slider_widget', hooks => {
             let handle = slider.handles[0];
 
             // move handle to end
-            move_handle(assert, handle, {
+            do_move_handle(assert, handle, {
                 drag_end: dim + 10, // 10px over end of slider,
                 assertion_value: dim,
                 type: true,
@@ -733,7 +733,7 @@ QUnit.module('slider_widget', hooks => {
                 assert.strictEqual(handle.value, 500)
                 done2();
                 // move handle to start
-                move_handle(assert, handle, {
+                do_move_handle(assert, handle, {
                     drag_end: slider.offset - 10,
                     assertion_value: 0,
                     type: false,
@@ -749,7 +749,7 @@ QUnit.module('slider_widget', hooks => {
         });
     });
 
-    QUnit.module('SliderHandle.scroll_handle', () => {
+    QUnit.module('SliderHandle.on_scroll', () => {
         // create synthetic wheel events
         let scroll_down = $.event.fix(new WheelEvent("mousewheel", {
             "deltaY": 1,
@@ -1108,7 +1108,7 @@ QUnit.module('slider_widget', hooks => {
             assert.verifySteps(['slidestop']);
 
             // invoke move
-            move_handle(assert, handle, {
+            do_move_handle(assert, handle, {
                 drag_end: slider.offset + 10, // 10px over start of slider,
                 assertion_value: 10,
                 type: true,
@@ -1203,7 +1203,7 @@ QUnit.module('slider_widget', hooks => {
 // various window resize functionality
 ////////////////////////////////////////////////////////////////////////////////
 
-QUnit.module('resize_handle', hooks => {
+QUnit.module('on_resize', hooks => {
     let options = {};
     let elem;
     let slider;
@@ -1306,7 +1306,7 @@ QUnit.module('resize_handle', hooks => {
 // helper functions
 ////////////////////////////////////////////////////////////////////////////////
 
-function move_handle(assert, handle, specs) {
+function do_move_handle(assert, handle, specs) {
     /* 
         type=true for value increase,
         type=false for value decrease

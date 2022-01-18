@@ -37,14 +37,14 @@ class SliderHandle {
         this.selected = false;
         this.elem.css(`${this.slider.dir_attr}`, this.pos);
 
-        this.slide_start = this.slide_start.bind(this);
-        this.handle_drag = this.handle_drag.bind(this);
-        this.resize_handle = this.resize_handle.bind(this);
-        this.scroll_handle = this.scroll_handle.bind(this);
-        this.key_handle = this.key_handle.bind(this);
+        this.on_slide_start = this.on_slide_start.bind(this);
+        this.on_move = this.on_move.bind(this);
+        this.on_resize = this.on_resize.bind(this);
+        this.on_scroll = this.on_scroll.bind(this);
+        this.on_key = this.on_key.bind(this);
 
-        this.elem.on('mousedown touchstart', this.slide_start);
-        $(window).on('resize', this.resize_handle);
+        this.elem.on('mousedown touchstart', this.on_slide_start);
+        $(window).on('resize', this.on_resize);
     }
 
     get offset() {
@@ -67,12 +67,12 @@ class SliderHandle {
                 }
             });
             this.elem.addClass('active');
-            this.slider.elem.on('mousewheel wheel', this.scroll_handle);
-            $(document).off('keydown').on('keydown', this.key_handle);
+            this.slider.elem.on('mousewheel wheel', this.on_scroll);
+            $(document).off('keydown').on('keydown', this.on_key);
         } else {
             this.elem.removeClass('active');
-            this.slider.elem.off('mousewheel wheel', this.scroll_handle);
-            $(document).off('keydown', this.key_handle);
+            this.slider.elem.off('mousewheel wheel', this.on_scroll);
+            $(document).off('keydown', this.on_key);
         }
         this._selected = selected;
     }
@@ -130,15 +130,15 @@ class SliderHandle {
     }
 
     unload() {
-        $(window).off('resize', this.resize_handle);
+        $(window).off('resize', this.on_resize);
         this.selected = false;
     }
 
-    resize_handle() {
+    on_resize() {
         this.pos = this.transform(this.value, 'screen');
     }
 
-    slide_start(event) {
+    on_slide_start(event) {
         this.selected = true;
         event.preventDefault();
         event.stopPropagation();
@@ -151,12 +151,12 @@ class SliderHandle {
         }));
 
         ['mousemove', 'touchmove'].forEach( evt =>
-            document.addEventListener(evt, this.handle_drag, {passive:false})
+            document.addEventListener(evt, this.on_move, {passive:false})
         );
         ['mouseup', 'touchend'].forEach( evt =>
             document.addEventListener(evt, () => {
-                document.removeEventListener('touchmove', this.handle_drag);
-                document.removeEventListener('mousemove', this.handle_drag);
+                document.removeEventListener('touchmove', this.on_move);
+                document.removeEventListener('mousemove', this.on_move);
                 this.slider.elem.trigger(new $.Event('slidestop', {
                     handle: this.elem,
                     handleIndex: this.slider.handles.indexOf(this),
@@ -166,7 +166,7 @@ class SliderHandle {
         );
     }
 
-    scroll_handle(e) {
+    on_scroll(e) {
         e.preventDefault();
         let evt = e.originalEvent,
             value = this.value;
@@ -179,7 +179,7 @@ class SliderHandle {
         this.slider.slider_track.set_value(e);
     }
 
-    key_handle(e) {
+    on_key(e) {
         let value = this.value,
             increase = this.vertical ? e.key === 'ArrowDown' : e.key === 'ArrowRight',
             decrease = this.vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
@@ -197,7 +197,7 @@ class SliderHandle {
         this.slider.slider_track.set_value(e);
     }
 
-    handle_drag(e) {
+    on_move(e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -355,8 +355,8 @@ export class SliderWidget {
 
         this.slider_track = new SliderTrack(this);
 
-        this.handle_singletouch = this.handle_singletouch.bind(this);
-        this.slider_elem.on('mousedown touchstart', this.handle_singletouch);
+        this.on_singletouch = this.on_singletouch.bind(this);
+        this.slider_elem.on('mousedown touchstart', this.on_singletouch);
 
         this.elem.trigger(new $.Event('slidecreate', {slider: this}));
     }
@@ -387,7 +387,7 @@ export class SliderWidget {
         }
     }
 
-    handle_singletouch(e) {
+    on_singletouch(e) {
         let value, target;
 
         // find target
