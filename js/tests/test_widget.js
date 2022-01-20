@@ -1108,26 +1108,26 @@ QUnit.module('slider_widget', hooks => {
             assert.verifySteps(['slidestop']);
 
             // invoke move
-            do_move_handle(assert, handle, {
-                drag_end: slider.offset + 10, // 10px over start of slider,
-                assertion_value: 10,
-                type: true,
-                vertical: false,
-                verify: function() {
-                    let arr = ['slidestart'];
-                    for (let i = 0; i < 8; i++) {
-                        arr.push('slide');
-                    }
-                    for(let i = 0; i < 5; i++) {
-                        arr.push('change');
-                        arr.push('slide');
-                        arr.push('slide');
-                    }
-                    arr.push('slidestop');
-                    assert.verifySteps(arr);
-                },
-                movestep: 1
-            });
+            target.trigger('mousedown');
+            assert.verifySteps(['slidestart']);
+
+            let client_x = slider.offset;
+
+            for(let i = 0; i < 1; i++) {
+                client_x += 1;
+
+                let slide_options  = {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                    clientY: 0,
+                    clientX: client_x
+                };
+                let ev = new MouseEvent("mousemove", slide_options);
+                target[0].dispatchEvent(ev);
+
+                assert.verifySteps(['change', 'slide']);
+            }
         });
 
         QUnit.test('custom event dispatch - scroll/step/key', assert => {

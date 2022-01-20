@@ -9,8 +9,7 @@
         } else if (type === 'screen') {
             val = parseInt(dim * ((val - min) / (max - min)));
         } else if (type === 'range') {
-            let value = Math.ceil((max - min) * (val / dim) + min);
-            val = parseInt(value);
+            val = Math.ceil((max - min) * (val / dim) + min);
         }
         return val;
     }
