@@ -20,8 +20,8 @@
             this.elem = $('<div />')
                 .addClass('slider-handle')
                 .width(this.slider.handle_diameter)
-                .height(this.slider.handle_diameter);
-            this.slider.slider_elem.append(this.elem);
+                .height(this.slider.handle_diameter)
+                .appendTo(this.slider.slider_elem);
             this.input_elem = input;
             this.span_elem = span;
             this.value = (this.input_elem.val() !== undefined) ?
@@ -58,7 +58,7 @@
                 });
                 this.elem.addClass('active');
                 this.slider.elem.on('mousewheel wheel', this.on_scroll);
-                $(document).off('keydown').on('keydown', this.on_key);
+                $(document).off('keydown', this.on_key).on('keydown', this.on_key);
             } else {
                 this.elem.removeClass('active');
                 this.slider.elem.off('mousewheel wheel', this.on_scroll);
@@ -208,13 +208,12 @@
     class SliderTrack {
         constructor(slider) {
             this.slider = slider;
-            this.track_elem = $('<div />')
-                .addClass('slider-value-track');
             this.bg_elem = $('<div />')
-                .addClass('slider-bg');
-            this.slider.slider_elem
-                .append(this.bg_elem)
-                .append(this.track_elem);
+                .addClass('slider-bg')
+                .appendTo(this.slider.slider_elem);
+            this.track_elem = $('<div />')
+                .addClass('slider-value-track')
+                .appendTo(this.slider.slider_elem);
             if (this.slider.vertical) {
                 this.track_elem.css('width', this.slider.thickness);
                 this.bg_elem.css('width', this.slider.thickness);

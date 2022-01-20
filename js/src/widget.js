@@ -8,7 +8,6 @@ export function transform(val, type, dim, min, max, step) {
     } else if (type === 'screen') {
         val = parseInt(dim * ((val - min) / (max - min)));
     } else if (type === 'range') {
-        // round up to prevent error on first drag on ranged slider
         let value = Math.ceil((max - min) * (val / dim) + min);
         val = parseInt(value);
     }
@@ -22,9 +21,9 @@ class SliderHandle {
         this.elem = $('<div />')
             .addClass('slider-handle')
             .width(this.slider.handle_diameter)
-            .height(this.slider.handle_diameter);
+            .height(this.slider.handle_diameter)
+            .appendTo(this.slider.slider_elem);
 
-        this.slider.slider_elem.append(this.elem);
         this.input_elem = input;
         this.span_elem = span;
 
@@ -68,7 +67,7 @@ class SliderHandle {
             });
             this.elem.addClass('active');
             this.slider.elem.on('mousewheel wheel', this.on_scroll);
-            $(document).off('keydown').on('keydown', this.on_key);
+            $(document).off('keydown', this.on_key).on('keydown', this.on_key);
         } else {
             this.elem.removeClass('active');
             this.slider.elem.off('mousewheel wheel', this.on_scroll);
@@ -90,7 +89,6 @@ class SliderHandle {
                 }
             }
         }
-
         this.input_elem.attr('value', value);
         this.span_elem.text(value);
 
@@ -241,13 +239,12 @@ class SliderTrack {
 
     constructor(slider) {
         this.slider = slider;
+        this.bg_elem = $('<div />')
+            .addClass('slider-bg')
+            .appendTo(this.slider.slider_elem);
         this.track_elem = $('<div />')
             .addClass('slider-value-track')
-        this.bg_elem = $('<div />')
-            .addClass('slider-bg');
-        this.slider.slider_elem
-            .append(this.bg_elem)
-            .append(this.track_elem);
+            .appendTo(this.slider.slider_elem);
 
         if (this.slider.vertical) {
             this.track_elem.css('width', this.slider.thickness);
