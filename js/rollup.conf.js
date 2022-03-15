@@ -1,6 +1,8 @@
 import cleanup from 'rollup-plugin-cleanup';
 import {terser} from 'rollup-plugin-terser';
 
+const out_dir = 'src/yafowil/widget/slider/resources';
+
 const outro = `
 if (window.yafowil === undefined) {
     window.yafowil = {};
@@ -16,14 +18,14 @@ export default args => {
             cleanup()
         ],
         output: [{
-            file: 'src/yafowil/widget/slider/resources/widget.js',
+            name: 'yafowil_slider',
+            file: `${out_dir}/widget.js`,
             format: 'iife',
             outro: outro,
             globals: {
                 jquery: 'jQuery'
             },
-            interop: 'default',
-            sourcemap: false
+            interop: 'default'
         }],
         external: [
             'jquery'
@@ -31,7 +33,8 @@ export default args => {
     };
     if (args.configDebug !== true) {
         conf.output.push({
-            file: 'src/yafowil/widget/slider/resources/widget.min.js',
+            name: 'yafowil_slider',
+            file: `${out_dir}/widget.min.js`,
             format: 'iife',
             plugins: [
                 terser()
@@ -40,8 +43,7 @@ export default args => {
             globals: {
                 jquery: 'jQuery'
             },
-            interop: 'default',
-            sourcemap: false
+            interop: 'default'
         });
     }
     return conf;

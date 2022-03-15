@@ -1,4 +1,4 @@
-(function (exports, $) {
+var yafowil_slider = (function (exports, $) {
     'use strict';
 
     function transform(val, type, dim, min, max, step) {
