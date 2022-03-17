@@ -42,7 +42,8 @@ module.exports = function(config) {
                 }
             }]
         },
-        singlerun: true,
+        autoWatch: false,
+        singleRun: true,
         reporters: [
             'progress',
             'coverage'
