@@ -1,3 +1,7 @@
+:root {
+    --track-color: #337ab7;
+}
+
 div.yafowil_slider {
     padding-top:0.65em;
     width: 100%;
@@ -20,7 +24,7 @@ div.yafowil_slider > .slider .slider-bg {
 div.yafowil_slider > .slider .slider-value-track {
     position: absolute;
     border-radius: 15px;
-    background: #8fcdfb;
+    background: var(--track-color);
 }
 
 div.yafowil_slider > .slider .slider-handle {
@@ -33,7 +37,7 @@ div.yafowil_slider > .slider .slider-handle {
 }
 
 div.yafowil_slider > .slider .slider-handle.active {
-    border: 1px solid #8fcdfb;
+    border: 1px solid var(--track-color);
 }
 
 div.yafowil_slider > .slider.slider-vertical {
