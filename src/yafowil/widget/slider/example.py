@@ -5,8 +5,6 @@ DOC_DEFAULT_SLIDER = """
 Default slider
 --------------
 
-jQuery UI slider. Default behavior.
-
 .. code-block:: python
 
     slider = factory('#field:slider', value=20, props={
@@ -43,10 +41,10 @@ maximum. Set the ``range`` option to ``'min'``.
 
 .. code-block:: python
 
-    slider = factory('#field:slider', value=37, props={
+    slider = factory('#field:slider', value=50, props={
         'label': 'Range with fixed minimum',
         'range': 'min',
-        'min': 1,
+        'min': 50,
         'max': 200,
         'show_value': True,
         'unit': 'Pieces',
@@ -61,11 +59,11 @@ def fixed_minimum_range():
     )
     form['slider'] = factory(
         '#field:slider',
-        value=37,
+        value=50,
         props={
             'label': 'Range with fixed minimum',
             'range': 'min',
-            'min': 1,
+            'min': 50,
             'max': 200,
             'show_value': True,
             'unit': 'Pieces',
@@ -126,7 +124,7 @@ DOC_RANGE_SLIDER = """
 Range slider
 ------------
 
-Set the range option to true to capture a range of values with two drag
+Set the range option to True to capture a range of values with two drag
 handles. The space between the handles is filled with a different background
 color to indicate those values are selected.
 

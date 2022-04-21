@@ -292,10 +292,17 @@ export class SliderWidget {
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
-            let options = elem.data();
-            // XXX: from data
-            // options.handle_diameter = 15;
-            // options.thickness = 10;
+            let options = {
+                min: elem.data('min'),
+                max: elem.data('max'),
+                step: elem.data('step'),
+                scroll_step: elem.data('scroll_step'),
+                range: elem.data('range'),
+                handle_diameter: elem.data('handle_diameter'),
+                thickness: elem.data('thickness'),
+                orientation: elem.data('orientation'),
+                height: elem.data('height')
+            }
             new SliderWidget(elem, options);
         });
     }
