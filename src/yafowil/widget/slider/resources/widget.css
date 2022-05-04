@@ -20,7 +20,7 @@ div.yafowil_slider > .slider .slider-bg {
 div.yafowil_slider > .slider .slider-value-track {
     position: absolute;
     border-radius: 15px;
-    background: var(--yafowil-accent-color, #428bca);
+    background: var(--yafowil-accent-color, #0d6efd);
 }
 
 div.yafowil_slider > .slider .slider-handle {
@@ -33,7 +33,7 @@ div.yafowil_slider > .slider .slider-handle {
 }
 
 div.yafowil_slider > .slider .slider-handle.active {
-    border: 1px solid var(--yafowil-accent-color, #428bca);
+    border: 1px solid var(--yafowil-accent-color, #0d6efd);
 }
 
 div.yafowil_slider > .slider.slider-vertical {
