@@ -15,6 +15,7 @@
 /dist/
 /downloads/
 /eggs/
+/include/
 /js/karma/
 /lib/
 /lib64
