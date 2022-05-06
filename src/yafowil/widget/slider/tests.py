@@ -24,7 +24,8 @@ class TestSliderWidget(YafowilTestCase):
             'slider',
             name='sliderfield')
         self.check_output("""
-        <div class="yafowil_slider">
+        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+             data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value=""/>
           <div class="slider"> </div>
@@ -56,7 +57,8 @@ class TestSliderWidget(YafowilTestCase):
             name='sliderfield',
             value=3)
         self.check_output("""
-        <div class="yafowil_slider">
+        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+             data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value="3"/>
           <div class="slider">
@@ -94,7 +96,8 @@ class TestSliderWidget(YafowilTestCase):
                 'unit': 'Unit'
             })
         self.check_output("""
-        <div class="yafowil_slider">
+        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+             data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value="20"/>
           <span class="unit">Unit: </span>
@@ -112,7 +115,8 @@ class TestSliderWidget(YafowilTestCase):
                 'range': True
             })
         self.check_output("""
-        <div class="yafowil_slider" data-range="true">
+        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+             data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
                  name="sliderfield.lower" style="display:none;"
                  type="text" value=""/>
@@ -161,7 +165,8 @@ class TestSliderWidget(YafowilTestCase):
                 'range': True
             })
         self.check_output("""
-        <div class="yafowil_slider" data-range="true">
+        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+             data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
                  name="sliderfield.lower" style="display:none;"
                  type="text" value="2"/>
@@ -222,13 +227,15 @@ class TestSliderWidget(YafowilTestCase):
         self.assertEqual(widget(), (
             '<div class="yafowil_slider" '
             'data-change=\'some_ns.some_callback\' '
+            'data-handle_diameter=\'20\' '
             'data-max=\'50\' '
             'data-min=\'1\' '
             'data-mydata=\'1\' '
             'data-orientation=\'vertical\' '
             'data-range=\'true\' '
             'data-slide=\'some_ns.some_callback\' '
-            'data-step=\'5\'><input '
+            'data-step=\'5\' '
+            'data-thickness=\'8\'><input '
             'class="lower_value" '
             'id="input-lower-sliderfield" '
             'name="sliderfield.lower" '
