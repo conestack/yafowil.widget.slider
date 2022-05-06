@@ -37,7 +37,18 @@ def slider_extractor(widget, data):
     return UNSET
 
 
-js_options = ['orientation', 'range', 'min', 'max', 'step', 'slide', 'change']
+js_options = [
+    'orientation',
+    'range',
+    'min',
+    'max',
+    'step',
+    'scroll_step',
+    'thickness',
+    'handle_diameter',
+    'slide',
+    'change'
+]
 
 
 @managedprops(*['show_value', 'unit', 'height', 'data'] + js_options)
@@ -143,24 +154,39 @@ factory.doc['props']['slider.height'] = """\
 Height of slider if orientation is ``vertical`` in pixel.
 """
 
+factory.defaults['slider.handle_diameter'] = 20
+factory.doc['props']['slider.handle_diameter'] = """\
+Diameter of slider handle in pixel.
+"""
+
+factory.defaults['slider.thickness'] = 8
+factory.doc['props']['slider.thickness'] = """\
+Thickness of slider track in pixel.
+"""
+
 factory.defaults['slider.range'] = None
 factory.doc['props']['slider.range'] = """\
 Slider Range. Either ``True``, ``'min'`` or ``'max'``.
 """
 
-factory.defaults['slider.min'] = None
+factory.defaults['slider.min'] = 0
 factory.doc['props']['slider.min'] = """\
 Minimum slider value. Defaults to 0.
 """
 
-factory.defaults['slider.max'] = None
+factory.defaults['slider.max'] = 100
 factory.doc['props']['slider.max'] = """\
 Maximum slider value value. Defaults to 100.
 """
 
-factory.defaults['slider.step'] = None
+factory.defaults['slider.step'] = 1
 factory.doc['props']['slider.step'] = """\
 Snap slider to increments.
+"""
+
+factory.defaults['slider.scroll_step'] = None
+factory.doc['props']['slider.scroll_step'] = """\
+Customize snapping on scroll.
 """
 
 factory.defaults['slider.slide'] = None
