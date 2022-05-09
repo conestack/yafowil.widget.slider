@@ -52,10 +52,12 @@ module.exports = function(config) {
             reporters: [
                 {
                     type: 'json-summary',
-                    dir: 'coverage/'
+                    dir: 'coverage/',
+                    subdir: '.'
                 }, {
                     type: 'html',
-                    dir: 'coverage/'
+                    dir: 'coverage/',
+                    subdir: 'chrome-headless'
                 }
             ]
         },
