@@ -29,7 +29,15 @@ jobs:
         run: |
           node_modules/karma/bin/karma start js/karma.conf.js
 
-      - name: Test Coverage Report
-        uses: tj-actions/coverage-badge-js@v1.3
-        with:
-          path: 'js/karma'
+      - name: Coverage check
+        - uses: devmasx/coverage-check-action@v1.2.0
+          with:
+            type: simplecov
+            result_path: karma/coverage/coverage-summary.json
+            min_coverage: 90
+            token: ${{ github.token }}
+
+      # - name: Test Coverage Report
+      #   uses: tj-actions/coverage-badge-js@v1.3
+      #   with:
+      #     path: 'js/karma'
