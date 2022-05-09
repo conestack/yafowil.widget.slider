@@ -30,6 +30,6 @@ jobs:
           node_modules/karma/bin/karma start js/karma.conf.js
 
       - name: Test Coverage Report
-          uses: tj-actions/coverage-badge-js@v1.3
-          with:
-            path: 'js/karma/coverage/**/*.json'
+        uses: tj-actions/coverage-badge-js@v1.3
+        with:
+          path: 'js/karma/coverage/**/*.json'
