@@ -29,16 +29,6 @@ jobs:
         run: |
           node_modules/karma/bin/karma start js/karma.conf.js
 
-      # - name: Run tests w/coverage (hacky)
-      #   run: |
-      #     node_modules/karma/bin/karma start js/karma.conf.js
-
-      # - name: Coverage check (action takes some time.)
-      #   uses: lenadax/karma-cov-action@main
-      #   with:
-      #     path: js/karma/coverage/coverage-summary.json
-
-      # WIP - npm script
       - name: Run coverage
-      run: |
-        npm run test:coverage
+        run: |
+          npm run test:coverage
