@@ -29,11 +29,12 @@ jobs:
         run: |
           node_modules/karma/bin/karma start js/karma.conf.js
 
+      # - name: Run testsw/coverage (useless hack)
+      #   run: |
+      #     node_modules/karma/bin/karma start js/karma.conf.js
+
       - name: Coverage check
-        uses: devmasx/coverage-check-action@v1.2.0
+        uses: lenadax/karma-cov-action@main
         with:
-          type: simplecov
-          result_path: js/karma/coverage/coverage-summary.json
-          min_coverage: 90
-          token: ${{ github.token }}
+          path: js/karma/coverage/coverage-summary.json
 
