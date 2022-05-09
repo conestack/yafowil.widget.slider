@@ -49,14 +49,14 @@ module.exports = function(config) {
             'coverage'
         ],
         coverageReporter: {
-            check: {
-                global: {
-                   statements: 50,
-                   lines: 50,
-                   functions: 50,
-                   branches: 50
-                }
-            },
+            // check: {
+            //     global: {
+            //        statements: 100,
+            //        lines: 100,
+            //        functions: 100,
+            //        branches: 100
+            //     }
+            // },
             reporters: [
                 {
                     type: 'json-summary',
