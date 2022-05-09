@@ -48,6 +48,17 @@ module.exports = function(config) {
             'progress',
             'coverage'
         ],
+        coverageReporter: {
+            reporters: [
+                {
+                    type: 'json-summary',
+                    dir: 'coverage/'
+                }, {
+                    type: 'html',
+                    dir: 'coverage/'
+                }
+            ]
+        },
         preprocessors: {
             '../src/*.js': [
                 'coverage',
