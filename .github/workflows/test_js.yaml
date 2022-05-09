@@ -32,4 +32,4 @@ jobs:
       - name: Test Coverage Report
         uses: tj-actions/coverage-badge-js@v1.3
         with:
-          path: 'js/karma'
+          path: 'js/karma/coverage/*/coverage-summary.json'
