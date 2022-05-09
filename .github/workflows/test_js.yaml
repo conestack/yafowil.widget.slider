@@ -37,4 +37,3 @@ jobs:
         uses: lenadax/karma-cov-action@main
         with:
           path: js/karma/coverage/coverage-summary.json
-
