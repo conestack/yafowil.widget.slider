@@ -2,8 +2,8 @@ name: JS Test slider
 
 on:
   push:
-    # paths:
-    # - '**.js'
+    paths:
+    - '**.js'
 
 jobs:
   test:
@@ -31,4 +31,4 @@ jobs:
 
       - name: Run coverage
         run: |
-          npm run test:coverage
+          npm run karma-test:coverage
