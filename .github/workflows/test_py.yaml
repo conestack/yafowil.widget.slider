@@ -1,7 +1,9 @@
-name: Test slider
+name: PY Test slider
 
 on:
   push:
+    paths:
+    - '**.py'
 
 jobs:
   test:

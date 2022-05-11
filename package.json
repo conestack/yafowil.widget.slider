@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "karma-test": "node_modules/karma/bin/karma start js/karma.conf.js",
+    "karma-test:coverage": "node js/karma-coverage.js"
+  },
   "devDependencies": {
     "karma": "^6.3.19",
     "karma-chrome-launcher": "^3.1.1",

@@ -1,0 +1,34 @@
+name: JS Test slider
+
+on:
+  push:
+    paths:
+    - '**.js'
+
+jobs:
+  test:
+    name: TEST SLIDER
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install
+        run: |
+          npm --save-dev install \
+            qunit \
+            karma \
+            karma-qunit \
+            karma-coverage \
+            karma-chrome-launcher \
+            karma-module-resolver-preprocessor
+          npm --no-save install https://github.com/jquery/jquery#main
+
+      - name: Run tests
+        run: |
+          node_modules/karma/bin/karma start js/karma.conf.js
+
+      - name: Run coverage
+        run: |
+          npm run karma-test:coverage
