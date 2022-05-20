@@ -56,7 +56,7 @@ QUnit.module('slider_widget', hooks => {
         elem.css("width", `${dim}px`).data(options);
 
         SliderWidget.initialize();
-        let slider = elem.data('slider_widget');
+        let slider = elem.data('yafowil-slider');
         // create object to compare given options
         let slider_options = {
             handle_diameter: slider.handle_diameter,

@@ -308,7 +308,7 @@ export class SliderWidget {
     }
 
     constructor(elem, options) {
-        elem.data('slider_widget', this);
+        elem.data('yafowil-slider', this);
         this.elem = elem;
         this.range = options.range ? options.range : false;
         this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
