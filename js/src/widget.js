@@ -60,7 +60,7 @@ class SliderHandle {
     set selected(selected) {
         if (selected) {
             $('.yafowil_slider').each(function() {
-                for (let handle of $(this).data('slider_widget').handles) {
+                for (let handle of $(this).data('yafowil-slider').handles) {
                     handle.selected = false;
                 }
             });

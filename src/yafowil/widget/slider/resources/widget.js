@@ -51,7 +51,7 @@ var yafowil_slider = (function (exports, $) {
         set selected(selected) {
             if (selected) {
                 $('.yafowil_slider').each(function() {
-                    for (let handle of $(this).data('slider_widget').handles) {
+                    for (let handle of $(this).data('yafowil-slider').handles) {
                         handle.selected = false;
                     }
                 });
@@ -270,7 +270,7 @@ var yafowil_slider = (function (exports, $) {
             });
         }
         constructor(elem, options) {
-            elem.data('slider_widget', this);
+            elem.data('yafowil-slider', this);
             this.elem = elem;
             this.range = options.range ? options.range : false;
             this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
@@ -383,6 +383,8 @@ var yafowil_slider = (function (exports, $) {
     $(function() {
         if (window.ts !== undefined) {
             ts.ajax.register(SliderWidget.initialize, true);
+        } else if (window.bdajax !== undefined) {
+            bdajax.register(SliderWidget.initialize, true);
         } else {
             SliderWidget.initialize();
         }
@@ -394,10 +396,7 @@ var yafowil_slider = (function (exports, $) {
     Object.defineProperty(exports, '__esModule', { value: true });
 
 
-    if (window.yafowil === undefined) {
-        window.yafowil = {};
-    }
-
+    window.yafowil = window.yafowil || {};
     window.yafowil.slider = exports;
 
 
