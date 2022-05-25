@@ -13,7 +13,10 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 # webresource ################################################################
 
-scripts = wr.ResourceGroup(name='yafowil-slider-scripts')
+scripts = wr.ResourceGroup(
+    name='yafowil-slider-scripts',
+    path='yafowil.widget.slider'
+)
 scripts.add(wr.ScriptResource(
     name='yafowil-slider-js',
     depends='jquery-js',
@@ -22,7 +25,10 @@ scripts.add(wr.ScriptResource(
     compressed='widget.min.js'
 ))
 
-styles = wr.ResourceGroup(name='yafowil-slider-styles')
+styles = wr.ResourceGroup(
+    name='yafowil-slider-styles',
+    path='yafowil.widget.slider'
+)
 styles.add(wr.StyleResource(
     name='yafowil-slider-css',
     directory=resources_dir,
