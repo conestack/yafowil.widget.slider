@@ -13,25 +13,19 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 # webresource ################################################################
 
-scripts = wr.ResourceGroup(
-    name='yafowil-slider-scripts',
-    path='yafowil.widget.slider'
+resources = wr.ResourceGroup(
+    name='yafowil-slider-resources',
+    directory=resources_dir,
+    path='yafowil-slider'
 )
-scripts.add(wr.ScriptResource(
+resources.add(wr.ScriptResource(
     name='yafowil-slider-js',
     depends='jquery-js',
-    directory=resources_dir,
     resource='widget.js',
     compressed='widget.min.js'
 ))
-
-styles = wr.ResourceGroup(
-    name='yafowil-slider-styles',
-    path='yafowil.widget.slider'
-)
-styles.add(wr.StyleResource(
+resources.add(wr.StyleResource(
     name='yafowil-slider-css',
-    directory=resources_dir,
     resource='widget.css'
 ))
 
@@ -57,10 +51,11 @@ css = [{
 def register():
     from yafowil.widget.slider import widget  # noqa
 
+    widget_name = 'yafowil.widget.slider'
+
     # Default
     factory.register_theme(
-        'default', 'yafowil.widget.slider', resources_dir,
+        'default', widget_name, resources_dir,
         js=js, css=css
     )
-    factory.register_scripts('default', 'yafowil.widget.slider', scripts)
-    factory.register_styles('default', 'yafowil.widget.slider', styles)
+    factory.register_resources('default', widget_name, resources)
