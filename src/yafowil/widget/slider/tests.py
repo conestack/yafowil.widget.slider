@@ -23,7 +23,7 @@ class TestSliderWidget(YafowilTestCase):
         widget = factory(
             'slider',
             name='sliderfield')
-        self.check_output("""
+        self.checkOutput("""
         <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
@@ -56,7 +56,7 @@ class TestSliderWidget(YafowilTestCase):
             'slider',
             name='sliderfield',
             value=3)
-        self.check_output("""
+        self.checkOutput("""
         <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
@@ -95,7 +95,7 @@ class TestSliderWidget(YafowilTestCase):
                 'show_value': True,
                 'unit': 'Unit'
             })
-        self.check_output("""
+        self.checkOutput("""
         <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
@@ -114,7 +114,7 @@ class TestSliderWidget(YafowilTestCase):
             props={
                 'range': True
             })
-        self.check_output("""
+        self.checkOutput("""
         <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
@@ -164,7 +164,7 @@ class TestSliderWidget(YafowilTestCase):
             props={
                 'range': True
             })
-        self.check_output("""
+        self.checkOutput("""
         <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
@@ -261,12 +261,10 @@ class TestSliderWidget(YafowilTestCase):
             'slider',
             name='sliderfield',
             mode='display')
-        err = self.expect_error(
-            NotImplementedError,
-            widget
-        )
+        with self.assertRaises(NotImplementedError) as arc:
+            widget()
         msg = '``yafowil.widget.slider`` does not support display mode yet'
-        self.assertEqual(str(err), msg)
+        self.assertEqual(str(arc.exception), msg)
 
     def test_reserved_data_attribute(self):
         # Render reserved data attribute, fails
@@ -276,12 +274,10 @@ class TestSliderWidget(YafowilTestCase):
             props={
                 'data': {'min': 1}
             })
-        err = self.expect_error(
-            ValueError,
-            widget
-        )
+        with self.assertRaises(ValueError) as arc:
+            widget()
         msg = "Additional data dict contains reserved attribute name 'min'"
-        self.assertEqual(str(err), msg)
+        self.assertEqual(str(arc.exception), msg)
 
 
 if __name__ == '__main__':
