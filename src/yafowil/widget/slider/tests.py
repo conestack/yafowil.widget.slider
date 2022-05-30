@@ -3,20 +3,25 @@ from yafowil.base import factory
 from yafowil.compat import IS_PY2
 from yafowil.tests import fxml
 from yafowil.tests import YafowilTestCase
+import os
 import unittest
-import yafowil.loader  # noqa
 
 
 if not IS_PY2:
     from importlib import reload
 
 
+def np(path):
+    return path.replace('/', os.path.sep)
+
+
 class TestSliderWidget(YafowilTestCase):
 
     def setUp(self):
         super(TestSliderWidget, self).setUp()
-        from yafowil.widget.slider import widget
-        reload(widget)
+        from yafowil.widget import slider
+        reload(slider.widget)
+        slider.register()
 
     def test_render_no_range(self):
         # Render no range
@@ -278,6 +283,28 @@ class TestSliderWidget(YafowilTestCase):
             widget()
         msg = "Additional data dict contains reserved attribute name 'min'"
         self.assertEqual(str(arc.exception), msg)
+
+    def test_resources(self):
+        factory.theme = 'default'
+        resources = factory.get_resources('yafowil.widget.slider')
+        self.assertTrue(resources.directory.endswith(np('/slider/resources')))
+        self.assertEqual(resources.path, 'yafowil-slider')
+
+        scripts = resources.scripts
+        self.assertEqual(len(scripts), 1)
+
+        self.assertTrue(scripts[0].directory.endswith(np('/slider/resources')))
+        self.assertEqual(scripts[0].path, 'yafowil-slider')
+        self.assertEqual(scripts[0].file_name, 'widget.min.js')
+        self.assertTrue(os.path.exists(scripts[0].file_path))
+
+        styles = resources.styles
+        self.assertEqual(len(styles), 1)
+
+        self.assertTrue(styles[0].directory.endswith(np('/slider/resources')))
+        self.assertEqual(styles[0].path, 'yafowil-slider')
+        self.assertEqual(styles[0].file_name, 'widget.css')
+        self.assertTrue(os.path.exists(styles[0].file_path))
 
 
 if __name__ == '__main__':
