@@ -20,7 +20,8 @@ class TestSliderWidget(YafowilTestCase):
     def setUp(self):
         super(TestSliderWidget, self).setUp()
         from yafowil.widget import slider
-        reload(slider.widget)
+        from yafowil.widget.slider import widget
+        reload(widget)
         slider.register()
 
     def test_render_no_range(self):
