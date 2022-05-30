@@ -289,6 +289,7 @@ class TestSliderWidget(YafowilTestCase):
         factory.theme = 'default'
         resources = factory.get_resources('yafowil.widget.slider')
         self.assertTrue(resources.directory.endswith(np('/slider/resources')))
+        self.assertEqual(resources.name, 'yafowil.widget.slider')
         self.assertEqual(resources.path, 'yafowil-slider')
 
         scripts = resources.scripts
