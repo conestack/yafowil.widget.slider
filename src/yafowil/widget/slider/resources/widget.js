@@ -18,19 +18,19 @@ var yafowil_slider = (function (exports, $) {
             this.slider = slider;
             this.elem = $('<div />')
                 .addClass('slider-handle')
-                .width(this.slider.handle_diameter)
-                .height(this.slider.handle_diameter)
-                .appendTo(this.slider.slider_elem);
+                .width(slider.handle_diameter)
+                .height(slider.handle_diameter)
+                .appendTo(slider.slider_elem);
             this.input_elem = input;
             this.span_elem = span;
             this.value = (this.input_elem.val() !== undefined) ?
                          parseInt(this.input_elem.val()) : 0;
             this.pos = this.transform(this.value, 'screen');
-            this.vertical = this.slider.vertical;
-            this.step = this.slider.step;
-            this.scroll_step = this.slider.scroll_step;
+            this.vertical = slider.vertical;
+            this.step = slider.step;
+            this.scroll_step = slider.scroll_step;
             this.selected = false;
-            this.elem.css(`${this.slider.dir_attr}`, this.pos);
+            this.elem.css(`${slider.dir_attr}`, this.pos);
             this.on_slide_start = this.on_slide_start.bind(this);
             this.on_move = this.on_move.bind(this);
             this.on_resize = this.on_resize.bind(this);
@@ -49,42 +49,49 @@ var yafowil_slider = (function (exports, $) {
             return this._selected;
         }
         set selected(selected) {
+            let elem = this.elem,
+                slider = this.slider;
             if (selected) {
                 $('.yafowil_slider').each(function() {
                     for (let handle of $(this).data('yafowil-slider').handles) {
                         handle.selected = false;
                     }
                 });
-                this.elem.addClass('active');
-                this.slider.elem.on('mousewheel wheel', this.on_scroll);
+                elem.addClass('active');
+                slider.elem.on('mousewheel wheel', this.on_scroll);
                 $(document).off('keydown', this.on_key).on('keydown', this.on_key);
             } else {
-                this.elem.removeClass('active');
-                this.slider.elem.off('mousewheel wheel', this.on_scroll);
+                elem.removeClass('active');
+                slider.elem.off('mousewheel wheel', this.on_scroll);
                 $(document).off('keydown', this.on_key);
             }
             this._selected = selected;
         }
         set value(value) {
-            if (value < this.slider.min || value > this.slider.max) return;
-            let index = this.slider.handles.indexOf(this);
-            if (this.slider.range_true && index >= 0) {
-                for (let i in this.slider.handles) {
-                    let handle = this.slider.handles[i];
+            let slider = this.slider;
+            if (value < slider.min || value > slider.max) {
+                return;
+            }
+            let handles = slider.handles,
+                index = handles.indexOf(this);
+            if (slider.range_true && index >= 0) {
+                for (let i in handles) {
+                    let handle = handles[i];
                     if (value >= handle.value && i > index ||
-                        value <= handle.value && i < index) {
-                            value = handle.value;
+                        value <= handle.value && i < index
+                    ) {
+                        value = handle.value;
                     }
                 }
             }
             this.input_elem.attr('value', value);
             this.span_elem.text(value);
             if (value !== this.value) {
-                this.slider.elem.trigger(new $.Event('slidechange', {
+                this.trigger('slidechange', {
                     handle: this.elem,
                     handleIndex: index,
                     value: value
-                }));
+                });
             }
             this._value = value;
         }
@@ -92,22 +99,25 @@ var yafowil_slider = (function (exports, $) {
             return this._pos;
         }
         set pos(pos) {
-            let index = this.slider.handles.indexOf(this);
-            if (this.slider.range_true && index >= 0) {
-                for (let i in this.slider.handles) {
-                    let handle = this.slider.handles[i];
+            let slider = this.slider,
+                handles = slider.handles,
+                index = handles.indexOf(this);
+            if (slider.range_true && index >= 0) {
+                for (let i in handles) {
+                    let handle = handles[i];
                     if (pos >= handle.pos && i > index ||
-                        pos <= handle.pos && i < index) {
-                            pos = handle.pos;
+                        pos <= handle.pos && i < index
+                    ) {
+                        pos = handle.pos;
                     }
                 }
             }
-            if (pos >= this.slider.slider_dim) {
-                pos = this.slider.slider_dim;
+            if (pos >= slider.slider_dim) {
+                pos = slider.slider_dim;
             } else if (pos <= 0) {
                 pos = 0;
             }
-            this.elem.css(`${this.slider.dir_attr}`, `${pos}px`);
+            this.elem.css(`${slider.dir_attr}`, `${pos}px`);
             this._pos = pos;
         }
         unload() {
@@ -123,32 +133,30 @@ var yafowil_slider = (function (exports, $) {
             event.stopPropagation();
             $('.slider-handle').css('z-index', 1);
             this.elem.css('z-index', 10);
-            this.slider.elem.trigger(new $.Event('slidestart', {
+            this.trigger('slidestart', {
                 handle: this.elem,
                 handleIndex: this.slider.handles.indexOf(this),
                 value: this.value
-            }));
-            ['mousemove', 'touchmove'].forEach( evt =>
-                document.addEventListener(evt, this.on_move, {passive:false})
-            );
-            ['mouseup', 'touchend'].forEach( evt =>
-                document.addEventListener(evt, () => {
-                    document.removeEventListener('touchmove', this.on_move);
-                    document.removeEventListener('mousemove', this.on_move);
-                    this.slider.elem.trigger(new $.Event('slidestop', {
-                        handle: this.elem,
-                        handleIndex: this.slider.handles.indexOf(this),
-                        value: this.value
-                    }));
-                }, { passive:false, once:true })
-            );
+            });
+            $(document).on('mousemove touchmove', this.on_move);
+            $(document).one('mouseup touchend', function(e) {
+                $(document).off('mousemove touchmove', this.on_move);
+                this.trigger('slidestop', {
+                    handle: this.elem,
+                    handleIndex: this.slider.handles.indexOf(this),
+                    value: this.value
+                });
+            }.bind(this));
         }
         on_scroll(e) {
             e.preventDefault();
             let evt = e.originalEvent,
                 value = this.value;
-            if (evt.deltaY > 0) value = parseInt(this.value) + this.scroll_step;
-            else if (evt.deltaY < 0) value = parseInt(this.value) - this.scroll_step;
+            if (evt.deltaY > 0) {
+                value = parseInt(this.value) + this.scroll_step;
+            } else if (evt.deltaY < 0) {
+                value = parseInt(this.value) - this.scroll_step;
+            }
             this.pos = this.transform(value, 'screen');
             this.value = value;
             this.slider.slider_track.set_value(e);
@@ -185,7 +193,7 @@ var yafowil_slider = (function (exports, $) {
             } else {
                 this.value = this.transform(this.pos, 'range');
             }
-            this.slider.elem.trigger(new $.Event('slide', {
+            this.trigger('slide', {
                 handle: this.elem,
                 handleIndex: this.slider.handles.indexOf(this),
                 value: this.value,
@@ -193,7 +201,7 @@ var yafowil_slider = (function (exports, $) {
                     this.slider.handles[0].value,
                     this.slider.handles[1] ? this.slider.handles[1].value : null
                 ]
-            }));
+            });
         }
         transform(val, type) {
             let min = this.slider.min,
@@ -202,6 +210,9 @@ var yafowil_slider = (function (exports, $) {
                 dim = this.slider.slider_dim;
             let value = transform(val, type, dim, min, max, step);
             return value;
+        }
+        trigger(name, data) {
+            this.slider.elem.trigger(new $.Event(name, data));
         }
     }
     class SliderTrack {
