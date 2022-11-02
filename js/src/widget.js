@@ -1,5 +1,21 @@
 import $ from 'jquery';
 
+export function lookup_callback(path) {
+    if (!path) {
+        return null;
+    }
+    source = path.split('.');
+    let cb = window, name;
+    for (let idx in source) {
+        name = source[idx];
+        if (cb[name] === undefined) {
+            throw "'" + name + "' not found.";
+        }
+        cb = cb[name];
+    }
+    return cb;
+}
+
 export function transform(val, type, dim, min, max, step) {
     if (type === 'step') {
         let condition = min === 0 ? max - step / 2 : max - min / 2;
@@ -15,42 +31,54 @@ export function transform(val, type, dim, min, max, step) {
 
 class SliderHandle {
 
-    constructor(slider, input, span) {
+    constructor(slider, index, value) {
         this.slider = slider;
+        let h_diam = slider.handle_diameter;
         this.elem = $('<div />')
             .addClass('slider-handle')
-            .width(slider.handle_diameter)
-            .height(slider.handle_diameter)
-            .appendTo(slider.slider_elem);
-
-        this.input_elem = input;
-        this.span_elem = span;
-
-        this.value = (this.input_elem.val() !== undefined) ?
-                     parseInt(this.input_elem.val()) : 0;
+            .width(h_diam)
+            .height(h_diam)
+            .appendTo(slider.elem);
+        this.elem.data('slider-handle', this);
+        this.index = index;
+        this._value = value;
         this.pos = this.transform(this.value, 'screen');
-        this.vertical = slider.vertical;
-        this.step = slider.step;
-        this.scroll_step = slider.scroll_step;
         this.selected = false;
         this.elem.css(`${slider.dir_attr}`, this.pos);
 
-        this.on_slide_start = this.on_slide_start.bind(this);
-        this.on_move = this.on_move.bind(this);
-        this.on_resize = this.on_resize.bind(this);
-        this.on_scroll = this.on_scroll.bind(this);
-        this.on_key = this.on_key.bind(this);
+        this._on_start = this._on_start.bind(this);
+        this._on_move = this._on_move.bind(this);
+        this._on_end = this._on_end.bind(this);
+        this._on_scroll = this._on_scroll.bind(this);
+        this._on_key = this._on_key.bind(this);
+        this._on_resize = this._on_resize.bind(this);
 
-        this.elem.on('mousedown touchstart', this.on_slide_start);
-        $(window).on('resize', this.on_resize);
-    }
-
-    get offset() {
-        return this.slider.offset;
+        this.elem.on('mousedown touchstart', this._on_start);
+        $(window).on('resize', this._on_resize);
     }
 
     get value() {
         return this._value;
+    }
+
+    set value(val) {
+        let slider = this.slider;
+        if (val < slider.min) {
+            val = slider.min;
+        } else if (val > slider.max) {
+            val = slider.max;
+        }
+        if (slider.range_true) {
+            let handles = slider.handles,
+                index = this.index;
+            for (let i in handles) {
+                let h = handles[i];
+                if (val >= h.value && i > index || val <= h.value && i < index) {
+                    val = h.value;
+                }
+            }
+        }
+        this._value = val;
     }
 
     get selected() {
@@ -61,49 +89,18 @@ class SliderHandle {
         let elem = this.elem,
             slider = this.slider;
         if (selected) {
-            $('.yafowil_slider').each(function() {
-                for (let handle of $(this).data('yafowil-slider').handles) {
-                    handle.selected = false;
-                }
+            $('div.slider-handle').each(function() {
+                $(this).data('slider-handle').selected = false;
             });
-            elem.addClass('active');
-            slider.elem.on('mousewheel wheel', this.on_scroll);
-            $(document).off('keydown', this.on_key).on('keydown', this.on_key);
+            elem.addClass('active').css('z-index', 10)
+            slider.elem.on('mousewheel wheel', this._on_scroll);
+            $(document).off('keydown', this._on_key).on('keydown', this._on_key);
         } else {
-            elem.removeClass('active');
-            slider.elem.off('mousewheel wheel', this.on_scroll);
-            $(document).off('keydown', this.on_key);
+            elem.removeClass('active').css('z-index', 1);
+            slider.elem.off('mousewheel wheel', this._on_scroll);
+            $(document).off('keydown', this._on_key);
         }
         this._selected = selected;
-    }
-
-    set value(value) {
-        let slider = this.slider;
-        if (value < slider.min || value > slider.max) {
-            return;
-        }
-        let handles = slider.handles,
-            index = handles.indexOf(this);
-        if (slider.range_true && index >= 0) { // index on init is -1
-            for (let i in handles) {
-                let handle = handles[i];
-                if (value >= handle.value && i > index ||
-                    value <= handle.value && i < index
-                ) {
-                    value = handle.value;
-                }
-            }
-        }
-        this.input_elem.attr('value', value);
-        this.span_elem.text(value);
-        if (value !== this.value) {
-            this.trigger('slidechange', {
-                handle: this.elem,
-                handleIndex: index,
-                value: value
-            });
-        }
-        this._value = value;
     }
 
     get pos() {
@@ -111,16 +108,14 @@ class SliderHandle {
     }
 
     set pos(pos) {
-        let slider = this.slider,
-            handles = slider.handles,
-            index = handles.indexOf(this);
-        if (slider.range_true && index >= 0) {
+        let slider = this.slider;
+        if (slider.range_true) {
+            let handles = slider.handles,
+                index = this.index;
             for (let i in handles) {
-                let handle = handles[i];
-                if (pos >= handle.pos && i > index ||
-                    pos <= handle.pos && i < index
-                ) {
-                    pos = handle.pos;
+                let h = handles[i];
+                if (pos >= h.pos && i > index || pos <= h.pos && i < index) {
+                    pos = h.pos;
                 }
             }
         }
@@ -134,105 +129,94 @@ class SliderHandle {
     }
 
     unload() {
-        $(window).off('resize', this.on_resize);
+        $(window).off('resize', this._on_resize);
         this.selected = false;
     }
 
-    on_resize() {
+    _on_resize() {
         this.pos = this.transform(this.value, 'screen');
     }
 
-    on_slide_start(event) {
-        this.selected = true;
+    _on_start(event) {
         event.preventDefault();
         event.stopPropagation();
-        $('.slider-handle').css('z-index', 1);
-        this.elem.css('z-index', 10);
-        this.trigger('slidestart', {
-            handle: this.elem,
-            handleIndex: this.slider.handles.indexOf(this),
-            value: this.value
-        });
-        $(document).on('mousemove touchmove', this.on_move);
-        $(document).one('mouseup touchend', function(e) {
-            $(document).off('mousemove touchmove', this.on_move);
-            this.trigger('slidestop', {
-                handle: this.elem,
-                handleIndex: this.slider.handles.indexOf(this),
-                value: this.value
-            });
-        }.bind(this));
+        this.selected = true;
+        this.slider.trigger('start', this);
+        $(document).on('mousemove touchmove', this._on_move);
+        $(document).one('mouseup touchend', this._on_end);
     }
 
-    on_scroll(e) {
-        e.preventDefault();
-        let evt = e.originalEvent,
-            value = this.value;
-        if (evt.deltaY > 0) {
-            value = parseInt(this.value) + this.scroll_step;
-        } else if (evt.deltaY < 0) {
-            value = parseInt(this.value) - this.scroll_step;
-        }
-        this.pos = this.transform(value, 'screen');
-        this.value = value;
-        this.slider.slider_track.set_value(e);
-    }
-
-    on_key(e) {
-        let value = this.value,
-            increase = this.vertical ? e.key === 'ArrowDown' : e.key === 'ArrowRight',
-            decrease = this.vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
-        if (increase) {
-            e.preventDefault();
-            value = parseInt(this.value) + this.scroll_step;
-        } else if (decrease) {
-            e.preventDefault();
-            value = parseInt(this.value) - this.scroll_step;
-        }
-        this.pos = this.transform(value, 'screen');
-        this.value = value;
-        this.slider.slider_track.set_value(e);
-    }
-
-    on_move(e) {
+    _on_move(e) {
         e.preventDefault();
         e.stopPropagation();
+        let slider = this.slider,
+            vertical = slider.vertical,
+            offset = slider.offset;
         if (e.type === 'mousemove') {
-            this.pos = (this.vertical ? e.pageY : e.pageX) - this.offset;
+            this.pos = (vertical ? e.pageY : e.pageX) - offset;
         } else {
-            this.pos =
-                (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
-                - this.offset;
+            this.pos = (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
         }
-        if (this.slider.step) {
+        if (slider.step) {
             let val = this.transform(this.pos, 'range');
             this.value = this.transform(val, 'step');
             this.pos = this.transform(this.value, 'screen');
         } else {
             this.value = this.transform(this.pos, 'range');
         }
-        this.trigger('slide', {
-            handle: this.elem,
-            handleIndex: this.slider.handles.indexOf(this),
-            value: this.value,
-            values: [
-                this.slider.handles[0].value,
-                this.slider.handles[1] ? this.slider.handles[1].value : null
-            ]
-        });
+        slider.trigger('slide', this);
+    }
+
+    _on_end(e) {
+        e.preventDefault();
+        $(document).off('mousemove touchmove', this._on_move);
+        this.slider.trigger('stop', this);
+    }
+
+    _on_scroll(e) {
+        e.preventDefault();
+        let evt = e.originalEvent,
+            step = this.slider.scroll_step,
+            value = this.value;
+        if (evt.deltaY > 0) {
+            value = parseInt(this.value) + step;
+        } else if (evt.deltaY < 0) {
+            value = parseInt(this.value) - step;
+        }
+        this.pos = this.transform(value, 'screen');
+        this.value = value;
+        this.slider.track.update();
+    }
+
+    _on_key(e) {
+        let value = this.value,
+            slider = this.slider,
+            step = slider.scroll_step,
+            vertical = slider.vertical,
+            increase = vertical ? e.key === 'ArrowDown' : e.key === 'ArrowRight',
+            decrease = vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
+        if (increase) {
+            e.preventDefault();
+            value = parseInt(this.value) + step;
+        } else if (decrease) {
+            e.preventDefault();
+            value = parseInt(this.value) - step;
+        } else {
+            return;
+        }
+        this.pos = this.transform(value, 'screen');
+        this.value = value;
+        this.slider.track.update();
     }
 
     transform(val, type) {
-        let min = this.slider.min,
-            max = this.slider.max,
-            step = this.slider.step,
-            dim = this.slider.slider_dim;
+        let slider = this.slider,
+            min = slider.min,
+            max = slider.max,
+            step = slider.step,
+            dim = slider.slider_dim;
         let value = transform(val, type, dim, min, max, step);
         return value;
-    }
-
-    trigger(name, data) {
-        this.slider.elem.trigger(new $.Event(name, data));
     }
 }
 
@@ -240,130 +224,90 @@ class SliderTrack {
 
     constructor(slider) {
         this.slider = slider;
+        this.dim_attr = slider.vertical ? 'height' : 'width';
+        let thickness_attr = slider.vertical ? 'width' : 'height';
         this.bg_elem = $('<div />')
             .addClass('slider-bg')
-            .appendTo(this.slider.slider_elem);
+            .css(thickness_attr, slider.thickness)
+            .appendTo(slider.elem);
         this.track_elem = $('<div />')
             .addClass('slider-value-track')
-            .appendTo(this.slider.slider_elem);
-
-        if (this.slider.vertical) {
-            this.track_elem.css('width', this.slider.thickness);
-            this.bg_elem.css('width', this.slider.thickness);
-        } else {
-            this.track_elem.css('height', this.slider.thickness);
-            this.bg_elem.css('height', this.slider.thickness);
-        }
-        if (this.slider.range_max) {
-            if (this.slider.vertical) {
-                this.track_elem
-                    .css('bottom', 0)
-                    .css('top', 'unset');
+            .css(thickness_attr, slider.thickness)
+            .appendTo(slider.elem);
+        if (slider.range_max) {
+            if (slider.vertical) {
+                this.track_elem.css('bottom', 0).css('top', 'unset');
             } else {
                 this.track_elem.css('right', 0);
             }
         }
-
-        this.set_value();
-        this.set_value = this.set_value.bind(this);
-        this.slider.elem.on('slide', this.set_value);
-        $(window).on('resize', this.set_value);
+        this.update = this.update.bind(this);
+        slider.elem.on('slide', this.update);
+        $(window).on('resize', this.update);
+        this.update();
     }
 
     unload() {
-        $(window).off('resize', this.set_value);
+        $(window).off('resize', this.update);
     }
 
-    set_value(e) {
-        let value = this.slider.handles[0].pos;
-        if (this.slider.range_true) {
-            let dimension = this.slider.handles[1].pos - this.slider.handles[0].pos;
+    update() {
+        let slider = this.slider,
+            handles = slider.handles,
+            value = handles[0].pos;
+        if (slider.range_true) {
+            let dimension = handles[1].pos - handles[0].pos;
             this.track_elem
-                .css(`${this.slider.dim_attr}`, dimension)
-                .css(`${this.slider.dir_attr}`, `${value}px`);
-        } else if (this.slider.range_max) {
-            this.track_elem.css(`${this.slider.dim_attr}`, this.slider.slider_dim - value);
+                .css(`${this.dim_attr}`, dimension)
+                .css(`${slider.dir_attr}`, `${value}px`);
+        } else if (slider.range_max) {
+            this.track_elem.css(`${this.dim_attr}`, slider.slider_dim - value);
         } else {
-            this.track_elem.css(`${this.slider.dim_attr}`, value);
+            this.track_elem.css(`${this.dim_attr}`, value);
         }
     }
 }
 
-export class SliderWidget {
+export class Slider {
 
-    static initialize(context) {
-        $('.yafowil_slider', context).each(function() {
-            let elem = $(this);
-            let options = {
-                min: elem.data('min'),
-                max: elem.data('max'),
-                step: elem.data('step'),
-                scroll_step: elem.data('scroll_step'),
-                range: elem.data('range'),
-                handle_diameter: elem.data('handle_diameter'),
-                thickness: elem.data('thickness'),
-                orientation: elem.data('orientation'),
-                height: elem.data('height')
-            }
-            new SliderWidget(elem, options);
-        });
-    }
-
-    constructor(elem, options) {
-        elem.data('yafowil-slider', this);
+    constructor(elem, opts) {
         this.elem = elem;
-        this.range = options.range ? options.range : false;
-        this.handle_diameter = options.handle_diameter ? options.handle_diameter : 20;
-        this.thickness = options.thickness ? options.thickness : 8;
-        this.min = options.min ? options.min : 0;
-        this.max = options.max ? options.max : 100;
-        this.step = options.step ? options.step : false;
-        let scroll_step = options.scroll_step ? options.scroll_step : 1;
-        this.scroll_step = options.step ? options.step : scroll_step;
-        this.slider_elem = $('div.slider', this.elem);
-        this.vertical = options.orientation === 'vertical';
-        this.dim_attr = this.vertical ? 'height' : 'width';
+        this.range = opts.range || false;
+        this.handle_diameter = opts.handle_diameter || 20;
+        this.thickness = opts.thickness || 8;
+        this.min = opts.min || 0;
+        this.max = opts.max || 100;
+        this.step = opts.step || false;
+        let scroll_step = opts.scroll_step || 1;
+        this.scroll_step = opts.step || scroll_step;
+        this.vertical = opts.orientation === 'vertical';
         this.dir_attr = this.vertical ? 'top' : 'left';
         if (this.vertical) {
-            this.slider_elem.addClass('slider-vertical');
-            this.slider_elem.css('width', this.handle_diameter);
-            this.slider_elem.css('height', options.height);
+            elem.addClass('slider-vertical')
+                .css('width', this.handle_diameter)
+                .css('height', opts.height);
         } else {
-            this.slider_elem.css('height', this.handle_diameter);
+            elem.css('height', this.handle_diameter);
         }
-
-        this.handles = [];
         if (this.range_true) {
-            this.handles.push(
-                new SliderHandle(
-                    this,
-                    $('input.lower_value', this.elem),
-                    $('span.lower_value', this.elem)
-                )
-            );
-            this.handles.push(
-                new SliderHandle(
-                    this,
-                    $('input.upper_value', this.elem),
-                    $('span.upper_value', this.elem)
-                )
-            );
+            this.value = opts.value || [0, 0];
+            this.handles = [
+                new SliderHandle(this, 0, this.value[0]),
+                new SliderHandle(this, 1, this.value[1])
+            ];
         } else {
-            this.handles.push(
-                new SliderHandle(
-                    this,
-                    $('input.slider_value', this.elem),
-                    $('span.slider_value', this.elem)
-                )
-            );
+            this.value = opts.value || 0;
+            this.handles = [new SliderHandle(this, 0, this.value)];
         }
-
-        this.slider_track = new SliderTrack(this);
-
-        this.on_singletouch = this.on_singletouch.bind(this);
-        this.slider_elem.on('mousedown touchstart', this.on_singletouch);
-
-        this.elem.trigger(new $.Event('slidecreate', {slider: this}));
+        this.track = new SliderTrack(this);
+        this._on_down = this._on_down.bind(this);
+        this.elem.on('mousedown touchstart', this._on_down);
+        for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
+            if (opts[evt]) {
+                this.elem.on(evt, opts[evt]);
+            }
+        }
+        this.trigger('create', this);
     }
 
     get range_max() {
@@ -375,35 +319,45 @@ export class SliderWidget {
     }
 
     get offset() {
-        let offset = this.vertical ? this.slider_elem.offset().top :
-                     this.elem.offset().left;
-        return offset;
+        let offset = this.elem.offset();
+        return this.vertical ? offset.top : offset.left;
     }
 
     get slider_dim() {
-        let dim = this.vertical ? this.slider_elem.height() : this.elem.width();
-        return dim;
+        let elem = this.elem;
+        return this.vertical ? elem.height() : elem.width();
+    }
+
+    on(names, handle) {
+        this.elem.on(names, handle);
+    }
+
+    off(names, handle) {
+        this.elem.off(names, handle);
+    }
+
+    trigger(name, widget) {
+        this.elem.trigger(new $.Event(name, {widget: widget}));
     }
 
     unload() {
-        this.slider_track.unload();
+        this.track.unload();
         for (let handle of this.handles) {
             handle.unload();
         }
     }
 
-    on_singletouch(e) {
+    _on_down(e) {
         let value, target;
-
-        // find target
         if (this.range_true) {
             let distances = [];
             for (let handle of this.handles) {
-                let evt_x = (e.type === 'mousedown') ? e.pageX : e.touches[0].pageX;
-                let evt_y = (e.type === 'mousedown') ? e.pageY : e.touches[0].pageY;
+                let evt_x = (e.type === 'mousedown') ? e.pageX : e.touches[0].pageX,
+                    evt_y = (e.type === 'mousedown') ? e.pageY : e.touches[0].pageY,
+                    offset = handle.elem.offset();
                 let distance = Math.hypot(
-                    handle.elem.offset().left - parseInt(evt_x),
-                    handle.elem.offset().top - parseInt(evt_y)
+                    offset.left - parseInt(evt_x),
+                    offset.top - parseInt(evt_y)
                 );
                 distances.push(parseInt(distance));
             }
@@ -413,14 +367,12 @@ export class SliderWidget {
             target = this.handles[0];
         }
         target.selected = true;
-
-        // mouse value
+        let offset = this.offset,
+            vertical = this.vertical;
         if (e.type === 'mousedown') {
-            value = (this.vertical ? e.pageY : e.pageX) - this.offset;
+            value = (vertical ? e.pageY : e.pageX) - offset;
         } else {
-            value =
-                (this.vertical ? e.touches[0].pageY : e.touches[0].pageX)
-                - this.offset;
+            value = (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
         }
         if (this.step) {
             value = target.transform(value, 'range');
@@ -430,6 +382,69 @@ export class SliderWidget {
             target.pos = value;
             target.value = target.transform(value, 'range');
         }
-        this.slider_track.set_value(e);
+        this.track.update();
+        this.trigger('change', target);
+    }
+}
+
+export class SliderWidget {
+
+    static initialize(context) {
+        $('.yafowil_slider', context).each(function() {
+            let elem = $(this);
+            let opts = {
+                min: elem.data('min'),
+                max: elem.data('max'),
+                step: elem.data('step'),
+                scroll_step: elem.data('scroll_step'),
+                range: elem.data('range'),
+                handle_diameter: elem.data('handle_diameter'),
+                thickness: elem.data('thickness'),
+                orientation: elem.data('orientation'),
+                height: elem.data('height'),
+                change: lookup_callback(elem.data('change')),
+                create: lookup_callback(elem.data('create')),
+                slide: lookup_callback(elem.data('slide')),
+                start: lookup_callback(elem.data('start')),
+                stop: lookup_callback(elem.data('stop'))
+            }
+            new SliderWidget(elem, opts);
+        });
+    }
+
+    constructor(elem, opts) {
+        elem.data('yafowil-slider', this);
+        this.range = opts.range;
+        if (this.range === true) {
+            this.elements = [{
+                input: $('input.lower_value', elem),
+                label: $('span.lower_value', elem)
+            },
+            {
+                input: $('input.upper_value', elem),
+                label: $('span.upper_value', elem)
+            }];
+            opts.value = [
+                parseInt(this.elements[0].input.val()),
+                parseInt(this.elements[1].input.val())
+            ]
+        } else {
+            this.elements = [{
+                input: $('input.slider_value', elem),
+                label: $('span.slider_value', elem)
+            }];
+            opts.value = parseInt(this.elements[0].input.val());
+        }
+        this.update_value = this.update_value.bind(this);
+        this.slider = new Slider($('div.slider', elem), opts);
+        this.slider.on('change slide stop', this.update_value);
+    }
+
+    update_value(e) {
+        let handle = e.widget,
+            index = handle.index,
+            element = this.elements[index];
+        element.input.val(handle.value);
+        element.label.html(handle.value);
     }
 }
