@@ -176,7 +176,8 @@ class SliderHandle {
     _on_scroll(e) {
         e.preventDefault();
         let evt = e.originalEvent,
-            step = this.slider.scroll_step,
+            slider = this.slider,
+            step = slider.scroll_step,
             value = this.value;
         if (evt.deltaY > 0) {
             value = parseInt(this.value) + step;
@@ -185,7 +186,8 @@ class SliderHandle {
         }
         this.pos = this.transform(value, 'screen');
         this.value = value;
-        this.slider.track.update();
+        slider.track.update();
+        slider.trigger('change', this);
     }
 
     _on_key(e) {
@@ -206,7 +208,8 @@ class SliderHandle {
         }
         this.pos = this.transform(value, 'screen');
         this.value = value;
-        this.slider.track.update();
+        slider.track.update();
+        slider.trigger('change', this);
     }
 
     transform(val, type) {
@@ -392,7 +395,7 @@ export class SliderWidget {
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
-            let opts = {
+            new SliderWidget(elem, {
                 min: elem.data('min'),
                 max: elem.data('max'),
                 step: elem.data('step'),
@@ -407,13 +410,13 @@ export class SliderWidget {
                 slide: lookup_callback(elem.data('slide')),
                 start: lookup_callback(elem.data('start')),
                 stop: lookup_callback(elem.data('stop'))
-            }
-            new SliderWidget(elem, opts);
+            });
         });
     }
 
     constructor(elem, opts) {
         elem.data('yafowil-slider', this);
+        this.elem = elem;
         this.range = opts.range;
         if (this.range === true) {
             this.elements = [{
