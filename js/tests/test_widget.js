@@ -354,7 +354,7 @@ QUnit.module('slider_widget', hooks => {
             QUnit.test('mousedown', assert => {
                 let handle = slider.handles[0];
                 let x = 100;
-                let evt = new $.Event('mousedown', {pageY: false, pageX: x});
+                let evt = new $.Event('mousedown', {pageY: 0, pageX: x});
                 slider.elem.trigger(evt);
 
                 let offset = slider.elem.offset().left;
@@ -573,10 +573,10 @@ QUnit.module('slider_widget', hooks => {
                 slider = widget.slider;
             });
 
-            QUnit.test('mousedown', assert => {
+            QUnit.only('mousedown', assert => {
                 let handle = slider.handles[0];
                 let x = 100;
-                let evt = new $.Event('mousedown', {pageY: false, pageX: x});
+                let evt = new $.Event('mousedown', {pageY: 0, pageX: x});
                 slider.elem.trigger(evt);
 
                 let offset = slider.elem.offset().left;

@@ -39,10 +39,8 @@ var yafowil_slider = (function (exports, $) {
                 .appendTo(slider.elem);
             this.elem.data('slider-handle', this);
             this.index = index;
-            this._value = value;
-            this.pos = this.transform(this.value, 'screen');
+            this.value = value;
             this.selected = false;
-            this.elem.css(`${slider.dir_attr}`, this.pos);
             this._on_start = this._on_start.bind(this);
             this._on_move = this._on_move.bind(this);
             this._on_end = this._on_end.bind(this);
@@ -62,16 +60,31 @@ var yafowil_slider = (function (exports, $) {
             } else if (val > slider.max) {
                 val = slider.max;
             }
-            if (slider.range_true) {
-                let handles = slider.handles,
-                    index = this.index;
-                for (let i in handles) {
-                    let h = handles[i];
-                    if (val >= h.value && i > index || val <= h.value && i < index) {
-                        val = h.value;
-                    }
-                }
+            val = this._prevent_overlap(val, 'value');
+            let pos = this._transform(val, 'screen');
+            this.elem.css(`${slider.dir_attr}`, `${pos}px`);
+            this._pos = pos;
+            this._value = val;
+        }
+        get pos() {
+            return this._pos;
+        }
+        set pos(pos) {
+            let slider = this.slider;
+            if (pos > slider.slider_dim) {
+                pos = slider.slider_dim;
+            } else if (pos < 0) {
+                pos = 0;
             }
+            pos = this._prevent_overlap(pos, 'pos');
+            let val;
+            if (slider.step) {
+                val = this._transform(this._transform(pos, 'range'), 'step');
+            } else {
+                val = this._transform(pos, 'range');
+            }
+            this.elem.css(`${slider.dir_attr}`, `${pos}px`);
+            this._pos = pos;
             this._value = val;
         }
         get selected() {
@@ -81,9 +94,7 @@ var yafowil_slider = (function (exports, $) {
             let elem = this.elem,
                 slider = this.slider;
             if (selected) {
-                $('div.slider-handle').each(function() {
-                    $(this).data('slider-handle').selected = false;
-                });
+                slider.unselect_handles();
                 elem.addClass('active').css('z-index', 10);
                 slider.elem.on('mousewheel wheel', this._on_scroll);
                 $(document).off('keydown', this._on_key).on('keydown', this._on_key);
@@ -94,39 +105,16 @@ var yafowil_slider = (function (exports, $) {
             }
             this._selected = selected;
         }
-        get pos() {
-            return this._pos;
-        }
-        set pos(pos) {
-            let slider = this.slider;
-            if (slider.range_true) {
-                let handles = slider.handles,
-                    index = this.index;
-                for (let i in handles) {
-                    let h = handles[i];
-                    if (pos >= h.pos && i > index || pos <= h.pos && i < index) {
-                        pos = h.pos;
-                    }
-                }
-            }
-            if (pos >= slider.slider_dim) {
-                pos = slider.slider_dim;
-            } else if (pos <= 0) {
-                pos = 0;
-            }
-            this.elem.css(`${slider.dir_attr}`, `${pos}px`);
-            this._pos = pos;
-        }
         unload() {
             $(window).off('resize', this._on_resize);
             this.selected = false;
         }
         _on_resize() {
-            this.pos = this.transform(this.value, 'screen');
+            this.pos = this._transform(this.value, 'screen');
         }
-        _on_start(event) {
-            event.preventDefault();
-            event.stopPropagation();
+        _on_start(e) {
+            e.preventDefault();
+            e.stopPropagation();
             this.selected = true;
             this.slider.trigger('start', this);
             $(document).on('mousemove touchmove', this._on_move);
@@ -135,21 +123,8 @@ var yafowil_slider = (function (exports, $) {
         _on_move(e) {
             e.preventDefault();
             e.stopPropagation();
-            let slider = this.slider,
-                vertical = slider.vertical,
-                offset = slider.offset;
-            if (e.type === 'mousemove') {
-                this.pos = (vertical ? e.pageY : e.pageX) - offset;
-            } else {
-                this.pos = (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
-            }
-            if (slider.step) {
-                let val = this.transform(this.pos, 'range');
-                this.value = this.transform(val, 'step');
-                this.pos = this.transform(this.value, 'screen');
-            } else {
-                this.value = this.transform(this.pos, 'range');
-            }
+            let slider = this.slider;
+            this.pos = slider.pos_from_evt(e);
             slider.trigger('slide', this);
         }
         _on_end(e) {
@@ -164,11 +139,10 @@ var yafowil_slider = (function (exports, $) {
                 step = slider.scroll_step,
                 value = this.value;
             if (evt.deltaY > 0) {
-                value = parseInt(this.value) + step;
+                value = this.value + step;
             } else if (evt.deltaY < 0) {
-                value = parseInt(this.value) - step;
+                value = this.value - step;
             }
-            this.pos = this.transform(value, 'screen');
             this.value = value;
             slider.track.update();
             slider.trigger('change', this);
@@ -182,25 +156,41 @@ var yafowil_slider = (function (exports, $) {
                 decrease = vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
             if (increase) {
                 e.preventDefault();
-                value = parseInt(this.value) + step;
+                value = this.value + step;
             } else if (decrease) {
                 e.preventDefault();
-                value = parseInt(this.value) - step;
+                value = this.value - step;
             } else {
                 return;
             }
-            this.pos = this.transform(value, 'screen');
             this.value = value;
             slider.track.update();
             slider.trigger('change', this);
         }
-        transform(val, type) {
-            let slider = this.slider,
-                min = slider.min,
-                max = slider.max,
-                step = slider.step,
-                dim = slider.slider_dim;
-            let value = transform(val, type, dim, min, max, step);
+        _transform(val, type) {
+            let slider = this.slider;
+            return transform(
+                val,
+                type,
+                slider.slider_dim,
+                slider.min,
+                slider.max,
+                slider.step
+            );
+        }
+        _prevent_overlap(value, attr) {
+            let slider = this.slider;
+            if (slider.range_true) {
+                let handles = slider.handles,
+                    index = this.index;
+                for (let i in handles) {
+                    let handle = handles[i],
+                        val = handle[attr];
+                    if (value >= val && i > index || value <= val && i < index) {
+                        value = val;
+                    }
+                }
+            }
             return value;
         }
     }
@@ -235,16 +225,17 @@ var yafowil_slider = (function (exports, $) {
         update() {
             let slider = this.slider,
                 handles = slider.handles,
-                value = handles[0].pos;
+                pos = handles[0].pos,
+                elem = this.track_elem,
+                dim_attr = this.dim_attr;
             if (slider.range_true) {
-                let dimension = handles[1].pos - handles[0].pos;
-                this.track_elem
-                    .css(`${this.dim_attr}`, dimension)
-                    .css(`${slider.dir_attr}`, `${value}px`);
+                let dim = handles[1].pos - handles[0].pos;
+                elem.css(`${dim_attr}`, dim)
+                    .css(`${slider.dir_attr}`, `${pos}px`);
             } else if (slider.range_max) {
-                this.track_elem.css(`${this.dim_attr}`, slider.slider_dim - value);
+                elem.css(`${dim_attr}`, slider.slider_dim - pos);
             } else {
-                this.track_elem.css(`${this.dim_attr}`, value);
+                elem.css(`${dim_attr}`, pos);
             }
         }
     }
@@ -317,43 +308,41 @@ var yafowil_slider = (function (exports, $) {
                 handle.unload();
             }
         }
+        unselect_handles() {
+            $('div.slider-handle').each(function() {
+                $(this).data('slider-handle').selected = false;
+            });
+        }
+        pos_from_evt(e) {
+            let offset = this.offset,
+                vertical = this.vertical;
+            if (e.type === 'mousedown' || e.type === 'mousemove') {
+                return (vertical ? e.pageY : e.pageX) - offset;
+            }
+            return (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
+        }
         _on_down(e) {
-            let value, target;
+            let index = 0,
+                handle;
             if (this.range_true) {
                 let distances = [];
                 for (let handle of this.handles) {
-                    let evt_x = (e.type === 'mousedown') ? e.pageX : e.touches[0].pageX,
-                        evt_y = (e.type === 'mousedown') ? e.pageY : e.touches[0].pageY,
+                    let e_x = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX,
+                        e_y = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY,
                         offset = handle.elem.offset();
                     let distance = Math.hypot(
-                        offset.left - parseInt(evt_x),
-                        offset.top - parseInt(evt_y)
+                        offset.left - parseInt(e_x),
+                        offset.top - parseInt(e_y)
                     );
                     distances.push(parseInt(distance));
                 }
-                let closest = distances.indexOf(Math.min(...distances));
-                target = this.handles[closest];
-            } else {
-                target = this.handles[0];
+                index = distances.indexOf(Math.min(...distances));
             }
-            target.selected = true;
-            let offset = this.offset,
-                vertical = this.vertical;
-            if (e.type === 'mousedown') {
-                value = (vertical ? e.pageY : e.pageX) - offset;
-            } else {
-                value = (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
-            }
-            if (this.step) {
-                value = target.transform(value, 'range');
-                target.value = target.transform(value, 'step');
-                target.pos = target.transform(target.value, 'screen');
-            } else {
-                target.pos = value;
-                target.value = target.transform(value, 'range');
-            }
+            handle = this.handles[index];
+            handle.selected = true;
+            handle.pos = this.pos_from_evt(e);
             this.track.update();
-            this.trigger('change', target);
+            this.trigger('change', handle);
         }
     }
     class SliderWidget {
@@ -410,7 +399,7 @@ var yafowil_slider = (function (exports, $) {
             let handle = e.widget,
                 index = handle.index,
                 element = this.elements[index];
-            element.input.val(handle.value);
+            element.input.attr('value', handle.value);
             element.label.html(handle.value);
         }
     }
