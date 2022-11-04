@@ -16,15 +16,15 @@ export function lookup_callback(path) {
     return cb;
 }
 
-export function transform(val, type, dim, min, max, step) {
+export function transform(val, type, size, min, max, step) {
     if (type === 'step') {
         let condition = min === 0 ? max - step / 2 : max - min / 2;
         val = val > condition ? max : step * parseInt(val / step);
         val = val <= min ? min : val;
     } else if (type === 'screen') {
-        val = parseInt(dim * ((val - min) / (max - min)));
+        val = parseInt(size * ((val - min) / (max - min)));
     } else if (type === 'range') {
-        val = Math.ceil((max - min) * (val / dim) + min);
+        val = Math.ceil((max - min) * (val / size) + min);
     }
     return val;
 }
@@ -79,8 +79,8 @@ class SliderHandle {
 
     set pos(pos) {
         let slider = this.slider;
-        if (pos > slider.slider_dim) {
-            pos = slider.slider_dim;
+        if (pos > slider.slider_size) {
+            pos = slider.slider_size;
         } else if (pos < 0) {
             pos = 0;
         }
@@ -88,6 +88,7 @@ class SliderHandle {
         let val;
         if (slider.step) {
             val = this._transform(this._transform(pos, 'range'), 'step');
+            pos = this._transform(val, 'screen');
         } else {
             val = this._transform(pos, 'range');
         }
@@ -190,7 +191,7 @@ class SliderHandle {
         return transform(
             val,
             type,
-            slider.slider_dim,
+            slider.slider_size,
             slider.min,
             slider.max,
             slider.step
@@ -218,7 +219,7 @@ class SliderTrack {
 
     constructor(slider) {
         this.slider = slider;
-        this.dim_attr = slider.vertical ? 'height' : 'width';
+        this.size_attr = slider.vertical ? 'height' : 'width';
         let thickness_attr = slider.vertical ? 'width' : 'height';
         this.bg_elem = $('<div />')
             .addClass('slider-bg')
@@ -250,15 +251,15 @@ class SliderTrack {
             handles = slider.handles,
             pos = handles[0].pos,
             elem = this.track_elem,
-            dim_attr = this.dim_attr;
+            size_attr = this.size_attr;
         if (slider.range_true) {
-            let dim = handles[1].pos - handles[0].pos;
-            elem.css(`${dim_attr}`, dim)
+            let size = handles[1].pos - handles[0].pos;
+            elem.css(`${size_attr}`, size)
                 .css(`${slider.dir_attr}`, `${pos}px`);
         } else if (slider.range_max) {
-            elem.css(`${dim_attr}`, slider.slider_dim - pos);
+            elem.css(`${size_attr}`, slider.slider_size - pos);
         } else {
-            elem.css(`${dim_attr}`, pos);
+            elem.css(`${size_attr}`, pos);
         }
     }
 }
@@ -284,15 +285,16 @@ export class Slider {
         } else {
             elem.css('height', this.handle_diameter);
         }
+        let value;
         if (this.range_true) {
-            this.value = opts.value || [0, 0];
+            value = this._value = opts.value || [0, 0];
             this.handles = [
-                new SliderHandle(this, 0, this.value[0]),
-                new SliderHandle(this, 1, this.value[1])
+                new SliderHandle(this, 0, value[0]),
+                new SliderHandle(this, 1, value[1])
             ];
         } else {
-            this.value = opts.value || 0;
-            this.handles = [new SliderHandle(this, 0, this.value)];
+            value = this._value = opts.value || 0;
+            this.handles = [new SliderHandle(this, 0, value)];
         }
         this.track = new SliderTrack(this);
         this._on_down = this._on_down.bind(this);
@@ -303,6 +305,20 @@ export class Slider {
             }
         }
         this.trigger('create', this);
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(value) {
+        if (!value instanceof Array) {
+            value = [value];
+        }
+        for (let i in this.handles) {
+            this.handles[i] = value[i];
+        }
+        this._value = value;
     }
 
     get range_max() {
@@ -318,7 +334,7 @@ export class Slider {
         return this.vertical ? offset.top : offset.left;
     }
 
-    get slider_dim() {
+    get slider_size() {
         let elem = this.elem;
         return this.vertical ? elem.height() : elem.width();
     }
@@ -436,8 +452,6 @@ export class SliderWidget {
     }
 
     update_value(e) {
-        console.log(e.widget.value);
-        console.log(e.widget.pos);
         let handle = e.widget,
             index = handle.index,
             element = this.elements[index];
