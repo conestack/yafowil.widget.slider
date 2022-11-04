@@ -118,7 +118,7 @@ QUnit.module('slider_widget', hooks => {
     let widget;
     let slider;
     let container = $('<div id="container" />');
-    let size = 200;
+    let len = 200;
     let value = 0;
 
     hooks.before(() => {
@@ -214,19 +214,19 @@ QUnit.module('slider_widget', hooks => {
             assert.strictEqual(slider.step, false);
             // default horizontal orientation
             assert.strictEqual(slider.vertical, false);
-            assert.strictEqual(slider.track.size_attr, 'width');
+            assert.strictEqual(slider.track.len_attr, 'width');
             assert.strictEqual(slider.dir_attr, 'left');
         });
     
         /* slider with vertical orientation */
         QUnit.test('vertical', assert => {
             options.orientation = 'vertical';
-            options.height = size;
+            options.height = len;
             widget = new SliderWidget(elem, options);
             slider = widget.slider
     
             assert.strictEqual(slider.vertical, true);
-            assert.strictEqual(slider.track.size_attr, 'height');
+            assert.strictEqual(slider.track.len_attr, 'height');
             assert.strictEqual(slider.dir_attr, 'top');
             assert.ok(slider.elem.hasClass('slider-vertical'));
             assert.strictEqual(slider.elem.css('width'), '20px');
@@ -254,7 +254,6 @@ QUnit.module('slider_widget', hooks => {
     
             assert.strictEqual(slider.handles.length, 2);
             assert.strictEqual(slider.range, true);
-            assert.strictEqual(slider.range_true, true);
             assert.strictEqual(slider.handles[0].value, options.value[0]);
             assert.strictEqual(slider.handles[1].value, options.value[1]);
         });
@@ -267,21 +266,20 @@ QUnit.module('slider_widget', hooks => {
     
             assert.strictEqual(slider.handles.length, 1);
             assert.strictEqual(slider.range, 'max');
-            assert.strictEqual(slider.range_max, true);
             // track has to start at right edge instead of left
-            assert.strictEqual(slider.track.track_elem.css('right'), '0px');
+            assert.strictEqual(slider.track.range_elem.css('right'), '0px');
         });
     
         /* vertical slider with range set to max */
-        QUnit.test('range_max & vertical', assert => {
+        QUnit.test('range max & vertical', assert => {
             options.orientation = 'vertical';
             options.range = 'max';
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
     
             // track has to start at bottom edge instead of top
-            assert.strictEqual(slider.track.track_elem.css('bottom'), '0px');
-            assert.strictEqual(slider.track.track_elem.css('top'), '0px');
+            assert.strictEqual(slider.track.range_elem.css('bottom'), '0px');
+            assert.strictEqual(slider.track.range_elem.css('top'), '0px');
         });
     
         /* slider with minimum and maximum value, to be rounded to a step
@@ -306,6 +304,7 @@ QUnit.module('slider_widget', hooks => {
         QUnit.test('handle_diameter/thickness', assert => {
             options.handle_diameter = 30;
             options.thickness = 50;
+            options.range = true;
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
     
@@ -321,7 +320,15 @@ QUnit.module('slider_widget', hooks => {
                 `${options.handle_diameter}px`
             );
             assert.strictEqual(
-                slider.track.track_elem.css('height'),
+                slider.handles[1].elem.css('width'),
+                `${options.handle_diameter}px`
+            );
+            assert.strictEqual(
+                slider.handles[1].elem.css('height'),
+                `${options.handle_diameter}px`
+            );
+            assert.strictEqual(
+                slider.track.range_elem.css('height'),
                 `${options.thickness}px`
             );
         });
@@ -345,7 +352,7 @@ QUnit.module('slider_widget', hooks => {
         QUnit.module('default', hooks => {
 
             hooks.beforeEach(() => {
-                elem.css('width', `${size}px`);
+                elem.css('width', `${len}px`);
                 $('.slider_value', elem).val(0);
                 widget = new SliderWidget(elem, options);
                 slider = widget.slider;
@@ -359,15 +366,11 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
 
                 // actual position equals calculated position
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
-                assert.strictEqual(
-                    slider.track.track_elem.css('width'),
-                    `${pos}px`
-                );
             });
 
             QUnit.test('touch', assert => {
@@ -379,15 +382,11 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
 
                 // actual position equals calculated position
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
-                assert.strictEqual(
-                    slider.track.track_elem.css('width'),
-                    `${pos}px`
-                );
             });
         });
 
@@ -397,8 +396,8 @@ QUnit.module('slider_widget', hooks => {
             hooks.beforeEach(() => {
                 // with a vertical slider, height has to be specified
                 options.orientation = 'vertical';
-                options.height = size;
-                elem.css('height', `${size}px`);
+                options.height = len;
+                elem.css('height', `${len}px`);
                 $('.slider_value', elem).val(0);
                 widget = new SliderWidget(elem, options);
                 slider = widget.slider;
@@ -412,16 +411,11 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().top;
                 let pos = y - offset;
-                let val = transform(pos, 'range', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
 
                 // actual position equals calculated position
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
-                // actual track height equals calculated height
-                assert.strictEqual(
-                    parseInt(slider.track.track_elem.css('height')),
-                    parseInt(`${pos}px`)
-                );
             });
 
             QUnit.test('touch', assert => {
@@ -433,23 +427,19 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().top;
                 let pos = y - offset;
-                let val = transform(pos, 'range', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
-                assert.strictEqual(
-                    parseInt(slider.track.track_elem.css('height')),
-                    parseInt(`${pos}px`)
-                );
             });
         });
 
         /* vertical slider with two handles */
-        QUnit.module('range_true', hooks => {
+        QUnit.module('range true', hooks => {
 
             hooks.beforeEach(() => {
                 options.range = true;
                 options.value = [50, 100];
-                elem.css('width', `${size}px`);
+                elem.css('width', `${len}px`);
                 $('.slider_value', elem).val(0);
                 let lower_val_elem = $(`<input class="lower_value"/>`)
                     .val(options.value[0]);
@@ -476,17 +466,17 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
-                let width = slider.slider_size - pos;
+                let val = transform(pos, 'range', len, 0, 100);
+                let width = slider.slider_len - pos;
 
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
                 assert.strictEqual(
-                    slider.track.track_elem.css('width'),
+                    slider.track.range_elem.css('width'),
                     `${width}px`
                 );
                 assert.strictEqual(
-                    slider.track.track_elem.css('left'),
+                    slider.track.range_elem.css('left'),
                     `${pos}px`
                 );
 
@@ -498,17 +488,17 @@ QUnit.module('slider_widget', hooks => {
 
                 offset = slider.elem.offset().left;
                 pos = x - offset;
-                val = transform(pos, 'range', size, 0, 100);
+                val = transform(pos, 'range', len, 0, 100);
                 width = pos - slider.handles[0].pos;
 
                 assert.strictEqual(handle_2.pos, pos);
                 assert.strictEqual(handle_2.value, val);
                 assert.strictEqual(
-                    slider.track.track_elem.css('width'),
+                    slider.track.range_elem.css('width'),
                     `${width}px`
                 );
                 assert.strictEqual(
-                    slider.track.track_elem.css('left'),
+                    slider.track.range_elem.css('left'),
                     `${slider.handles[0].pos}px`
                 );
             });
@@ -523,17 +513,17 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
-                let width = slider.slider_size - pos;
+                let val = transform(pos, 'range', len, 0, 100);
+                let width = slider.slider_len - pos;
 
                 assert.strictEqual(handle.pos, pos);
                 assert.strictEqual(handle.value, val);
                 assert.strictEqual(
-                    slider.track.track_elem.css('width'),
+                    slider.track.range_elem.css('width'),
                     `${width}px`
                 );
                 assert.strictEqual(
-                    slider.track.track_elem.css('left'),
+                    slider.track.range_elem.css('left'),
                     `${pos}px`
                 );
 
@@ -546,17 +536,17 @@ QUnit.module('slider_widget', hooks => {
 
                 offset = slider.elem.offset().left;
                 pos = x - offset;
-                val = transform(pos, 'range', size, 0, 100);
+                val = transform(pos, 'range', len, 0, 100);
                 width = pos - slider.handles[0].pos;
 
                 assert.strictEqual(handle_2.pos, pos);
                 assert.strictEqual(handle_2.value, val);
                 assert.strictEqual(
-                    slider.track.track_elem.css('width'),
+                    slider.track.range_elem.css('width'),
                     `${width}px`
                 );
                 assert.strictEqual(
-                    slider.track.track_elem.css('left'),
+                    slider.track.range_elem.css('left'),
                     `${slider.handles[0].pos}px`
                 );
             });
@@ -567,7 +557,7 @@ QUnit.module('slider_widget', hooks => {
 
             hooks.beforeEach(() => {
                 options.step = 10;
-                elem.css('width', `${size}px`);
+                elem.css('width', `${len}px`);
                 $('.slider_value', elem).val(0);
                 widget = new SliderWidget(elem, options);
                 slider = widget.slider;
@@ -581,15 +571,11 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
-                let new_val = transform(val, 'step', size, 0, 100, options.step);
-                let new_pos = transform(new_val, 'screen', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
+                let new_val = transform(val, 'step', len, 0, 100, options.step);
+                let new_pos = transform(new_val, 'screen', len, 0, 100);
                 assert.strictEqual(handle.pos, new_pos);
                 assert.strictEqual(handle.value, new_val);
-                assert.strictEqual(
-                    slider.track.track_elem.css('width'),
-                    `${new_pos}px`
-                );
             });
 
             QUnit.test('touch', assert => {
@@ -601,15 +587,11 @@ QUnit.module('slider_widget', hooks => {
 
                 let offset = slider.elem.offset().left;
                 let pos = x - offset;
-                let val = transform(pos, 'range', size, 0, 100);
-                let new_val = transform(val, 'step', size, 0, 100, options.step);
-                let new_pos = transform(new_val, 'screen', size, 0, 100);
+                let val = transform(pos, 'range', len, 0, 100);
+                let new_val = transform(val, 'step', len, 0, 100, options.step);
+                let new_pos = transform(new_val, 'screen', len, 0, 100);
                 assert.strictEqual(handle.pos, new_pos);
                 assert.strictEqual(handle.value, new_val);
-                assert.strictEqual(
-                    slider.track.track_elem.css('width'),
-                    `${new_pos}px`
-                );
             });
         });
     });
@@ -618,7 +600,7 @@ QUnit.module('slider_widget', hooks => {
 
         /* range slider with two handles */
         QUnit.test('horizontal', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
             options.range = true;
             options.value = [50, 100];
@@ -640,9 +622,9 @@ QUnit.module('slider_widget', hooks => {
             // value of first handle
             let start_val = val[0];
             let new_val = 60;
-            let new_pos = transform(new_val, 'screen', size, 0, 100);
+            let new_pos = transform(new_val, 'screen', len, 0, 100);
             slider.handles[0].pos = new_pos;
-            let new_size = slider.handles[1].pos - slider.handles[0].pos;
+            let new_len = slider.handles[1].pos - slider.handles[0].pos;
 
             // create and trigger custom drag event
             const event = new $.Event('slide', {widget: slider.handles[0]});
@@ -650,11 +632,11 @@ QUnit.module('slider_widget', hooks => {
 
             assert.notStrictEqual(start_val, new_val);
             assert.strictEqual(
-                slider.track.track_elem.css('width'),
-                `${new_size}px`
+                slider.track.range_elem.css('width'),
+                `${new_len}px`
             );
             assert.strictEqual(
-                slider.track.track_elem.css('left'),
+                slider.track.range_elem.css('left'),
                 `${new_pos}px`
             );
 
@@ -677,12 +659,12 @@ QUnit.module('slider_widget', hooks => {
         });
 
         QUnit.test('vertical', assert => {
-            elem.css('height', `${size}px`);
+            elem.css('height', `${len}px`);
             $('.slider_value', elem).val(0);
             options.range = true;
             let val = options.values = [50, 100];
             options.orientation = 'vertical';
-            options.height = size;
+            options.height = len;
             let lower_val_elem = $(`<input class="lower_value" value="${val[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${val[0]}"/>`);
             let upper_val_elem = $(`<input class="upper_value" value="${val[1]}"/>`);
@@ -700,9 +682,9 @@ QUnit.module('slider_widget', hooks => {
             // value of first handle
             let start_val = val[0];
             let new_val = 60;
-            let new_pos = transform(new_val, 'screen', size, 0, 100);
+            let new_pos = transform(new_val, 'screen', len, 0, 100);
             slider.handles[0].pos = new_pos;
-            let new_size = slider.handles[1].pos - slider.handles[0].pos;
+            let new_len = slider.handles[1].pos - slider.handles[0].pos;
 
             // create and trigger custom drag event
             const event = new $.Event('slide', {widget: slider.handles[0]});
@@ -710,17 +692,17 @@ QUnit.module('slider_widget', hooks => {
 
             assert.notStrictEqual(start_val, new_val);
             assert.strictEqual(
-                slider.track.track_elem.css('height'),
-                `${new_size}px`
+                slider.track.range_elem.css('height'),
+                `${new_len}px`
             );
             assert.strictEqual(
-                slider.track.track_elem.css('top'),
+                slider.track.range_elem.css('top'),
                 `${new_pos}px`
             );
         });
 
         QUnit.test('default - move to end', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // create slider object
@@ -729,14 +711,14 @@ QUnit.module('slider_widget', hooks => {
 
             let handle = slider.handles[0];
             do_move_handle(assert, handle, {
-                drag_end: size + 10, // 10px over end of slider
-                assertion_value: size,
+                drag_end: len + 10, // 10px over end of slider
+                assertion_value: len,
                 type: true
             });
         });
 
         QUnit.test('default - move to start', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // create slider object
@@ -752,7 +734,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         QUnit.test('default - touch move to end', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // create slider object
@@ -760,17 +742,17 @@ QUnit.module('slider_widget', hooks => {
             slider = widget.slider;
 
             let handle = slider.handles[0];
-            let drag_end = size + 10;
+            let drag_end = len + 10;
             let target = handle.elem;
 
             send_touch_event(0, 0, target[0], 'touchstart');
             send_touch_event(drag_end, 0, document, 'touchmove');
             send_touch_event(drag_end, 0, document, 'touchend');
-            assert.strictEqual(handle.pos, size);
+            assert.strictEqual(handle.pos, len);
         });
 
         QUnit.test('default - touch move to start', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // create slider object
@@ -792,8 +774,8 @@ QUnit.module('slider_widget', hooks => {
 
             hooks.beforeEach(() => {
                 options.orientation = 'vertical';
-                options.height = size;
-                elem.css('height', `${size}px`);
+                options.height = len;
+                elem.css('height', `${len}px`);
                 widget = new SliderWidget(elem, options);
                 slider = widget.slider;
             });
@@ -801,8 +783,8 @@ QUnit.module('slider_widget', hooks => {
             QUnit.test('move to end', assert => {
                 let handle = slider.handles[0];
                 do_move_handle(assert, handle, {
-                    drag_end: slider.offset + size + 10,
-                    assertion_value: size,
+                    drag_end: slider.offset + len + 10,
+                    assertion_value: len,
                     type: true,
                     vertical: true
                 });
@@ -820,13 +802,13 @@ QUnit.module('slider_widget', hooks => {
 
             QUnit.test('touch move to end', assert => {
                 let handle = slider.handles[0];
-                let drag_end = slider.offset + size + 10;
+                let drag_end = slider.offset + len + 10;
                 let target = handle.elem;
 
                 send_touch_event(0, 0, target[0], 'touchstart');
                 send_touch_event(0, drag_end, document, 'touchmove');
                 send_touch_event(0, drag_end, document, 'touchend');
-                assert.strictEqual(handle.pos, size);
+                assert.strictEqual(handle.pos, len);
             });
 
             QUnit.test('touch move to start', assert => {
@@ -844,15 +826,15 @@ QUnit.module('slider_widget', hooks => {
         /* slider with specified step */
         QUnit.test('step_slider move', assert => {
             options.step = 10;
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
 
             let handle = slider.handles[0];
             // add Integer 5 to test the value rounding to step
-            let drag_end = slider.offset + slider.slider_size / 2 + 5;
+            let drag_end = slider.offset + slider.slider_len / 2 + 5;
             // assertion value will be actual rounded value
-            let assertion_value = slider.slider_size / 2;
+            let assertion_value = slider.slider_len / 2;
             do_move_handle(assert, handle, {
                 drag_end: drag_end,
                 assertion_value: assertion_value,
@@ -866,7 +848,7 @@ QUnit.module('slider_widget', hooks => {
             options.min = 30;
             options.max = 500;
             options.step = 25;
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(30);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
@@ -874,8 +856,8 @@ QUnit.module('slider_widget', hooks => {
 
             // move handle to end
             do_move_handle(assert, handle, {
-                drag_end: size + 10, // 10px over end of slider,
-                assertion_value: size,
+                drag_end: len + 10, // 10px over end of slider,
+                assertion_value: len,
                 type: true,
                 vertical: false
             });
@@ -914,10 +896,10 @@ QUnit.module('slider_widget', hooks => {
         }));
 
         /* range slider with two handles */
-        QUnit.test('range_true (horizontal)', assert => {
+        QUnit.test('range true (horizontal)', assert => {
             options.range = true;
             options.values = [50, 100];
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             let val = options.values;
             let lower_val_elem = $(`<input class="lower_value" value="${val[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${val[0]}"/>`);
@@ -945,23 +927,23 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[1].pos, size);
+            assert.strictEqual(slider.handles[1].pos, len);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
             slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
         });
 
-        QUnit.test('range_true (vertical)', assert => {
+        QUnit.test('range true (vertical)', assert => {
             options.range = true;
             let val = options.values = [50, 100];
-            elem.css('height', `${size}px`);
+            elem.css('height', `${len}px`);
             options.orientation = 'vertical';
-            options.height = size;
+            options.height = len;
             let lower_val_elem = $(`<input class="lower_value" value="${val[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${val[0]}"/>`);
             let upper_val_elem = $(`<input class="upper_value" value="${val[1]}"/>`);
@@ -988,20 +970,20 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[1].pos, size);
+            assert.strictEqual(slider.handles[1].pos, len);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
             slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
         });
 
         /* default slider with no additional options */
         QUnit.test('move to end/start', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
             slider.handles[0].selected = true;
@@ -1010,7 +992,7 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 100; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
 
             // trigger scroll upward
@@ -1024,8 +1006,8 @@ QUnit.module('slider_widget', hooks => {
         /* vertical slider with no additional options */
         QUnit.test('move to end/start (vertical)', assert => {
             options.orientation = 'vertical';
-            options.height = size;
-            elem.css('height', `${size}px`);
+            options.height = len;
+            elem.css('height', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
             slider.handles[0].selected = true;
@@ -1034,7 +1016,7 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 100; i++) {
                 slider.elem.trigger(scroll_down);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
 
             // trigger scroll upward
@@ -1048,7 +1030,7 @@ QUnit.module('slider_widget', hooks => {
         /* slider with specified step */
         QUnit.test('step', assert => {
             options.step = 10;
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
             slider.handles[0].selected = true;
@@ -1075,7 +1057,7 @@ QUnit.module('slider_widget', hooks => {
         /* slider with specified scroll step */
         QUnit.test('move', assert => {
             options.scroll_step = 20;
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
             slider.handles[0].selected = true;
@@ -1120,7 +1102,7 @@ QUnit.module('slider_widget', hooks => {
         QUnit.test('horizontal', assert => {
             options.range = true;
             options.values = [50, 100];
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             let val = options.values;
             let lower_val_elem = $(`<input class="lower_value" value="${val[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${val[0]}"/>`);
@@ -1154,14 +1136,14 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_right);
             }
-            assert.strictEqual(slider.handles[1].pos, size);
+            assert.strictEqual(slider.handles[1].pos, len);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
             slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_right);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
         });
 
@@ -1169,8 +1151,8 @@ QUnit.module('slider_widget', hooks => {
             options.range = true;
             let val = options.values = [50, 100];
             options.orientation = 'vertical';
-            options.height = size;
-            elem.css('height', `${size}px`);
+            options.height = len;
+            elem.css('height', `${len}px`);
             let lower_val_elem = $(`<input class="lower_value" value="${val[0]}"/>`);
             let lower_span_elem = $(`<span class="lower_value" value="${val[0]}"/>`);
             let upper_val_elem = $(`<input class="upper_value" value="${val[1]}"/>`);
@@ -1203,14 +1185,14 @@ QUnit.module('slider_widget', hooks => {
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_down);
             }
-            assert.strictEqual(slider.handles[1].pos, size);
+            assert.strictEqual(slider.handles[1].pos, len);
             assert.strictEqual(slider.handles[1].value, slider.max);
 
             slider.handles[0].selected = true;
             for (let i = 0; i < 50; i++) {
                 document.dispatchEvent(arrow_down);
             }
-            assert.strictEqual(slider.handles[0].pos, size);
+            assert.strictEqual(slider.handles[0].pos, len);
             assert.strictEqual(slider.handles[0].value, slider.max);
         });
     });
@@ -1218,7 +1200,7 @@ QUnit.module('slider_widget', hooks => {
     QUnit.module('custom event dispatch', () => {
 
         QUnit.test('custom event dispatch', assert => {
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // add event listeners for custom event
@@ -1315,7 +1297,7 @@ QUnit.module('slider_widget', hooks => {
                 key: 'ArrowRight'
             });
 
-            elem.css('width', `${size}px`);
+            elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
             // add event listeners for custom event
@@ -1387,9 +1369,9 @@ QUnit.module('on_resize', hooks => {
     let elem;
     let widget;
     let slider;
-    // set width and size property to 100% to allow for container dimension change
+    // set width and len property to 100% to allow for container dimension change
     let container = $('<div id="container" style="width:100%"/>');
-    let size = '100%';
+    let len = '100%';
 
     hooks.before(() => {
         $('body').append(container);
@@ -1422,16 +1404,17 @@ QUnit.module('on_resize', hooks => {
 
     QUnit.test('resize', assert => {
         options.value = 50;
-        elem.css('height', `${size}px`);
+        options.range = 'min';
+        elem.css('height', `${len}px`);
         $('.slider_value', elem).val(options.value);
         widget = new SliderWidget(elem, options);
         slider = widget.slider;
         let handle = slider.handles[0];
 
         // variables before resize
-        let size_before = slider.slider_size;
+        let len_before = slider.slider_len;
         let pos_before = handle.pos;
-        let track_val_before = slider.track.track_elem.css('width');
+        let track_val_before = slider.track.range_elem.css('width');
 
         // resize viewport
         let new_window_width = 320;
@@ -1440,23 +1423,24 @@ QUnit.module('on_resize', hooks => {
 
         // variables and positions after resize
         assert.notStrictEqual(pos_before, handle.pos);
-        assert.notStrictEqual(size_before, slider.slider_size);
+        assert.notStrictEqual(len_before, slider.slider_len);
         assert.notStrictEqual(
             track_val_before,
-            slider.track.track_elem.css('width')
+            slider.track.range_elem.css('width')
         );
     });
 
     QUnit.test('unload', assert => {
         options.value = 50;
-        elem.css('height', `${size}px`);
+        options.range = 'min';
+        elem.css('height', `${len}px`);
         $('.slider_value', elem).val(options.value);
         widget = new SliderWidget(elem, options);
         slider = widget.slider;
         let handle = slider.handles[0];
 
         let pos_before = handle.pos;
-        let track_val_before = slider.track.track_elem.css('width');
+        let track_val_before = slider.track.range_elem.css('width');
 
         // trigger unload
         slider.unload();
@@ -1483,7 +1467,7 @@ QUnit.module('on_resize', hooks => {
         assert.strictEqual(pos_before, handle.pos);
         assert.strictEqual(
             track_val_before,
-            slider.track.track_elem.css('width')
+            slider.track.range_elem.css('width')
         );
     });
 });

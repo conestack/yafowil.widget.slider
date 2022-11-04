@@ -16,15 +16,15 @@ var yafowil_slider = (function (exports, $) {
         }
         return cb;
     }
-    function transform(val, type, size, min, max, step) {
+    function transform(val, type, len, min, max, step) {
         if (type === 'step') {
             let condition = min === 0 ? max - step / 2 : max - min / 2;
             val = val > condition ? max : step * parseInt(val / step);
             val = val <= min ? min : val;
         } else if (type === 'screen') {
-            val = parseInt(size * ((val - min) / (max - min)));
+            val = parseInt(len * ((val - min) / (max - min)));
         } else if (type === 'range') {
-            val = Math.ceil((max - min) * (val / size) + min);
+            val = Math.ceil((max - min) * (val / len) + min);
         }
         return val;
     }
@@ -71,8 +71,8 @@ var yafowil_slider = (function (exports, $) {
         }
         set pos(pos) {
             let slider = this.slider;
-            if (pos > slider.slider_size) {
-                pos = slider.slider_size;
+            if (pos > slider.slider_len) {
+                pos = slider.slider_len;
             } else if (pos < 0) {
                 pos = 0;
             }
@@ -173,7 +173,7 @@ var yafowil_slider = (function (exports, $) {
             return transform(
                 val,
                 type,
-                slider.slider_size,
+                slider.slider_len,
                 slider.min,
                 slider.max,
                 slider.step
@@ -181,7 +181,7 @@ var yafowil_slider = (function (exports, $) {
         }
         _prevent_overlap(value, attr) {
             let slider = this.slider;
-            if (slider.range_true) {
+            if (slider.range === true) {
                 let handles = slider.handles,
                     index = this.index;
                 for (let i in handles) {
@@ -198,21 +198,25 @@ var yafowil_slider = (function (exports, $) {
     class SliderTrack {
         constructor(slider) {
             this.slider = slider;
-            this.size_attr = slider.vertical ? 'height' : 'width';
+            this.len_attr = slider.vertical ? 'height' : 'width';
             let thickness_attr = slider.vertical ? 'width' : 'height';
-            this.bg_elem = $('<div />')
+            this.elem = $('<div />')
                 .addClass('slider-bg')
                 .css(thickness_attr, slider.thickness)
                 .appendTo(slider.elem);
-            this.track_elem = $('<div />')
-                .addClass('slider-value-track')
-                .css(thickness_attr, slider.thickness)
-                .appendTo(slider.elem);
-            if (slider.range_max) {
-                if (slider.vertical) {
-                    this.track_elem.css('bottom', 0).css('top', 'unset');
-                } else {
-                    this.track_elem.css('right', 0);
+            this.range_elem = null;
+            let range = slider.range;
+            if (range) {
+                this.range_elem = $('<div />')
+                    .addClass('slider-value-track')
+                    .css(thickness_attr, slider.thickness)
+                    .appendTo(slider.elem);
+                if (range === 'max') {
+                    if (slider.vertical) {
+                        this.range_elem.css('bottom', 0).css('top', 'unset');
+                    } else {
+                        this.range_elem.css('right', 0);
+                    }
                 }
             }
             this.update = this.update.bind(this);
@@ -225,18 +229,21 @@ var yafowil_slider = (function (exports, $) {
         }
         update() {
             let slider = this.slider,
-                handles = slider.handles,
+                range = slider.range;
+            if (!range) {
+                return;
+            }
+            let handles = slider.handles,
                 pos = handles[0].pos,
-                elem = this.track_elem,
-                size_attr = this.size_attr;
-            if (slider.range_true) {
-                let size = handles[1].pos - handles[0].pos;
-                elem.css(`${size_attr}`, size)
+                elem = this.range_elem,
+                len_attr = this.len_attr;
+            if (range === true) {
+                elem.css(`${len_attr}`, handles[1].pos - handles[0].pos)
                     .css(`${slider.dir_attr}`, `${pos}px`);
-            } else if (slider.range_max) {
-                elem.css(`${size_attr}`, slider.slider_size - pos);
-            } else {
-                elem.css(`${size_attr}`, pos);
+            } else if (range === 'min') {
+                elem.css(`${len_attr}`, pos);
+            } else if (range === 'max') {
+                elem.css(`${len_attr}`, slider.slider_len - pos);
             }
         }
     }
@@ -261,7 +268,7 @@ var yafowil_slider = (function (exports, $) {
                 elem.css('height', this.handle_diameter);
             }
             let value;
-            if (this.range_true) {
+            if (this.range === true) {
                 value = this._value = opts.value || [0, 0];
                 this.handles = [
                     new SliderHandle(this, 0, value[0]),
@@ -293,17 +300,11 @@ var yafowil_slider = (function (exports, $) {
             }
             this._value = value;
         }
-        get range_max() {
-            return this.range === 'max';
-        }
-        get range_true() {
-            return this.range === true;
-        }
         get offset() {
             let offset = this.elem.offset();
             return this.vertical ? offset.top : offset.left;
         }
-        get slider_size() {
+        get slider_len() {
             let elem = this.elem;
             return this.vertical ? elem.height() : elem.width();
         }
@@ -338,7 +339,7 @@ var yafowil_slider = (function (exports, $) {
         _on_down(e) {
             let index = 0,
                 handle;
-            if (this.range_true) {
+            if (this.range === true) {
                 let distances = [];
                 for (let handle of this.handles) {
                     let e_x = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX,
