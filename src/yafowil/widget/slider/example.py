@@ -222,8 +222,8 @@ option to ``vertical``.
     slider = factory('#field:slider', value=50, props={
         'label': 'Vertical slider',
         'orientation': 'vertical',
-        'show_value': True,
         'height': 200,
+        'show_value': True,
         'unit': 'mmHg',
     })
 """
@@ -240,8 +240,8 @@ def vertical_slider():
         props={
             'label': 'Vertical slider',
             'orientation': 'vertical',
-            'show_value': True,
             'height': 200,
+            'show_value': True,
             'unit': 'mmHg',
         }
     )
@@ -251,6 +251,142 @@ def vertical_slider():
         'title': 'Vertical slider',
     }
 
+
+DOC_VERTICAL_FIXED_MIN_RANGE_SLIDER = """
+Vertical range with fixed minimum
+---------------------------------
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=50, props={
+        'label': 'Vertical range with fixed minimum',
+        'orientation': 'vertical',
+        'height': 200,
+        'range': 'min',
+        'min': 50,
+        'max': 200,
+        'show_value': True,
+        'unit': 'Pieces',
+    })
+"""
+
+
+def vertical_fixed_minimum_range():
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.fixed_minimum_range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=50,
+        props={
+            'label': 'Vertical range with fixed minimum',
+            'orientation': 'vertical',
+            'height': 200,
+            'range': 'min',
+            'min': 50,
+            'max': 200,
+            'show_value': True,
+            'unit': 'Pieces',
+        }
+    )
+    return {
+        'widget': form,
+        'doc': DOC_VERTICAL_FIXED_MIN_RANGE_SLIDER,
+        'title': 'Vertical fixed minimum',
+    }
+
+
+DOC_VERTICAL_FIXED_MAX_RANGE_SLIDER = """
+Vertical range with fixed maximum
+---------------------------------
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=2, props={
+        'label': 'Vertical range with fixed maximum',
+        'orientation': 'vertical',
+        'height': 200,
+        'range': 'max',
+        'min': 1,
+        'max': 10,
+        'show_value': True,
+        'unit': 'Minimum number',
+    })
+"""
+
+
+def vertical_fixed_maximum_range():
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.fixed_maximum_range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=2,
+        props={
+            'label': 'Vertical range with fixed maximum',
+            'orientation': 'vertical',
+            'height': 200,
+            'range': 'max',
+            'min': 1,
+            'max': 10,
+            'show_value': True,
+            'unit': 'Minimum number',
+        }
+    )
+    return {
+        'widget': form,
+        'doc': DOC_VERTICAL_FIXED_MAX_RANGE_SLIDER,
+        'title': 'Vertical fixed maximum',
+    }
+
+
+DOC_VERTICAL_RANGE_SLIDER = """
+Vertical range slider
+---------------------
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=[75, 300], props={
+        'label': 'Vertical range slider',
+        'orientation': 'vertical',
+        'height': 200,
+        'range': True,
+        'min': 0,
+        'max': 500,
+        'show_value': True,
+        'unit': 'Price range (EUR)',
+    })
+"""
+
+
+def vertical_range_slider():
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.range'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=[75, 300],
+        props={
+            'label': 'Vertical range slider',
+            'orientation': 'vertical',
+            'height': 200,
+            'range': True,
+            'min': 0,
+            'max': 500,
+            'show_value': True,
+            'unit': 'Price range (EUR)',
+        }
+    )
+    return {
+        'widget': form,
+        'doc': DOC_VERTICAL_RANGE_SLIDER,
+        'title': 'Vertical range slider',
+    }
+
+
 def get_example():
     return [
         default_slider(),
@@ -258,5 +394,8 @@ def get_example():
         fixed_maximum_range(),
         range_slider(),
         step_slider(),
-        vertical_slider()
+        vertical_slider(),
+        vertical_fixed_minimum_range(),
+        vertical_fixed_maximum_range(),
+        vertical_range_slider()
     ]

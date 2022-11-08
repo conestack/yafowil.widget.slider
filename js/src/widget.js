@@ -4,9 +4,10 @@ export function lookup_callback(path) {
     if (!path) {
         return null;
     }
-    source = path.split('.');
-    let cb = window, name;
-    for (let idx in source) {
+    let source = path.split('.'),
+        cb = window,
+        name;
+    for (const idx in source) {
         name = source[idx];
         if (cb[name] === undefined) {
             throw "'" + name + "' not found.";
@@ -16,20 +17,7 @@ export function lookup_callback(path) {
     return cb;
 }
 
-export function transform(val, type, len, min, max, step) {
-    if (type === 'step') {
-        let condition = min === 0 ? max - step / 2 : max - min / 2;
-        val = val > condition ? max : step * parseInt(val / step);
-        val = val <= min ? min : val;
-    } else if (type === 'screen') {
-        val = parseInt(len * ((val - min) / (max - min)));
-    } else if (type === 'range') {
-        val = Math.ceil((max - min) * (val / len) + min);
-    }
-    return val;
-}
-
-class SliderHandle {
+export class SliderHandle {
 
     constructor(slider, index, value) {
         this.slider = slider;
@@ -60,14 +48,18 @@ class SliderHandle {
     }
 
     set value(val) {
-        let slider = this.slider;
-        if (val < slider.min) {
-            val = slider.min;
-        } else if (val > slider.max) {
-            val = slider.max;
-        }
+        let slider = this.slider,
+            min = slider.min,
+            max = slider.max;
+        val = this._align_value(val, min, slider.step);
         val = this._prevent_overlap(val, 'value');
-        let pos = this._transform(val, 'screen');
+        if (val < min) {
+            val = min;
+        } else if (val > max) {
+            val = max;
+        }
+        let pos = slider.slider_len * ((val - min) / (max - min));
+        pos = slider.vertical ? slider.elem.height() - pos : pos;
         this.elem.css(`${slider.dir_attr}`, `${pos}px`);
         this._pos = pos;
         this._value = val;
@@ -78,23 +70,12 @@ class SliderHandle {
     }
 
     set pos(pos) {
-        let slider = this.slider;
-        if (pos > slider.slider_len) {
-            pos = slider.slider_len;
-        } else if (pos < 0) {
-            pos = 0;
-        }
-        pos = this._prevent_overlap(pos, 'pos');
-        let val;
-        if (slider.step) {
-            val = this._transform(this._transform(pos, 'range'), 'step');
-            pos = this._transform(val, 'screen');
-        } else {
-            val = this._transform(pos, 'range');
-        }
-        this.elem.css(`${slider.dir_attr}`, `${pos}px`);
-        this._pos = pos;
-        this._value = val;
+        let slider = this.slider,
+            min = slider.min,
+            max = slider.max,
+            len = slider.slider_len;
+        pos = slider.vertical ? slider.elem.height() - pos : pos;
+        this.value = Math.round((max - min) * (pos / len) + min);
     }
 
     get selected() {
@@ -123,7 +104,7 @@ class SliderHandle {
     }
 
     _on_resize() {
-        this.pos = this._transform(this.value, 'screen');
+        this.value = this.value;
     }
 
     _on_start(e) {
@@ -170,8 +151,8 @@ class SliderHandle {
             slider = this.slider,
             step = slider.scroll_step,
             vertical = slider.vertical,
-            increase = vertical ? e.key === 'ArrowDown' : e.key === 'ArrowRight',
-            decrease = vertical ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
+            increase = vertical ? e.key === 'ArrowUp' : e.key === 'ArrowRight',
+            decrease = vertical ? e.key === 'ArrowDown' : e.key === 'ArrowLeft';
         if (increase) {
             e.preventDefault();
             value = this.value + step;
@@ -186,16 +167,17 @@ class SliderHandle {
         slider.trigger('change', this);
     }
 
-    _transform(val, type) {
-        let slider = this.slider;
-        return transform(
-            val,
-            type,
-            slider.slider_len,
-            slider.min,
-            slider.max,
-            slider.step
-        );
+    _align_value(value, min, step) {
+        if (!step) {
+            return value;
+        }
+        value -= min;
+        let offset = value % step;
+        value = Math.floor(value / step) * step;
+        if (offset >= step / 2) {
+            value += step;
+        }
+        return value + min;
     }
 
     _prevent_overlap(value, attr) {
