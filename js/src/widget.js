@@ -52,7 +52,7 @@ export class SliderHandle {
             min = slider.min,
             max = slider.max;
         val = this._align_value(val, min, slider.step);
-        val = this._prevent_overlap(val, 'value');
+        val = this._prevent_overlap(val);
         if (val < min) {
             val = min;
         } else if (val > max) {
@@ -180,17 +180,23 @@ export class SliderHandle {
         return value + min;
     }
 
-    _prevent_overlap(value, attr) {
-        let slider = this.slider;
-        if (slider.range === true) {
-            let handles = slider.handles,
-                index = this.index;
-            for (let i in handles) {
-                let handle = handles[i],
-                    val = handle[attr];
-                if (value >= val && i > index || value <= val && i < index) {
-                    value = val;
-                }
+    _prevent_overlap(value) {
+        let slider = this.slider,
+            handles = slider.handles,
+            index = this.index;
+        if (handles === undefined) {
+            return value;
+        }
+        if (index > 0) {
+            let prev = handles[index - 1];
+            if (value < prev.value) {
+                value = prev.value;
+            }
+        }
+        if (index < handles.length - 1) {
+            let next = handles[index + 1];
+            if (value > next.value) {
+                value = next.value;
             }
         }
         return value;
