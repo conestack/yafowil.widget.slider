@@ -92,6 +92,10 @@ var yafowil_slider = (function (exports, $) {
             $(window).off('resize', this._on_resize);
             this.selected = false;
         }
+        destroy() {
+            this.unload();
+            this.elem.remove();
+        }
         _on_resize() {
             this.value = this.value;
         }
@@ -216,6 +220,10 @@ var yafowil_slider = (function (exports, $) {
         unload() {
             $(window).off('resize', this.update);
         }
+        destroy() {
+            this.unload();
+            this.elem.remove();
+        }
         update() {
             let slider = this.slider,
                 range = slider.range;
@@ -312,6 +320,12 @@ var yafowil_slider = (function (exports, $) {
                 handle.unload();
             }
         }
+        destroy() {
+            for (let handle of this.handles) {
+                handle.destroy();
+            }
+            this.track.destroy();
+        }
         unselect_handles() {
             $('div.slider-handle').each(function() {
                 $(this).data('slider-handle').selected = false;
@@ -356,6 +370,10 @@ var yafowil_slider = (function (exports, $) {
                 let id = $('input.slider_value', elem).attr('id');
                 if (id && id.includes('TEMPLATE')) {
                     return;
+                }
+                let data = $(this).data('yafowil-slider');
+                if (data) {
+                    data.slider.destroy();
                 }
                 new SliderWidget(elem, {
                     min: elem.data('min'),
@@ -402,6 +420,9 @@ var yafowil_slider = (function (exports, $) {
             this.update_value = this.update_value.bind(this);
             this.slider = new Slider($('div.slider', elem), opts);
             this.slider.on('change slide stop', this.update_value);
+        }
+        destroy() {
+            this.slider.destroy();
         }
         update_value(e) {
             let handle = e.widget,

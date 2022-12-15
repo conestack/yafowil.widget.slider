@@ -103,6 +103,11 @@ export class SliderHandle {
         this.selected = false;
     }
 
+    destroy() {
+        this.unload();
+        this.elem.remove();
+    }
+
     _on_resize() {
         this.value = this.value;
     }
@@ -238,6 +243,11 @@ class SliderTrack {
         $(window).off('resize', this.update);
     }
 
+    destroy() {
+        this.unload();
+        this.elem.remove();
+    }
+
     update() {
         let slider = this.slider,
             range = slider.range;
@@ -345,6 +355,13 @@ export class Slider {
         }
     }
 
+    destroy() {
+        for (let handle of this.handles) {
+            handle.destroy();
+        }
+        this.track.destroy();
+    }
+
     unselect_handles() {
         $('div.slider-handle').each(function() {
             $(this).data('slider-handle').selected = false;
@@ -394,6 +411,10 @@ export class SliderWidget {
             if (id && id.includes('TEMPLATE')) {
                 return;
             }
+            let data = $(this).data('yafowil-slider');
+            if (data) {
+                data.slider.destroy();
+            }
             new SliderWidget(elem, {
                 min: elem.data('min'),
                 max: elem.data('max'),
@@ -440,6 +461,10 @@ export class SliderWidget {
         this.update_value = this.update_value.bind(this);
         this.slider = new Slider($('div.slider', elem), opts);
         this.slider.on('change slide stop', this.update_value);
+    }
+
+    destroy() {
+        this.slider.destroy();
     }
 
     update_value(e) {
