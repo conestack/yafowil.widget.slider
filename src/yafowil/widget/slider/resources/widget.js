@@ -353,6 +353,9 @@ var yafowil_slider = (function (exports, $) {
         static initialize(context) {
             $('.yafowil_slider', context).each(function() {
                 let elem = $(this);
+                if ($('input.slider_value', elem).attr('id').includes('TEMPLATE')) {
+                    return;
+                }
                 new SliderWidget(elem, {
                     min: elem.data('min'),
                     max: elem.data('max'),
@@ -407,6 +410,15 @@ var yafowil_slider = (function (exports, $) {
             element.label.html(handle.value);
         }
     }
+    function slider_on_array_add(inst, context) {
+        SliderWidget.initialize(context, true);
+    }
+    $(function() {
+        if (yafowil_array === undefined) {
+            return;
+        }
+        yafowil_array.on_array_event('on_add', slider_on_array_add);
+    });
 
     $(function() {
         if (window.ts !== undefined) {

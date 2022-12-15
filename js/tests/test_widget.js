@@ -6,6 +6,8 @@ import {
     lookup_callback
 } from '../src/widget';
 
+window.yafowil_slider = undefined
+
 QUnit.module('slider_widget', hooks => {
     const container = $('<div />');
 
