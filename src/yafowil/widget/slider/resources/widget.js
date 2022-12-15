@@ -353,7 +353,8 @@ var yafowil_slider = (function (exports, $) {
         static initialize(context) {
             $('.yafowil_slider', context).each(function() {
                 let elem = $(this);
-                if ($('input.slider_value', elem).attr('id').includes('TEMPLATE')) {
+                let id = $('input.slider_value', elem).attr('id');
+                if (id && id.includes('TEMPLATE')) {
                     return;
                 }
                 new SliderWidget(elem, {
