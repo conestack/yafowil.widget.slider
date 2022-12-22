@@ -3,10 +3,9 @@ import {
     Slider,
     SliderHandle,
     SliderWidget,
-    lookup_callback
+    lookup_callback,
+    register_array_subscribers
 } from '../src/widget';
-
-window.yafowil_slider = undefined
 
 QUnit.module('slider_widget', hooks => {
     const container = $('<div />');
@@ -38,6 +37,48 @@ QUnit.module('slider_widget', hooks => {
         }, "'inexistent' not found.");
 
         delete window.namespace;
+    });
+
+    QUnit.test('register_array_subscribers', assert => {
+        let _array_subscribers = {
+            on_add: []
+        };
+    
+        // window.yafowil_array is undefined - return
+        register_array_subscribers();
+        assert.deepEqual(_array_subscribers['on_add'], []);
+    
+        // patch yafowil_array
+        window.yafowil_array = {
+            on_array_event: function(evt_name, evt_function) {
+                _array_subscribers[evt_name] = evt_function;
+            }
+        };
+        register_array_subscribers();
+    
+        // create table DOM
+        let table = $('<table />')
+            .append($('<tr />'))
+            .append($('<td />'))
+            .appendTo('body');
+    
+        let el = $(`<div />`).addClass('yafowil_slider');
+        $('td', table).addClass('arraytemplate');
+        el.appendTo($('td', table));
+    
+        // invoke array on_add - returns
+        _array_subscribers['on_add'].apply(null, $('tr', table));
+        let widget = el.data('yafowil-slider');
+        assert.notOk(widget);
+        $('td', table).removeClass('arraytemplate');
+
+        // invoke array on_add
+        _array_subscribers['on_add'].apply(null, $('tr', table));
+        widget = el.data('yafowil-slider');
+        assert.ok(widget);
+        table.remove();
+        window.yafowil_array = undefined;
+        _array_subscribers = undefined;
     });
 
     QUnit.test('SliderHandle.constructor', assert => {
@@ -338,7 +379,7 @@ QUnit.module('slider_widget', hooks => {
     });
 
     /* test initialize function */
-    QUnit.skip('initialize()', assert => {
+    QUnit.test.skip('initialize()', assert => {
         // create options and set as data attribute
         options = {
             handle_diameter: 11,
@@ -367,7 +408,7 @@ QUnit.module('slider_widget', hooks => {
     QUnit.module('constructor', () => {
 
         /* slider without additional options given */
-        QUnit.skip('default slider', assert => {
+        QUnit.test.skip('default slider', assert => {
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
 
@@ -401,7 +442,7 @@ QUnit.module('slider_widget', hooks => {
         });
     
         /* slider with vertical orientation */
-        QUnit.skip('vertical', assert => {
+        QUnit.test.skip('vertical', assert => {
             options.orientation = 'vertical';
             options.height = len;
             widget = new SliderWidget(elem, options);
@@ -416,7 +457,7 @@ QUnit.module('slider_widget', hooks => {
         });
     
         /* range slider - two handles */
-        QUnit.skip('slider with range', assert => {
+        QUnit.test.skip('slider with range', assert => {
             options.range = true;
             options.value = [50, 100];
     
@@ -441,7 +482,7 @@ QUnit.module('slider_widget', hooks => {
         });
     
         /* slider with range set to max - user can only choose a maximum value */
-        QUnit.skip('slider with max range', assert => {
+        QUnit.test.skip('slider with max range', assert => {
             options.range = 'max';
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
@@ -453,7 +494,7 @@ QUnit.module('slider_widget', hooks => {
         });
     
         /* vertical slider with range set to max */
-        QUnit.skip('range max & vertical', assert => {
+        QUnit.test.skip('range max & vertical', assert => {
             options.orientation = 'vertical';
             options.range = 'max';
             widget = new SliderWidget(elem, options);
@@ -483,7 +524,7 @@ QUnit.module('slider_widget', hooks => {
         });
     
         /* slider with custom handle diameter and track thickness */
-        QUnit.skip('handle_diameter/thickness', assert => {
+        QUnit.test.skip('handle_diameter/thickness', assert => {
             options.handle_diameter = 30;
             options.thickness = 50;
             options.range = true;
@@ -516,7 +557,7 @@ QUnit.module('slider_widget', hooks => {
         });
     });
 
-    QUnit.skip('value setter', assert => {
+    QUnit.test.skip('value setter', assert => {
         $('.slider_value', elem).val(10);
         widget = new SliderWidget(elem, options);
         slider = widget.slider;
@@ -883,7 +924,7 @@ QUnit.module('slider_widget', hooks => {
             );
         });
 
-        QUnit.skip('default - move to end', assert => {
+        QUnit.test.skip('default - move to end', assert => {
             elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
@@ -899,7 +940,7 @@ QUnit.module('slider_widget', hooks => {
             });
         });
 
-        QUnit.skip('default - move to start', assert => {
+        QUnit.test.skip('default - move to start', assert => {
             elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
@@ -915,7 +956,7 @@ QUnit.module('slider_widget', hooks => {
             });
         });
 
-        QUnit.skip('default - touch move to end', assert => {
+        QUnit.test.skip('default - touch move to end', assert => {
             elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
@@ -933,7 +974,7 @@ QUnit.module('slider_widget', hooks => {
             assert.strictEqual(handle.pos, len);
         });
 
-        QUnit.skip('default - touch move to start', assert => {
+        QUnit.test.skip('default - touch move to start', assert => {
             elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
@@ -962,7 +1003,7 @@ QUnit.module('slider_widget', hooks => {
                 slider = widget.slider;
             });
 
-            QUnit.skip('move to end', assert => {
+            QUnit.test.skip('move to end', assert => {
                 let handle = slider.handles[0];
                 do_move_handle(assert, handle, {
                     drag_end: slider.offset + len + 10,
@@ -972,7 +1013,7 @@ QUnit.module('slider_widget', hooks => {
                 });
             });
 
-            QUnit.skip('move to start', assert => {
+            QUnit.test.skip('move to start', assert => {
                 let handle = slider.handles[0];
                 do_move_handle(assert, handle, {
                     drag_end: slider.offset - 10,
@@ -982,7 +1023,7 @@ QUnit.module('slider_widget', hooks => {
                 });
             });
 
-            QUnit.skip('touch move to end', assert => {
+            QUnit.test.skip('touch move to end', assert => {
                 let handle = slider.handles[0];
                 let drag_end = slider.offset + len + 10;
                 let target = handle.elem;
@@ -993,7 +1034,7 @@ QUnit.module('slider_widget', hooks => {
                 assert.strictEqual(handle.pos, len);
             });
 
-            QUnit.skip('touch move to start', assert => {
+            QUnit.test.skip('touch move to start', assert => {
                 let handle = slider.handles[0];
                 let drag_end = slider.offset - 10;
                 let target = handle.elem;
@@ -1006,7 +1047,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* slider with specified step */
-        QUnit.skip('step_slider move', assert => {
+        QUnit.test.skip('step_slider move', assert => {
             options.step = 10;
             elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
@@ -1026,7 +1067,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* slider with minimum and maximum value and step */
-        QUnit.skip('min/max/step - move to end', assert => {
+        QUnit.test.skip('min/max/step - move to end', assert => {
             options.min = 30;
             options.max = 500;
             options.step = 25;
@@ -1078,7 +1119,7 @@ QUnit.module('slider_widget', hooks => {
         }));
 
         /* range slider with two handles */
-        QUnit.skip('range true (horizontal)', assert => {
+        QUnit.test.skip('range true (horizontal)', assert => {
             options.range = true;
             options.values = [50, 100];
             elem.css('width', `${len}px`);
@@ -1164,7 +1205,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* default slider with no additional options */
-        QUnit.skip('move to end/start', assert => {
+        QUnit.test.skip('move to end/start', assert => {
             elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
             slider = widget.slider;
@@ -1210,7 +1251,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* slider with specified step */
-        QUnit.skip('step', assert => {
+        QUnit.test.skip('step', assert => {
             options.step = 10;
             elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
@@ -1237,7 +1278,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* slider with specified scroll step */
-        QUnit.skip('move', assert => {
+        QUnit.test.skip('move', assert => {
             options.scroll_step = 20;
             elem.css('width', `${len}px`);
             widget = new SliderWidget(elem, options);
@@ -1281,7 +1322,7 @@ QUnit.module('slider_widget', hooks => {
         });
 
         /* range slider with two handles */
-        QUnit.skip('horizontal', assert => {
+        QUnit.test.skip('horizontal', assert => {
             options.range = true;
             options.values = [50, 100];
             elem.css('width', `${len}px`);
@@ -1381,7 +1422,7 @@ QUnit.module('slider_widget', hooks => {
 
     QUnit.module('custom event dispatch', () => {
 
-        QUnit.skip('custom event dispatch', assert => {
+        QUnit.test.skip('custom event dispatch', assert => {
             elem.css('width', `${len}px`);
             $('.slider_value', elem).val(0);
 
@@ -1462,7 +1503,7 @@ QUnit.module('slider_widget', hooks => {
             }
         });
 
-        QUnit.skip('custom event dispatch - scroll/step/key', assert => {
+        QUnit.test.skip('custom event dispatch - scroll/step/key', assert => {
 
             let scroll_down = $.event.fix(new WheelEvent('mousewheel', {
                 'deltaY': 1,
@@ -1584,7 +1625,7 @@ QUnit.module('on_resize', hooks => {
         container.remove();
     });
 
-    QUnit.skip('resize', assert => {
+    QUnit.test.skip('resize', assert => {
         options.value = 50;
         options.range = 'min';
         elem.css('height', `${len}px`);
@@ -1612,7 +1653,7 @@ QUnit.module('on_resize', hooks => {
         );
     });
 
-    QUnit.skip('unload', assert => {
+    QUnit.test.skip('unload', assert => {
         options.value = 50;
         options.range = 'min';
         elem.css('height', `${len}px`);

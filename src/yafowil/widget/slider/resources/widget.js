@@ -367,11 +367,10 @@ var yafowil_slider = (function (exports, $) {
         static initialize(context) {
             $('.yafowil_slider', context).each(function() {
                 let elem = $(this);
-                let id = $('input.slider_value', elem).attr('id');
-                if (id && id.includes('TEMPLATE')) {
+                if (elem.parents('.arraytemplate').length) {
                     return;
                 }
-                let data = $(this).data('yafowil-slider');
+                let data = elem.data('yafowil-slider');
                 if (data) {
                     data.slider.destroy();
                 }
@@ -435,12 +434,12 @@ var yafowil_slider = (function (exports, $) {
     function slider_on_array_add(inst, context) {
         SliderWidget.initialize(context, true);
     }
-    $(function() {
-        if (yafowil_array === undefined) {
+    function register_array_subscribers() {
+        if (window.yafowil_array === undefined) {
             return;
         }
-        yafowil_array.on_array_event('on_add', slider_on_array_add);
-    });
+        window.yafowil_array.on_array_event('on_add', slider_on_array_add);
+    }
 
     $(function() {
         if (window.ts !== undefined) {
@@ -450,12 +449,14 @@ var yafowil_slider = (function (exports, $) {
         } else {
             SliderWidget.initialize();
         }
+        register_array_subscribers();
     });
 
     exports.Slider = Slider;
     exports.SliderHandle = SliderHandle;
     exports.SliderWidget = SliderWidget;
     exports.lookup_callback = lookup_callback;
+    exports.register_array_subscribers = register_array_subscribers;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
