@@ -370,10 +370,6 @@ var yafowil_slider = (function (exports, $) {
                 if (elem.parents('.arraytemplate').length) {
                     return;
                 }
-                let data = elem.data('yafowil-slider');
-                if (data) {
-                    data.slider.destroy();
-                }
                 new SliderWidget(elem, {
                     min: elem.data('min'),
                     max: elem.data('max'),
