@@ -285,7 +285,7 @@ var yafowil_slider = (function (exports, $) {
                 value = [value];
             }
             for (let i in this.handles) {
-                this.handles[i] = value[i];
+                this.handles[i].value = value[i];
             }
             this._value = value;
         }
