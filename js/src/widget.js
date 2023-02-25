@@ -98,7 +98,7 @@ export class SliderHandle {
         this._selected = selected;
     }
 
-    unload() {
+    destroy() {
         $(window).off('resize', this._on_resize);
         this.selected = false;
     }
@@ -237,7 +237,7 @@ class SliderTrack {
         this.update();
     }
 
-    unload() {
+    destroy() {
         $(window).off('resize', this.update);
     }
 
@@ -265,6 +265,9 @@ class SliderTrack {
 export class Slider {
 
     constructor(elem, opts) {
+        if (window.ts !== undefined) {
+            ts.ajax.attach(this, elem);
+        }
         this.elem = elem;
         this.range = opts.range || false;
         this.handle_diameter = opts.handle_diameter || 20;
@@ -342,10 +345,10 @@ export class Slider {
         this.elem.trigger(new $.Event(name, {widget: widget}));
     }
 
-    unload() {
-        this.track.unload();
+    destroy() {
+        this.track.destroy();
         for (let handle of this.handles) {
-            handle.unload();
+            handle.destroy();
         }
     }
 

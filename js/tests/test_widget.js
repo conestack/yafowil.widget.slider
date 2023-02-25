@@ -62,53 +62,75 @@ QUnit.module('slider_widget', hooks => {
         const slider = {
             elem: $('<div />'),
             handle_diameter: 20,
+            min: 0,
+            step: false
         };
         const handle = new SliderHandle(slider, 0, 0);
 
-        assert.deepEqual(handle._align_value(1, 0, false), 1);
+        assert.deepEqual(handle._align_value(1), 1);
 
-        assert.deepEqual(handle._align_value(0, 0, 10), 0);
-        assert.deepEqual(handle._align_value(100, 0, 10), 100);
+        slider.step = 10;
+        assert.deepEqual(handle._align_value(0), 0);
+        assert.deepEqual(handle._align_value(100), 100);
 
-        assert.deepEqual(handle._align_value(4, 0, 10), 0);
-        assert.deepEqual(handle._align_value(5, 0, 10), 10);
+        assert.deepEqual(handle._align_value(4), 0);
+        assert.deepEqual(handle._align_value(5), 10);
 
-        assert.deepEqual(handle._align_value(94, 0, 10), 90);
-        assert.deepEqual(handle._align_value(95, 0, 10), 100);
+        assert.deepEqual(handle._align_value(94), 90);
+        assert.deepEqual(handle._align_value(95), 100);
 
-        assert.deepEqual(handle._align_value(25, 25, 5), 25);
-        assert.deepEqual(handle._align_value(26, 25, 5), 25);
+        slider.min = 25;
+        slider.step = 5;
+        assert.deepEqual(handle._align_value(25), 25);
+        assert.deepEqual(handle._align_value(26), 25);
 
-        assert.deepEqual(handle._align_value(28, 25, 5), 30);
-        assert.deepEqual(handle._align_value(30, 25, 5), 30);
-        assert.deepEqual(handle._align_value(32, 25, 5), 30);
+        assert.deepEqual(handle._align_value(28), 30);
+        assert.deepEqual(handle._align_value(30), 30);
+        assert.deepEqual(handle._align_value(32), 30);
 
-        assert.deepEqual(handle._align_value(68, 25, 5), 70);
-        assert.deepEqual(handle._align_value(70, 25, 5), 70);
-        assert.deepEqual(handle._align_value(72, 25, 5), 70);
+        assert.deepEqual(handle._align_value(68), 70);
+        assert.deepEqual(handle._align_value(70), 70);
+        assert.deepEqual(handle._align_value(72), 70);
 
-        assert.deepEqual(handle._align_value(74, 25, 5), 75);
-        assert.deepEqual(handle._align_value(75, 25, 5), 75);
+        assert.deepEqual(handle._align_value(74), 75);
+        assert.deepEqual(handle._align_value(75), 75);
 
-        assert.deepEqual(handle._align_value(-9, -9, 3), -9);
-        assert.deepEqual(handle._align_value(-8, -9, 3), -9);
+        slider.min = -9;
+        slider.step = 3;
+        assert.deepEqual(handle._align_value(-9), -9);
+        assert.deepEqual(handle._align_value(-8), -9);
 
-        assert.deepEqual(handle._align_value(-7, -9, 3), -6);
-        assert.deepEqual(handle._align_value(-6, -9, 3), -6);
-        assert.deepEqual(handle._align_value(-5, -9, 3), -6);
+        assert.deepEqual(handle._align_value(-7), -6);
+        assert.deepEqual(handle._align_value(-6), -6);
+        assert.deepEqual(handle._align_value(-5), -6);
 
-        assert.deepEqual(handle._align_value(-2, -9, 3), -3);
-        assert.deepEqual(handle._align_value(-1, -9, 3), 0);
-        assert.deepEqual(handle._align_value(0, -9, 3), 0);
-        assert.deepEqual(handle._align_value(1, -9, 3), 0);
-        assert.deepEqual(handle._align_value(2, -9, 3), 3);
+        assert.deepEqual(handle._align_value(-2), -3);
+        assert.deepEqual(handle._align_value(-1), 0);
+        assert.deepEqual(handle._align_value(0), 0);
+        assert.deepEqual(handle._align_value(1), 0);
+        assert.deepEqual(handle._align_value(2), 3);
 
-        assert.deepEqual(handle._align_value(7, -9, 3), 6);
-        assert.deepEqual(handle._align_value(6, -9, 3), 6);
-        assert.deepEqual(handle._align_value(5, -9, 3), 6);
+        assert.deepEqual(handle._align_value(7), 6);
+        assert.deepEqual(handle._align_value(6), 6);
+        assert.deepEqual(handle._align_value(5), 6);
 
-        assert.deepEqual(handle._align_value(9, -9, 3), 9);
-        assert.deepEqual(handle._align_value(8, -9, 3), 9);
+        assert.deepEqual(handle._align_value(9), 9);
+        assert.deepEqual(handle._align_value(8), 9);
+    });
+
+    QUnit.test('SliderHandle._prevent_overlap', assert => {
+        const slider = {
+            elem: $('<div />')
+        };
+        const handle_0 = new SliderHandle(slider, 0, 25);
+        assert.deepEqual(handle_0._prevent_overlap(80), 80);
+
+        const handle_1 = new SliderHandle(slider, 1, 75);
+        assert.deepEqual(handle_1._prevent_overlap(20), 20);
+
+        slider.handles = [handle_0, handle_1];
+        assert.deepEqual(handle_0._prevent_overlap(80), 75);
+        assert.deepEqual(handle_1._prevent_overlap(20), 25);
     });
 
     QUnit.test('SliderHandle.value -> horizontal', assert => {
@@ -174,6 +196,194 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.pos, 160);
         handle.value = 71;
         assert.strictEqual(handle.value, 75);
+        assert.strictEqual(handle.pos, 200);
+    });
+
+    QUnit.test('SliderHandle.value -> vertical', assert => {
+        const elem = $('<div />').css('height', 200).appendTo(container);
+        const slider = new Slider(elem, {orientation: 'vertical'});
+        const handle = slider.handles[0];
+
+        assert.strictEqual(slider.min, 0);
+        assert.strictEqual(slider.max, 100);
+
+        assert.strictEqual(handle.value, 0);
+        assert.strictEqual(handle.pos, 200);
+
+        handle.value = -10;
+        assert.strictEqual(handle.value, 0);
+        handle.value = 110;
+        assert.strictEqual(handle.value, 100);
+
+        handle.value = 0;
+        assert.strictEqual(handle.pos, 200);
+        handle.value = 25;
+        assert.strictEqual(handle.pos, 150);
+        handle.value = 75;
+        assert.strictEqual(handle.pos, 50);
+        handle.value = 100;
+        assert.strictEqual(handle.pos, 0);
+
+        slider.min = 50;
+        handle.value = 50;
+        assert.strictEqual(handle.pos, 200);
+        handle.value = 75;
+        assert.strictEqual(handle.pos, 100);
+        handle.value = 100;
+        assert.strictEqual(handle.pos, 0);
+
+        slider.min = 0;
+        slider.max = 50;
+        handle.value = 0;
+        assert.strictEqual(handle.pos, 200);
+        handle.value = 25;
+        assert.strictEqual(handle.pos, 100);
+        handle.value = 50;
+        assert.strictEqual(handle.pos, 0);
+
+        slider.min = 25;
+        slider.max = 75;
+        handle.value = 25;
+        assert.strictEqual(handle.pos, 200);
+        handle.value = 50;
+        assert.strictEqual(handle.pos, 100);
+        handle.value = 75;
+        assert.strictEqual(handle.pos, 0);
+
+        slider.step = 10;
+        handle.value = 29;
+        assert.strictEqual(handle.value, 25);
+        assert.strictEqual(handle.pos, 200);
+        handle.value = 30;
+        assert.strictEqual(handle.value, 35);
+        assert.strictEqual(handle.pos, 160);
+        handle.value = 60;
+        assert.strictEqual(handle.value, 65);
+        assert.strictEqual(handle.pos, 40);
+        handle.value = 71;
+        assert.strictEqual(handle.value, 75);
+        assert.strictEqual(handle.pos, 0);
+    });
+
+    QUnit.test('SliderHandle.pos -> horizontal', assert => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, {});
+        const handle = slider.handles[0];
+
+        assert.strictEqual(slider.min, 0);
+        assert.strictEqual(slider.max, 100);
+
+        assert.strictEqual(handle.value, 0);
+        assert.strictEqual(handle.pos, 0);
+
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 0);
+        handle.pos = 50;
+        assert.strictEqual(handle.value, 25);
+        handle.pos = 150;
+        assert.strictEqual(handle.value, 75);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 100);
+
+        slider.min = 50;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 50);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 75);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 100);
+
+        slider.min = 0;
+        slider.max = 50;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 0);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 25);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 50);
+
+        slider.min = 25;
+        slider.max = 75;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 25);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 50);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 75);
+
+        slider.step = 10;
+        handle.pos = 19;
+        assert.strictEqual(handle.value, 25);
+        assert.strictEqual(handle.pos, 0);
+        handle.pos = 20;
+        assert.strictEqual(handle.value, 35);
+        assert.strictEqual(handle.pos, 40);
+        handle.pos = 140;
+        assert.strictEqual(handle.value, 65);
+        assert.strictEqual(handle.pos, 160);
+        handle.pos = 181;
+        assert.strictEqual(handle.value, 75);
+        assert.strictEqual(handle.pos, 200);
+    });
+
+    QUnit.test('SliderHandle.pos -> vertical', assert => {
+        const elem = $('<div />').css('height', 200).appendTo(container);
+        const slider = new Slider(elem, {orientation: 'vertical'});
+        const handle = slider.handles[0];
+
+        assert.strictEqual(slider.min, 0);
+        assert.strictEqual(slider.max, 100);
+
+        assert.strictEqual(handle.value, 0);
+        assert.strictEqual(handle.pos, 200);
+
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 100);
+        handle.pos = 50;
+        assert.strictEqual(handle.value, 75);
+        handle.pos = 150;
+        assert.strictEqual(handle.value, 25);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 0);
+
+        slider.min = 50;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 100);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 75);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 50);
+
+        slider.min = 0;
+        slider.max = 50;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 50);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 25);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 0);
+
+        slider.min = 25;
+        slider.max = 75;
+        handle.pos = 0;
+        assert.strictEqual(handle.value, 75);
+        handle.pos = 100;
+        assert.strictEqual(handle.value, 50);
+        handle.pos = 200;
+        assert.strictEqual(handle.value, 25);
+
+        slider.step = 10;
+        handle.pos = 20;
+        assert.strictEqual(handle.value, 75);
+        assert.strictEqual(handle.pos, 0);
+        handle.pos = 21;
+        assert.strictEqual(handle.value, 65);
+        assert.strictEqual(handle.pos, 40);
+        handle.pos = 141;
+        assert.strictEqual(handle.value, 35);
+        assert.strictEqual(handle.pos, 160);
+        handle.pos = 181;
+        assert.strictEqual(handle.value, 25);
         assert.strictEqual(handle.pos, 200);
     });
 });
