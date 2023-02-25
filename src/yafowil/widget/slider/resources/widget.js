@@ -101,8 +101,9 @@ var yafowil_slider = (function (exports, $) {
             e.stopPropagation();
             this.selected = true;
             this.slider.trigger('start', this);
-            $(document).on('mousemove touchmove', this._on_move);
-            $(document).on('mouseup touchend', this._on_end);
+            $(document)
+                .on('mousemove touchmove', this._on_move)
+                .on('mouseup touchend', this._on_end);
         }
         _on_move(e) {
             e.preventDefault();
@@ -113,8 +114,9 @@ var yafowil_slider = (function (exports, $) {
         }
         _on_end(e) {
             e.preventDefault();
-            $(document).off('mousemove touchmove', this._on_move);
-            $(document).off('mouseup touchend', this._on_end);
+            $(document)
+                .off('mousemove touchmove', this._on_move)
+                .off('mouseup touchend', this._on_end);
             this.slider.trigger('stop', this);
         }
         _on_scroll(e) {

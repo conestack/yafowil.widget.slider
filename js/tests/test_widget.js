@@ -416,7 +416,7 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(events.keydown[0].handler, handle._on_key);
     });
 
-    QUnit.test('SliderHandle -> motion', assert => {
+    QUnit.test('SliderHandle -> drag', assert => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -447,7 +447,7 @@ QUnit.module('slider_widget', hooks => {
 
         let events = $._data(document, 'events');
         assert.deepEqual(events.mousemove[0].handler, handle._on_move);
-        assert.strictEqual(events.mouseup[0].handler.guid, handle._on_end.guid);
+        assert.deepEqual(events.mouseup[0].handler, handle._on_end);
 
         $(document).trigger(new $.Event('mousemove', {
             pageX: 100 + slider.offset
@@ -467,8 +467,9 @@ QUnit.module('slider_widget', hooks => {
 
         events = $._data(document, 'events');
         assert.deepEqual(events.touchmove[0].handler, handle._on_move);
-        assert.strictEqual(events.touchend[0].handler.guid, handle._on_end.guid);
+        assert.deepEqual(events.touchend[0].handler, handle._on_end);
 
+        handle.value = 0;
         $(document).trigger(new $.Event('touchmove', {
             touches: [{pageX: 100 + slider.offset}]
         }));
@@ -480,6 +481,52 @@ QUnit.module('slider_widget', hooks => {
         events = $._data(document, 'events');
         assert.strictEqual(events.touchmove, undefined);
         assert.strictEqual(events.touchend, undefined);
+    });
+
+    QUnit.test('SliderHandle -> scroll', assert => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, {});
+        const handle = slider.handles[0];
+
+        slider.on('change', (e) => {
+            assert.strictEqual(e.type, 'change');
+            assert.deepEqual(e.widget, handle);
+            assert.step('change event triggered');
+        });
+
+        slider.elem.trigger(new $.Event('mousewheel'));
+        assert.verifySteps([]);
+        assert.strictEqual(handle.value, 0);
+
+        handle.selected = true;
+
+        slider.elem.trigger(new $.Event('mousewheel', {
+            originalEvent: {deltaY: 1},
+            preventDefault: function() {}
+        }));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle.value, 1);
+
+        slider.elem.trigger(new $.Event('wheel', {
+            originalEvent: {deltaY: 1},
+            preventDefault: function() {}
+        }));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle.value, 2);
+
+        slider.elem.trigger(new $.Event('mousewheel', {
+            originalEvent: {deltaY: -1},
+            preventDefault: function() {}
+        }));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle.value, 1);
+
+        slider.elem.trigger(new $.Event('wheel', {
+            originalEvent: {deltaY: -1},
+            preventDefault: function() {}
+        }));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle.value, 0);
     });
 });
 
