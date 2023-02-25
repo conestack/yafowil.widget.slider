@@ -25,8 +25,8 @@ var yafowil_slider = (function (exports, $) {
                 .addClass('slider-handle')
                 .width(h_diam)
                 .height(h_diam)
-                .appendTo(slider.elem);
-            this.elem.data('slider-handle', this);
+                .appendTo(slider.elem)
+                .data('slider-handle', this);
             this.index = index;
             this.value = value;
             this.selected = false;
@@ -42,22 +42,22 @@ var yafowil_slider = (function (exports, $) {
         get value() {
             return this._value;
         }
-        set value(val) {
+        set value(value) {
             let slider = this.slider,
                 min = slider.min,
                 max = slider.max;
-            val = this._align_value(val, min, slider.step);
-            val = this._prevent_overlap(val);
-            if (val < min) {
-                val = min;
-            } else if (val > max) {
-                val = max;
+            value = this._align_value(value);
+            value = this._prevent_overlap(value);
+            if (value < min) {
+                value = min;
+            } else if (value > max) {
+                value = max;
             }
-            let pos = slider.slider_len * ((val - min) / (max - min));
+            let pos = slider.slider_len * ((value - min) / (max - min));
             pos = slider.vertical ? slider.elem.height() - pos : pos;
             this.elem.css(`${slider.dir_attr}`, `${pos}px`);
             this._pos = pos;
-            this._value = val;
+            this._value = value;
         }
         get pos() {
             return this._pos;
@@ -68,7 +68,7 @@ var yafowil_slider = (function (exports, $) {
                 max = slider.max,
                 len = slider.slider_len;
             pos = slider.vertical ? slider.elem.height() - pos : pos;
-            this.value = Math.round((max - min) * (pos / len) + min);
+            this.value = (max - min) * (pos / len) + min;
         }
         get selected() {
             return this._selected;
@@ -150,17 +150,20 @@ var yafowil_slider = (function (exports, $) {
             slider.track.update();
             slider.trigger('change', this);
         }
-        _align_value(value, min, step) {
-            if (!step) {
-                return value;
+        _align_value(value) {
+            let slider = this.slider,
+                min = slider.min,
+                step = slider.step;
+            if (step) {
+                value -= min;
+                let offset = value % step;
+                value = Math.floor(value / step) * step;
+                if (offset >= step / 2) {
+                    value += step;
+                }
+                value += min;
             }
-            value -= min;
-            let offset = value % step;
-            value = Math.floor(value / step) * step;
-            if (offset >= step / 2) {
-                value += step;
-            }
-            return value + min;
+            return Math.round(value);
         }
         _prevent_overlap(value) {
             let slider = this.slider,
@@ -281,13 +284,14 @@ var yafowil_slider = (function (exports, $) {
             return this._value;
         }
         set value(value) {
-            if (!value instanceof Array) {
+            if (!(value instanceof Array)) {
                 value = [value];
             }
             for (let i in this.handles) {
                 this.handles[i].value = value[i];
             }
             this._value = value;
+            this.track.update();
         }
         get offset() {
             let offset = this.elem.offset();
