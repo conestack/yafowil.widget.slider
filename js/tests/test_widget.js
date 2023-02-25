@@ -415,6 +415,72 @@ QUnit.module('slider_widget', hooks => {
         events = $._data(document, 'events');
         assert.deepEqual(events.keydown[0].handler, handle._on_key);
     });
+
+    QUnit.test('SliderHandle -> motion', assert => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, {});
+        const handle = slider.handles[0];
+
+        slider.on('start', (e) => {
+            assert.strictEqual(e.type, 'start');
+            assert.deepEqual(e.widget, handle);
+            assert.step('start event triggered');
+        });
+
+        slider.on('slide', (e) => {
+            assert.strictEqual(e.type, 'slide');
+            assert.deepEqual(e.widget, handle);
+            assert.strictEqual(e.widget.pos, 100);
+            assert.strictEqual(e.widget.value, 50);
+            assert.step('slide event triggered');
+        });
+
+        slider.on('stop', (e) => {
+            assert.strictEqual(e.type, 'stop');
+            assert.deepEqual(e.widget, handle);
+            assert.step('stop event triggered');
+        });
+
+        // mouse events
+        handle.elem.trigger(new $.Event('mousedown'));
+        assert.verifySteps(['start event triggered']);
+
+        let events = $._data(document, 'events');
+        assert.deepEqual(events.mousemove[0].handler, handle._on_move);
+        assert.strictEqual(events.mouseup[0].handler.guid, handle._on_end.guid);
+
+        $(document).trigger(new $.Event('mousemove', {
+            pageX: 100 + slider.offset
+        }));
+        assert.verifySteps(['slide event triggered']);
+
+        $(document).trigger(new $.Event('mouseup'));
+        assert.verifySteps(['stop event triggered']);
+
+        events = $._data(document, 'events');
+        assert.strictEqual(events.mousemove, undefined);
+        assert.strictEqual(events.mouseup, undefined);
+
+        // touch events
+        handle.elem.trigger(new $.Event('touchstart'));
+        assert.verifySteps(['start event triggered']);
+
+        events = $._data(document, 'events');
+        assert.deepEqual(events.touchmove[0].handler, handle._on_move);
+        assert.strictEqual(events.touchend[0].handler.guid, handle._on_end.guid);
+
+        $(document).trigger(new $.Event('touchmove', {
+            touches: [{pageX: 100 + slider.offset}]
+        }));
+        assert.verifySteps(['slide event triggered']);
+
+        $(document).trigger(new $.Event('touchend'));
+        assert.verifySteps(['stop event triggered']);
+
+        events = $._data(document, 'events');
+        assert.strictEqual(events.touchmove, undefined);
+        assert.strictEqual(events.touchend, undefined);
+    });
 });
 
 //////////////////////////////////////////////////////////////////////////////
