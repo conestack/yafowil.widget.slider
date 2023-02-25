@@ -30,7 +30,6 @@ export class SliderHandle {
             .data('slider-handle', this);
         this.index = index;
         this.value = value;
-        this.selected = false;
 
         this._on_start = this._on_start.bind(this);
         this._on_move = this._on_move.bind(this);
@@ -38,6 +37,8 @@ export class SliderHandle {
         this._on_scroll = this._on_scroll.bind(this);
         this._on_key = this._on_key.bind(this);
         this._on_resize = this._on_resize.bind(this);
+
+        this.selected = false;
 
         this.elem.on('mousedown touchstart', this._on_start);
         $(window).on('resize', this._on_resize);
@@ -90,7 +91,7 @@ export class SliderHandle {
             slider.unselect_handles();
             elem.addClass('active').css('z-index', 10)
             slider.elem.on('mousewheel wheel', this._on_scroll);
-            $(document).off('keydown', this._on_key).on('keydown', this._on_key);
+            $(document).on('keydown', this._on_key);
         } else {
             elem.removeClass('active').css('z-index', 1);
             slider.elem.off('mousewheel wheel', this._on_scroll);

@@ -67,55 +67,55 @@ QUnit.module('slider_widget', hooks => {
         };
         const handle = new SliderHandle(slider, 0, 0);
 
-        assert.deepEqual(handle._align_value(1), 1);
+        assert.strictEqual(handle._align_value(1), 1);
 
         slider.step = 10;
-        assert.deepEqual(handle._align_value(0), 0);
-        assert.deepEqual(handle._align_value(100), 100);
+        assert.strictEqual(handle._align_value(0), 0);
+        assert.strictEqual(handle._align_value(100), 100);
 
-        assert.deepEqual(handle._align_value(4), 0);
-        assert.deepEqual(handle._align_value(5), 10);
+        assert.strictEqual(handle._align_value(4), 0);
+        assert.strictEqual(handle._align_value(5), 10);
 
-        assert.deepEqual(handle._align_value(94), 90);
-        assert.deepEqual(handle._align_value(95), 100);
+        assert.strictEqual(handle._align_value(94), 90);
+        assert.strictEqual(handle._align_value(95), 100);
 
         slider.min = 25;
         slider.step = 5;
-        assert.deepEqual(handle._align_value(25), 25);
-        assert.deepEqual(handle._align_value(26), 25);
+        assert.strictEqual(handle._align_value(25), 25);
+        assert.strictEqual(handle._align_value(26), 25);
 
-        assert.deepEqual(handle._align_value(28), 30);
-        assert.deepEqual(handle._align_value(30), 30);
-        assert.deepEqual(handle._align_value(32), 30);
+        assert.strictEqual(handle._align_value(28), 30);
+        assert.strictEqual(handle._align_value(30), 30);
+        assert.strictEqual(handle._align_value(32), 30);
 
-        assert.deepEqual(handle._align_value(68), 70);
-        assert.deepEqual(handle._align_value(70), 70);
-        assert.deepEqual(handle._align_value(72), 70);
+        assert.strictEqual(handle._align_value(68), 70);
+        assert.strictEqual(handle._align_value(70), 70);
+        assert.strictEqual(handle._align_value(72), 70);
 
-        assert.deepEqual(handle._align_value(74), 75);
-        assert.deepEqual(handle._align_value(75), 75);
+        assert.strictEqual(handle._align_value(74), 75);
+        assert.strictEqual(handle._align_value(75), 75);
 
         slider.min = -9;
         slider.step = 3;
-        assert.deepEqual(handle._align_value(-9), -9);
-        assert.deepEqual(handle._align_value(-8), -9);
+        assert.strictEqual(handle._align_value(-9), -9);
+        assert.strictEqual(handle._align_value(-8), -9);
 
-        assert.deepEqual(handle._align_value(-7), -6);
-        assert.deepEqual(handle._align_value(-6), -6);
-        assert.deepEqual(handle._align_value(-5), -6);
+        assert.strictEqual(handle._align_value(-7), -6);
+        assert.strictEqual(handle._align_value(-6), -6);
+        assert.strictEqual(handle._align_value(-5), -6);
 
-        assert.deepEqual(handle._align_value(-2), -3);
-        assert.deepEqual(handle._align_value(-1), 0);
-        assert.deepEqual(handle._align_value(0), 0);
-        assert.deepEqual(handle._align_value(1), 0);
-        assert.deepEqual(handle._align_value(2), 3);
+        assert.strictEqual(handle._align_value(-2), -3);
+        assert.strictEqual(handle._align_value(-1), 0);
+        assert.strictEqual(handle._align_value(0), 0);
+        assert.strictEqual(handle._align_value(1), 0);
+        assert.strictEqual(handle._align_value(2), 3);
 
-        assert.deepEqual(handle._align_value(7), 6);
-        assert.deepEqual(handle._align_value(6), 6);
-        assert.deepEqual(handle._align_value(5), 6);
+        assert.strictEqual(handle._align_value(7), 6);
+        assert.strictEqual(handle._align_value(6), 6);
+        assert.strictEqual(handle._align_value(5), 6);
 
-        assert.deepEqual(handle._align_value(9), 9);
-        assert.deepEqual(handle._align_value(8), 9);
+        assert.strictEqual(handle._align_value(9), 9);
+        assert.strictEqual(handle._align_value(8), 9);
     });
 
     QUnit.test('SliderHandle._prevent_overlap', assert => {
@@ -123,14 +123,14 @@ QUnit.module('slider_widget', hooks => {
             elem: $('<div />')
         };
         const handle_0 = new SliderHandle(slider, 0, 25);
-        assert.deepEqual(handle_0._prevent_overlap(80), 80);
+        assert.strictEqual(handle_0._prevent_overlap(80), 80);
 
         const handle_1 = new SliderHandle(slider, 1, 75);
-        assert.deepEqual(handle_1._prevent_overlap(20), 20);
+        assert.strictEqual(handle_1._prevent_overlap(20), 20);
 
         slider.handles = [handle_0, handle_1];
-        assert.deepEqual(handle_0._prevent_overlap(80), 75);
-        assert.deepEqual(handle_1._prevent_overlap(20), 25);
+        assert.strictEqual(handle_0._prevent_overlap(80), 75);
+        assert.strictEqual(handle_1._prevent_overlap(20), 25);
     });
 
     QUnit.test('SliderHandle.value -> horizontal', assert => {
@@ -385,6 +385,35 @@ QUnit.module('slider_widget', hooks => {
         handle.pos = 181;
         assert.strictEqual(handle.value, 25);
         assert.strictEqual(handle.pos, 200);
+    });
+
+    QUnit.test('SliderHandle.selected', assert => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, {});
+        const handle = slider.handles[0];
+
+        assert.false(handle.selected);
+        assert.false(handle.elem.hasClass('active'));
+        assert.strictEqual(handle.elem.css('z-index'), '1');
+
+        let events = $._data(elem[0], 'events');
+        assert.strictEqual(events.mousewheel, undefined);
+        assert.strictEqual(events.wheel, undefined);
+
+        events = $._data(document, 'events');
+        assert.strictEqual(events, undefined);
+
+        handle.selected = true;
+        assert.true(handle.selected);
+        assert.true(handle.elem.hasClass('active'));
+        assert.strictEqual(handle.elem.css('z-index'), '10');
+
+        events = $._data(elem[0], 'events');
+        assert.deepEqual(events.mousewheel[0].handler, handle._on_scroll);
+        assert.deepEqual(events.wheel[0].handler, handle._on_scroll);
+
+        events = $._data(document, 'events');
+        assert.deepEqual(events.keydown[0].handler, handle._on_key);
     });
 });
 
