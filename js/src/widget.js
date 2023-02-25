@@ -50,7 +50,8 @@ export class SliderHandle {
     set value(value) {
         let slider = this.slider,
             min = slider.min,
-            max = slider.max;
+            max = slider.max,
+            vertical = slider.vertical;
         value = this._align_value(value);
         value = this._prevent_overlap(value);
         if (value < min) {
@@ -59,8 +60,8 @@ export class SliderHandle {
             value = max;
         }
         let pos = slider.slider_len * ((value - min) / (max - min));
-        pos = slider.vertical ? slider.elem.height() - pos : pos;
-        this.elem.css(`${slider.dir_attr}`, `${pos}px`);
+        pos = vertical ? slider.elem.height() - pos : pos;
+        this.elem.css(`${vertical ? 'top' : 'left'}`, `${pos}px`);
         this._pos = pos;
         this._value = value;
     }
@@ -210,25 +211,24 @@ class SliderTrack {
 
     constructor(slider) {
         this.slider = slider;
-        this.len_attr = slider.vertical ? 'height' : 'width';
-        let thickness_attr = slider.vertical ? 'width' : 'height';
+        let vertical = slider.vertical,
+            thickness = slider.thickness,
+            thickness_attr = vertical ? 'width' : 'height';
         this.elem = $('<div />')
             .addClass('slider-bg')
-            .css(thickness_attr, slider.thickness)
+            .css(thickness_attr, thickness)
             .appendTo(slider.elem);
         this.range_elem = null;
         let range = slider.range;
         if (range) {
-            this.range_elem = $('<div />')
+            let range_elem = this.range_elem = $('<div />')
                 .addClass('slider-value-track')
-                .css(thickness_attr, slider.thickness)
+                .css(thickness_attr, thickness)
                 .appendTo(slider.elem);
-            if (range === 'max') {
-                if (slider.vertical) {
-                    this.range_elem.css('bottom', 0).css('top', 'unset');
-                } else {
-                    this.range_elem.css('right', 0);
-                }
+            if (range === 'min' && vertical) {
+                range_elem.css('bottom', 0).css('top', 'unset');
+            } else if (range === 'max' && !vertical) {
+                range_elem.css('right', 0);
             }
         }
         this.update = this.update.bind(this);
@@ -248,16 +248,25 @@ class SliderTrack {
             return;
         }
         let handles = slider.handles,
-            pos = handles[0].pos,
-            elem = this.range_elem,
-            len_attr = this.len_attr;
-        if (range === true) {
-            elem.css(`${len_attr}`, handles[1].pos - handles[0].pos)
-                .css(`${slider.dir_attr}`, `${pos}px`);
-        } else if (range === 'min') {
-            elem.css(`${len_attr}`, pos);
-        } else if (range === 'max') {
-            elem.css(`${len_attr}`, slider.slider_len - pos);
+            pos_0 = handles[0].pos,
+            pos_1 = range === true ? handles[1].pos : null,
+            elem = this.range_elem;
+        if (slider.vertical) {
+            if (range === true) {
+                elem.css('height', pos_0 - pos_1).css('top', `${pos_1}px`);
+            } else if (range === 'min') {
+                elem.css('height', slider.slider_len - pos_0);
+            } else if (range === 'max') {
+                elem.css('height', pos_0);
+            }
+        } else {
+            if (range === true) {
+                elem.css('width', pos_1 - pos_0).css('left', `${pos_0}px`);
+            } else if (range === 'min') {
+                elem.css('width', pos_0);
+            } else if (range === 'max') {
+                elem.css('width', slider.slider_len - pos_0);
+            }
         }
     }
 }
@@ -278,7 +287,6 @@ export class Slider {
         let scroll_step = opts.scroll_step || 1;
         this.scroll_step = opts.step || scroll_step;
         this.vertical = opts.orientation === 'vertical';
-        this.dir_attr = this.vertical ? 'top' : 'left';
         if (this.vertical) {
             elem.addClass('slider-vertical')
                 .css('width', this.handle_diameter)
