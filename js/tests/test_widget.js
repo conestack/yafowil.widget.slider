@@ -707,6 +707,121 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(track_v_range.range_elem.css('top'), '40px');
         assert.strictEqual(track_v_range.range_elem.css('height'), '120px');
     });
+
+    QUnit.module('Slider -> treibstoff integration', hooks => {
+        const ts = {
+            ajax: {
+                assert: null,
+                attach: function (inst, elem) {
+                    this.assert.step('attach slider widget');
+                }
+            }
+        };
+
+        hooks.before(() => {
+            window.ts = ts;
+        });
+
+        hooks.after(() => {
+            window.ts = undefined;
+        });
+
+        QUnit.test('Slider.constructor -> ts.ajax.attach', assert => {
+            ts.ajax.assert = assert;
+
+            const elem = $('<div />').css('width', 200).appendTo(container);
+            new Slider(elem, {});
+            assert.verifySteps(['attach slider widget']);
+        });
+    });
+
+    QUnit.test('Slider.constructor -> options', assert => {
+        // defaults
+        let elem = $('<div />').css('width', 200).appendTo(container),
+            slider = new Slider(elem, {});
+        assert.strictEqual(slider.value, 0);
+        assert.false(slider.range);
+        assert.strictEqual(slider.handle_diameter, 20);
+        assert.strictEqual(slider.thickness, 8);
+        assert.strictEqual(slider.min, 0);
+        assert.strictEqual(slider.max, 100);
+        assert.false(slider.step);
+        assert.strictEqual(slider.scroll_step, 1);
+        assert.false(slider.vertical);
+
+        // override defaults
+        elem = $('<div />').css('height', 200).appendTo(container);
+        slider = new Slider(elem, {
+            value: 10,
+            handle_diameter: 25,
+            thickness: 10,
+            min: 10,
+            max: 50,
+            step: 10,
+            orientation: 'vertical'
+        });
+        assert.strictEqual(slider.value, 10);
+        assert.strictEqual(slider.handle_diameter, 25);
+        assert.strictEqual(slider.thickness, 10);
+        assert.strictEqual(slider.min, 10);
+        assert.strictEqual(slider.max, 50);
+        assert.strictEqual(slider.step, 10);
+        assert.strictEqual(slider.scroll_step, 10);
+        assert.true(slider.vertical);
+
+        // step takes precedence over scroll_step if given
+        elem = $('<div />').css('width', 200).appendTo(container);
+        slider = new Slider(elem, {
+            scroll_step: 10
+        });
+        assert.false(slider.step);
+        assert.strictEqual(slider.scroll_step, 10);
+
+        elem = $('<div />').css('width', 200).appendTo(container);
+        slider = new Slider(elem, {
+            step: 5,
+            scroll_step: 10
+        });
+        assert.strictEqual(slider.step, 5);
+        assert.strictEqual(slider.scroll_step, 5);
+
+        // value is array if range is true
+        elem = $('<div />').css('width', 200).appendTo(container);
+        slider = new Slider(elem, {});
+        assert.strictEqual(slider.value, 0);
+        assert.strictEqual(slider.handles.length, 1);
+
+        elem = $('<div />').css('width', 200).appendTo(container);
+        slider = new Slider(elem, {
+            range: true
+        });
+        assert.deepEqual(slider.value, [0, 0]);
+        assert.strictEqual(slider.handles.length, 2);
+
+        // create event
+        elem = $('<div />').css('width', 200).appendTo(container);
+        new Slider(elem, {
+            create: function(e) {
+                assert.step('create event triggered');
+            }
+        });
+        assert.verifySteps(['create event triggered']);
+
+        // DOM element CSS classes and dimensions
+        elem = $('<div />').css('width', 200).appendTo(container);
+        slider = new Slider(elem, {});
+        assert.strictEqual(elem.css('height'), '20px');
+        assert.strictEqual(elem[0].className, '');
+
+        elem = $('<div />').css('height', 200).appendTo(container);
+        slider = new Slider(elem, {
+            orientation: 'vertical',
+            height: 200
+        });
+        assert.strictEqual(elem.css('height'), '200px');
+        assert.strictEqual(elem.css('width'), '20px');
+        assert.strictEqual(elem[0].className, 'slider-vertical');
+    });
 });
 
 //////////////////////////////////////////////////////////////////////////////
