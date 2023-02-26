@@ -230,7 +230,7 @@ class SliderTrack {
                 .css(thickness_attr, thickness)
                 .appendTo(slider.elem);
             if (range === 'min' && vertical) {
-                range_elem.css('bottom', 0).css('top', 'unset');
+                range_elem.css('bottom', 0).css('top', 'auto');
             } else if (range === 'max' && !vertical) {
                 range_elem.css('right', 0);
             }

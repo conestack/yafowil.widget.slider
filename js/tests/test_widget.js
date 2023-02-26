@@ -144,6 +144,11 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.value, 0);
         assert.strictEqual(handle.pos, 0);
 
+        handle.value = 0;
+        assert.strictEqual(handle.elem.css('left'), '0px');
+        handle.value = 100;
+        assert.strictEqual(handle.elem.css('left'), '200px');
+
         handle.value = -10;
         assert.strictEqual(handle.value, 0);
         handle.value = 110;
@@ -209,6 +214,11 @@ QUnit.module('slider_widget', hooks => {
 
         assert.strictEqual(handle.value, 0);
         assert.strictEqual(handle.pos, 200);
+
+        handle.value = 0;
+        assert.strictEqual(handle.elem.css('top'), '200px');
+        handle.value = 100;
+        assert.strictEqual(handle.elem.css('top'), '0px');
 
         handle.value = -10;
         assert.strictEqual(handle.value, 0);
@@ -527,6 +537,175 @@ QUnit.module('slider_widget', hooks => {
         }));
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle.value, 0);
+    });
+
+    QUnit.test('SliderHandle -> keys', assert => {
+        const elem_h = $('<div />').css('width', 200).appendTo(container);
+        const slider_h = new Slider(elem_h, {});
+        const handle_h = slider_h.handles[0];
+
+        slider_h.on('change', (e) => {
+            assert.strictEqual(e.type, 'change');
+            assert.deepEqual(e.widget, handle_h);
+            assert.step('change event triggered');
+        });
+
+        slider_h.elem.trigger(new $.Event('keydown'));
+        assert.verifySteps([]);
+        assert.strictEqual(handle_h.value, 0);
+
+        handle_h.selected = true;
+
+        slider_h.elem.trigger(new $.Event('keydown', {key: 'ArrowRight'}));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle_h.value, 1);
+
+        slider_h.elem.trigger(new $.Event('keydown', {key: 'ArrowLeft'}));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle_h.value, 0);
+
+        const elem_v = $('<div />').css('height', 200).appendTo(container);
+        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const handle_v = slider_v.handles[0];
+
+        slider_v.on('change', (e) => {
+            assert.strictEqual(e.type, 'change');
+            assert.deepEqual(e.widget, handle_v);
+            assert.step('change event triggered');
+        });
+
+        slider_v.elem.trigger(new $.Event('keydown'));
+        assert.verifySteps([]);
+        assert.strictEqual(handle_h.value, 0);
+
+        handle_v.selected = true;
+
+        slider_v.elem.trigger(new $.Event('keydown', {key: 'ArrowUp'}));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle_v.value, 1);
+
+        slider_v.elem.trigger(new $.Event('keydown', {key: 'ArrowDown'}));
+        assert.verifySteps(['change event triggered']);
+        assert.strictEqual(handle_v.value, 0);
+    });
+
+    QUnit.test('SliderTrack', assert => {
+        // horizontal slider with no range
+        const elem_h = $('<div />').css('width', 200).appendTo(container);
+        const slider_h = new Slider(elem_h, {});
+        const track_h = slider_h.track;
+
+        assert.strictEqual(track_h.range_elem, null);
+        assert.strictEqual(track_h.elem.css('height'), '8px');
+
+        // horizontal slider with min range
+        const elem_h_min = $('<div />').css('width', 200).appendTo(container);
+        const slider_h_min = new Slider(elem_h_min, {
+            range: 'min',
+            value: 25
+        });
+        const track_h_min = slider_h_min.track;
+
+        assert.strictEqual(track_h_min.range_elem.css('left'), 'auto');
+        assert.strictEqual(track_h_min.range_elem.css('right'), 'auto');
+        assert.strictEqual(track_h_min.range_elem.css('width'), '50px');
+        assert.strictEqual(track_h_min.range_elem.css('height'), '8px');
+
+        slider_h_min.value = 50;
+        assert.strictEqual(track_h_min.range_elem.css('width'), '100px');
+
+        // horizontal slider with max range
+        const elem_h_max = $('<div />').css('width', 200).appendTo(container);
+        const slider_h_max = new Slider(elem_h_max, {
+            range: 'max',
+            value: 25
+        });
+        const track_h_max = slider_h_max.track;
+
+        assert.strictEqual(track_h_max.range_elem.css('left'), 'auto');
+        assert.strictEqual(track_h_max.range_elem.css('right'), '0px');
+        assert.strictEqual(track_h_max.range_elem.css('width'), '150px');
+        assert.strictEqual(track_h_max.range_elem.css('height'), '8px');
+
+        slider_h_max.value = 50;
+        assert.strictEqual(track_h_max.range_elem.css('width'), '100px');
+
+        // horizontal slider with range
+        const elem_h_range = $('<div />').css('width', 200).appendTo(container);
+        const slider_h_range = new Slider(elem_h_range, {
+            range: true,
+            value: [25, 75]
+        });
+        const track_h_range = slider_h_range.track;
+
+        assert.strictEqual(track_h_range.range_elem.css('left'), '50px');
+        assert.strictEqual(track_h_range.range_elem.css('right'), 'auto');
+        assert.strictEqual(track_h_range.range_elem.css('width'), '100px');
+        assert.strictEqual(track_h_range.range_elem.css('height'), '8px');
+
+        slider_h_range.value = [20, 80];
+        assert.strictEqual(track_h_range.range_elem.css('left'), '40px');
+        assert.strictEqual(track_h_range.range_elem.css('width'), '120px');
+
+        // vertical slider with no range
+        const elem_v = $('<div />').css('height', 200).appendTo(container);
+        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const track_v = slider_v.track;
+
+        assert.strictEqual(track_v.range_elem, null);
+        assert.strictEqual(track_v.elem.css('width'), '8px');
+
+        // vertical slider with min range
+        const elem_v_min = $('<div />').css('height', 200).appendTo(container);
+        const slider_v_min = new Slider(elem_v_min, {
+            orientation: 'vertical',
+            range: 'min',
+            value: 25
+        });
+        const track_v_min = slider_v_min.track;
+
+        assert.strictEqual(track_v_min.range_elem.css('top'), 'auto');
+        assert.strictEqual(track_v_min.range_elem.css('bottom'), '0px');
+        assert.strictEqual(track_v_min.range_elem.css('width'), '8px');
+        assert.strictEqual(track_v_min.range_elem.css('height'), '50px');
+
+        slider_v_min.value = 50;
+        assert.strictEqual(track_v_min.range_elem.css('height'), '100px');
+
+        // vertical slider with max range
+        const elem_v_max = $('<div />').css('height', 200).appendTo(container);
+        const slider_v_max = new Slider(elem_v_max, {
+            orientation: 'vertical',
+            range: 'max',
+            value: 25
+        });
+        const track_v_max = slider_v_max.track;
+
+        assert.strictEqual(track_v_max.range_elem.css('top'), 'auto');
+        assert.strictEqual(track_v_max.range_elem.css('bottom'), 'auto');
+        assert.strictEqual(track_v_max.range_elem.css('width'), '8px');
+        assert.strictEqual(track_v_max.range_elem.css('height'), '150px');
+
+        slider_v_max.value = 50;
+        assert.strictEqual(track_v_max.range_elem.css('height'), '100px');
+
+        // vertical slider with range
+        const elem_v_range = $('<div />').css('height', 200).appendTo(container);
+        const slider_v_range = new Slider(elem_v_range, {
+            orientation: 'vertical',
+            range: true,
+            value: [25, 75]
+        });
+        const track_v_range = slider_v_range.track;
+
+        assert.strictEqual(track_v_range.range_elem.css('top'), '50px');
+        assert.strictEqual(track_v_range.range_elem.css('bottom'), 'auto');
+        assert.strictEqual(track_v_range.range_elem.css('width'), '8px');
+        assert.strictEqual(track_v_range.range_elem.css('height'), '100px');
+
+        slider_v_range.value = [20, 80];
+        assert.strictEqual(track_v_range.range_elem.css('top'), '40px');
+        assert.strictEqual(track_v_range.range_elem.css('height'), '120px');
     });
 });
 
