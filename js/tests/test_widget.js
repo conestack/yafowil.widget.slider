@@ -822,6 +822,173 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(elem.css('width'), '20px');
         assert.strictEqual(elem[0].className, 'slider-vertical');
     });
+
+    QUnit.test('Slider.value', assert => {
+        const elem_s = $('<div />').css('width', 200).appendTo(container);
+        const slider_s = new Slider(elem_s, {});
+
+        slider_s.value = 0;
+        assert.strictEqual(slider_s.value, 0);
+        slider_s.value = 50;
+        assert.strictEqual(slider_s.value, 50);
+        slider_s.value = 100;
+        assert.strictEqual(slider_s.value, 100);
+        assert.throws(() => {slider_s.value = [1, 2]}, 'Invalid value size');
+        assert.throws(() => {slider_s.value = -1}, 'Value out of bounds');
+        assert.throws(() => {slider_s.value = 101}, 'Value out of bounds');
+
+        const elem_r = $('<div />').css('width', 200).appendTo(container);
+        const slider_r = new Slider(elem_r, {range: true});
+
+        slider_r.value = [100, 100];
+        assert.deepEqual(slider_r.value, [100, 100]);
+        slider_r.value = [50, 50];
+        assert.deepEqual(slider_r.value, [50, 50]);
+        slider_r.value = [0, 0];
+        assert.deepEqual(slider_r.value, [0, 0]);
+        slider_r.value = [25, 75];
+        assert.deepEqual(slider_r.value, [25, 75]);
+        assert.throws(() => {slider_r.value = 1}, 'Invalid value size');
+        assert.throws(() => {slider_r.value = [-1, 100]}, 'Value out of bounds');
+        assert.throws(() => {slider_r.value = [0, 101]}, 'Value out of bounds');
+        assert.throws(
+            () => {slider_r.value = [75, 25]},
+            'Single values in range must be in ascending order'
+        );
+    });
+
+    QUnit.test('Slider._closest_handle', assert => {
+        // horizontal single slider
+        const elem_sh = $('<div />').css('width', 200).appendTo(container);
+        const slider_sh = new Slider(elem_sh, {});
+
+        assert.strictEqual(slider_sh.handles.length, 1);
+        assert.deepEqual(slider_sh._closest_handle(100), slider_sh.handles[0]);
+
+        // vertical single slider
+        const elem_sv = $('<div />').css('height', 200).appendTo(container);
+        const slider_sv = new Slider(elem_sv, {});
+
+        assert.strictEqual(slider_sv.handles.length, 1);
+        assert.deepEqual(slider_sv._closest_handle(100), slider_sv.handles[0]);
+
+        // horizontal range slider
+        const elem_rh = $('<div />').css('width', 200).appendTo(container);
+        const slider_rh = new Slider(elem_rh, {range: true});
+
+        assert.strictEqual(slider_rh.handles.length, 2);
+        assert.deepEqual(slider_rh.value, [0, 0]);
+        assert.deepEqual(slider_rh._closest_handle(-1), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(0), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(1), slider_rh.handles[1]);
+
+        slider_rh.value = [25, 75];
+        assert.deepEqual(slider_rh.value, [25, 75]);
+        assert.deepEqual(slider_rh._closest_handle(50), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(75), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(100), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(125), slider_rh.handles[1]);
+        assert.deepEqual(slider_rh._closest_handle(150), slider_rh.handles[1]);
+        assert.deepEqual(slider_rh._closest_handle(175), slider_rh.handles[1]);
+
+        slider_rh.value = [100, 100];
+        assert.deepEqual(slider_rh.value, [100, 100]);
+        assert.deepEqual(slider_rh._closest_handle(199), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(200), slider_rh.handles[0]);
+        assert.deepEqual(slider_rh._closest_handle(201), slider_rh.handles[1]);
+
+        // vertical range slider
+        const elem_rv = $('<div />').css('height', 200).appendTo(container);
+        const slider_rv = new Slider(elem_rv, {
+            range: true,
+            orientation: 'vertical'
+        });
+
+        assert.strictEqual(slider_rv.handles.length, 2);
+        assert.deepEqual(slider_rv.value, [0, 0]);
+        assert.deepEqual(slider_rv._closest_handle(199), slider_rv.handles[1]);
+        assert.deepEqual(slider_rv._closest_handle(200), slider_rv.handles[1]);
+        assert.deepEqual(slider_rv._closest_handle(201), slider_rv.handles[0]);
+
+        slider_rv.value = [25, 75];
+        assert.deepEqual(slider_rv.value, [25, 75]);
+        assert.strictEqual(slider_rv.handles[0].pos, 150);
+        assert.strictEqual(slider_rv.handles[1].pos, 50);
+        assert.deepEqual(slider_rv._closest_handle(175), slider_rv.handles[0]);
+        assert.deepEqual(slider_rv._closest_handle(150), slider_rv.handles[0]);
+        assert.deepEqual(slider_rv._closest_handle(125), slider_rv.handles[0]);
+        // XXX: should return handles[1] at value 100
+        assert.deepEqual(slider_rv._closest_handle(99.99), slider_rv.handles[1]);
+        assert.deepEqual(slider_rv._closest_handle(75), slider_rv.handles[1]);
+        assert.deepEqual(slider_rv._closest_handle(50), slider_rv.handles[1]);
+
+        slider_rv.value = [100, 100];
+        assert.deepEqual(slider_rv.value, [100, 100]);
+        assert.deepEqual(slider_rv._closest_handle(-1), slider_rv.handles[1]);
+        // XXX: should return handles[0] at value 0.01
+        assert.deepEqual(slider_rv._closest_handle(.01), slider_rv.handles[0]);
+        assert.deepEqual(slider_rv._closest_handle(1), slider_rv.handles[0]);
+    });
+
+    QUnit.test('Slider -> select', assert => {
+        // single slider
+        const elem_s = $('<div />').css('width', 200).appendTo(container);
+        const slider_s = new Slider(elem_s, {});
+
+        slider_s.on('change', (e) => {
+            assert.strictEqual(e.type, 'change');
+            assert.deepEqual(e.widget, slider_s.handles[0]);
+            assert.step('change event triggered');
+        });
+
+        assert.false(slider_s.handles[0].selected);
+
+        slider_s.elem.trigger(new $.Event('mousedown', {
+            pageX: 100 + slider_s.offset,
+            pageY: 0 + slider_s.elem.offset().top,
+        }));
+
+        assert.verifySteps(['change event triggered']);
+        assert.true(slider_s.handles[0].selected);
+        assert.strictEqual(slider_s.value, 50);
+
+        slider_s.handles[0].selected = false;
+        slider_s.elem.trigger(new $.Event('touchstart', {
+            touches: [{
+                pageX: 150 + slider_s.offset,
+                pageY: 0 + slider_s.elem.offset().top,
+            }],
+        }));
+
+        assert.verifySteps(['change event triggered']);
+        assert.true(slider_s.handles[0].selected);
+        assert.strictEqual(slider_s.value, 75);
+
+        // range slider
+        const elem_r = $('<div />').css('width', 200).appendTo(container);
+        const slider_r = new Slider(elem_r, {range: true});
+
+        let current_handle = null;
+        slider_r.on('change', (e) => {
+            assert.strictEqual(e.type, 'change');
+            assert.deepEqual(e.widget, slider_r.handles[current_handle]);
+            assert.step('change event triggered');
+        });
+
+        assert.false(slider_r.handles[0].selected);
+        assert.false(slider_r.handles[1].selected);
+
+        current_handle = 1;
+        slider_r.elem.trigger(new $.Event('mousedown', {
+            pageX: 100 + slider_r.offset,
+            pageY: 0 + slider_r.elem.offset().top,
+        }));
+
+        assert.verifySteps(['change event triggered']);
+        assert.false(slider_r.handles[0].selected);
+        assert.true(slider_r.handles[1].selected);
+        assert.deepEqual(slider_r.value, [0, 50]);
+    });
 });
 
 //////////////////////////////////////////////////////////////////////////////

@@ -42,6 +42,8 @@ export class SliderHandle {
 
         this.elem.on('mousedown touchstart', this._on_start);
         $(window).on('resize', this._on_resize);
+
+        this._force_value = false;
     }
 
     get value() {
@@ -189,6 +191,9 @@ export class SliderHandle {
     }
 
     _prevent_overlap(value) {
+        if (this._force_value) {
+            return value;
+        }
         let slider = this.slider,
             handles = slider.handles,
             index = this.index;
@@ -299,13 +304,13 @@ export class Slider {
         }
         let value;
         if (this.range === true) {
-            value = this._value = opts.value || [0, 0];
+            value = opts.value || [0, 0];
             this.handles = [
                 new SliderHandle(this, 0, value[0]),
                 new SliderHandle(this, 1, value[1])
             ];
         } else {
-            value = this._value = opts.value || 0;
+            value = opts.value || 0;
             this.handles = [new SliderHandle(this, 0, value)];
         }
         this.track = new SliderTrack(this);
@@ -320,17 +325,43 @@ export class Slider {
     }
 
     get value() {
-        return this._value;
+        let handles = this.handles;
+        if (handles.length == 1) {
+            return handles[0].value;
+        }
+        let value = [];
+        for (let handle of handles) {
+            value.push(handle.value);
+        }
+        return value;
     }
 
     set value(value) {
         if (!(value instanceof Array)) {
             value = [value];
         }
-        for (let i in this.handles) {
-            this.handles[i].value = value[i];
+        let handles = this.handles;
+        if (value.length !== handles.length) {
+            throw new Error('Invalid value size');
         }
-        this._value = value;
+        let prev = 0;
+        for (let val of value) {
+            if (val < this.min || val > this.max) {
+                throw new Error('Value out of bounds');
+            }
+            if (prev > val) {
+                let msg = 'Single values in range must be in ascending order';
+                throw new Error(msg);
+            }
+            prev = val;
+        }
+        let handle;
+        for (let i in handles) {
+            handle = handles[i];
+            handle._force_value = true;
+            handle.value = value[i];
+            handle._force_value = false;
+        }
         this.track.update();
     }
 
@@ -379,27 +410,33 @@ export class Slider {
     }
 
     _on_down(e) {
-        let index = 0,
-            handle;
+        let handle;
         if (this.range === true) {
-            let distances = [];
-            for (let handle of this.handles) {
-                let e_x = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX,
-                    e_y = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY,
-                    offset = handle.elem.offset();
-                let distance = Math.hypot(
-                    offset.left - parseInt(e_x),
-                    offset.top - parseInt(e_y)
-                );
-                distances.push(parseInt(distance));
-            }
-            index = distances.indexOf(Math.min(...distances));
+            handle = this._closest_handle(this.pos_from_evt(e));
+        } else {
+            handle = this.handles[0];
         }
-        handle = this.handles[index];
         handle.selected = true;
         handle.pos = this.pos_from_evt(e);
         this.track.update();
         this.trigger('change', handle);
+    }
+
+    _closest_handle(pos) {
+        let handles = this.handles,
+            vertical = this.vertical,
+            first = vertical ? handles[handles.length - 1] : handles[0],
+            last = vertical ? handles[0] : handles[handles.length - 1];
+        if (pos <= first.pos) {
+            return first;
+        } else if (pos >= last.pos) {
+            return last;
+        }
+        let distances = [];
+        for (let handle of handles) {
+            distances.push(Math.abs(pos - handle.pos));
+        }
+        return handles[distances.indexOf(Math.min(...distances))];
     }
 }
 
