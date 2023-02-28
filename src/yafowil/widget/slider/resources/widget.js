@@ -55,7 +55,7 @@ var yafowil_slider = (function (exports, $) {
             } else if (value > max) {
                 value = max;
             }
-            let pos = slider.slider_len * ((value - min) / (max - min));
+            let pos = slider.size * ((value - min) / (max - min));
             pos = vertical ? slider.elem.height() - pos : pos;
             this.elem.css(`${vertical ? 'top' : 'left'}`, `${pos}px`);
             this._pos = pos;
@@ -68,7 +68,7 @@ var yafowil_slider = (function (exports, $) {
             let slider = this.slider,
                 min = slider.min,
                 max = slider.max,
-                len = slider.slider_len;
+                len = slider.size;
             pos = slider.vertical ? slider.elem.height() - pos : pos;
             this.value = (max - min) * (pos / len) + min;
         }
@@ -240,7 +240,7 @@ var yafowil_slider = (function (exports, $) {
                 if (range === true) {
                     elem.css('height', pos_0 - pos_1).css('top', `${pos_1}px`);
                 } else if (range === 'min') {
-                    elem.css('height', slider.slider_len - pos_0);
+                    elem.css('height', slider.size - pos_0);
                 } else if (range === 'max') {
                     elem.css('height', pos_0);
                 }
@@ -250,7 +250,7 @@ var yafowil_slider = (function (exports, $) {
                 } else if (range === 'min') {
                     elem.css('width', pos_0);
                 } else if (range === 'max') {
-                    elem.css('width', slider.slider_len - pos_0);
+                    elem.css('width', slider.size - pos_0);
                 }
             }
         }
@@ -336,11 +336,7 @@ var yafowil_slider = (function (exports, $) {
             }
             this.track.update();
         }
-        get offset() {
-            let offset = this.elem.offset();
-            return this.vertical ? offset.top : offset.left;
-        }
-        get slider_len() {
+        get size() {
             let elem = this.elem;
             return this.vertical ? elem.height() : elem.width();
         }
@@ -365,8 +361,9 @@ var yafowil_slider = (function (exports, $) {
             });
         }
         pos_from_evt(e) {
-            let offset = this.offset,
-                vertical = this.vertical;
+            let vertical = this.vertical,
+                e_offset = this.elem.offset(),
+                offset = vertical ? e_offset.top : e_offset.left;
             if (e.type === 'mousedown' || e.type === 'mousemove') {
                 return (vertical ? e.pageY : e.pageX) - offset;
             }
