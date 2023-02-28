@@ -1161,4 +1161,66 @@ QUnit.module('slider_widget', hooks => {
     //         assert.strictEqual(handle.pos, 25);
     //     });
     // });
+
+    QUnit.test('SliderWidget -> single value', assert => {
+        $(`
+        <div class="yafowil_slider">
+          <input class="slider_value" type="text" value="60"/>
+          <span class="slider_value">60</span>
+          <div class="slider"> </div>
+        </div>
+        `).appendTo(container);
+
+        SliderWidget.initialize(container);
+
+        const widget = $('.yafowil_slider', container).data('yafowil-slider');
+        assert.strictEqual(widget.value, 60);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '60');
+        assert.strictEqual(widget.elements[0].label.html(), '60');
+
+        widget.value = 50;
+        assert.strictEqual(widget.value, 50);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '50');
+        assert.strictEqual(widget.elements[0].label.html(), '50');
+
+        widget.slider.handles[0].value = 40;
+        widget.slider.trigger('change', widget.slider.handles[0]);
+        assert.strictEqual(widget.value, 40);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '40');
+        assert.strictEqual(widget.elements[0].label.html(), '40');
+    });
+
+    QUnit.test('SliderWidget -> range value', assert => {
+        $(`
+        <div class="yafowil_slider" data-range="true">
+          <input class="lower_value" type="text" value="25"/>
+          <input class="upper_value" type="text" value="75"/>
+          <span class="lower_value">25</span>
+          <span class="upper_value">75</span>
+          <div class="slider"> </div>
+        </div>
+        `).appendTo(container);
+
+        SliderWidget.initialize(container);
+
+        const widget = $('.yafowil_slider', container).data('yafowil-slider');
+        assert.deepEqual(widget.value, [25, 75]);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '25');
+        assert.strictEqual(widget.elements[0].label.html(), '25');
+        assert.strictEqual(widget.elements[1].input.attr('value'), '75');
+        assert.strictEqual(widget.elements[1].label.html(), '75');
+
+        widget.value = [40, 60];
+        assert.deepEqual(widget.value, [40, 60]);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '40');
+        assert.strictEqual(widget.elements[0].label.html(), '40');
+        assert.strictEqual(widget.elements[1].input.attr('value'), '60');
+        assert.strictEqual(widget.elements[1].label.html(), '60');
+
+        widget.slider.handles[0].value = 50;
+        widget.slider.trigger('change', widget.slider.handles[0]);
+        assert.deepEqual(widget.value, [50, 60]);
+        assert.strictEqual(widget.elements[0].input.attr('value'), '50');
+        assert.strictEqual(widget.elements[0].label.html(), '50');
+    });
 });

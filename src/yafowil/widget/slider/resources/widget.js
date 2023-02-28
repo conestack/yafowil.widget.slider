@@ -428,8 +428,7 @@ var yafowil_slider = (function (exports, $) {
                 this.elements = [{
                     input: $('input.lower_value', elem),
                     label: $('span.lower_value', elem)
-                },
-                {
+                }, {
                     input: $('input.upper_value', elem),
                     label: $('span.upper_value', elem)
                 }];
@@ -444,13 +443,23 @@ var yafowil_slider = (function (exports, $) {
                 }];
                 opts.value = parseInt(this.elements[0].input.val());
             }
-            this.update_value = this.update_value.bind(this);
             this.slider = new Slider($('div.slider', elem), opts);
-            this.slider.on('change slide stop', this.update_value);
+            this.slider.on('change slide stop', e => {
+                this._update_value(e.widget);
+            });
         }
-        update_value(e) {
-            let handle = e.widget,
-                index = handle.index,
+        get value() {
+            return this.slider.value;
+        }
+        set value(value) {
+            let slider = this.slider;
+            slider.value = value;
+            for (let handle of slider.handles) {
+                this._update_value(handle);
+            }
+        }
+        _update_value(handle) {
+            let index = handle.index,
                 element = this.elements[index];
             element.input.attr('value', handle.value);
             element.label.html(handle.value);
