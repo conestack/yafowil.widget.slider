@@ -176,22 +176,29 @@ SYSTEM_DEPENDENCIES+=npm
 NPM_TARGET:=$(SENTINEL_FOLDER)/npm.sentinel
 $(NPM_TARGET): $(SENTINEL)
 	@echo "Install npm packages"
-	@test -z "$(NPM_PACKAGES)" && npm \
-		--prefix $(NPM_PREFIX) \
-		--no-save \
-		install $(NPM_PACKAGES)
-	@test -z "$(NPM_DEV_PACKAGES)" && npm \
-		--prefix $(NPM_PREFIX) \
-		--save-dev $(NPM_INSTALL_OPTS) \
-		install $(NPM_DEV_PACKAGES)
-	@test -z "$(NPM_PROD_PACKAGES)" && npm \
-		--prefix $(NPM_PREFIX) \
-		--save-prod $(NPM_INSTALL_OPTS) \
-		install $(NPM_PROD_PACKAGES)
-	@test -z "$(NPM_OPT_PACKAGES)" && npm \
-		--prefix $(NPM_PREFIX) \
-		--save-optional $(NPM_INSTALL_OPTS) \
-		install $(NPM_OPT_PACKAGES)
+	@test -z "$(NPM_DEV_PACKAGES)" \
+		&& echo "No dev packages to be installed" \
+		|| npm --prefix $(NPM_PREFIX) install \
+			--save-dev \
+			$(NPM_INSTALL_OPTS) \
+			$(NPM_DEV_PACKAGES)
+	@test -z "$(NPM_PROD_PACKAGES)" \
+		&& echo "No prod packages to be installed" \
+		|| npm --prefix $(NPM_PREFIX) install \
+			--save-prod \
+			$(NPM_INSTALL_OPTS) \
+			$(NPM_PROD_PACKAGES)
+	@test -z "$(NPM_OPT_PACKAGES)" \
+		&& echo "No opt packages to be installed" \
+		|| npm --prefix $(NPM_PREFIX) install \
+			--save-optional \
+			$(NPM_INSTALL_OPTS) \
+			$(NPM_OPT_PACKAGES)
+	@test -z "$(NPM_PACKAGES)" \
+		&& echo "No packages to be installed" \
+		|| npm --prefix $(NPM_PREFIX) install \
+			--no-save \
+			$(NPM_PACKAGES)
 	@touch $(NPM_TARGET)
 
 .PHONY: npm
