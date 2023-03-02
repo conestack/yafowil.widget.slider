@@ -35,18 +35,10 @@ jobs:
 
       - name: Install
         run: |
-          pip install wheel
-          pip install coverage
-          pip install lxml
-          pip install zope.testrunner
-          pip install https://github.com/conestack/webresource/archive/master.zip
-          pip install https://github.com/conestack/yafowil/archive/master.zip
-          pip install -e .[test]
+          make install
       - name: Run tests
         run: |
-          python --version
-          python -m yafowil.widget.slider.tests
+          make test
       - name: Run coverage
         run: |
-          coverage run --source=src/yafowil/widget/slider --omit=src/yafowil/widget/slider/example.py -m yafowil.widget.slider.tests
-          coverage report --fail-under=99
+          make coverage

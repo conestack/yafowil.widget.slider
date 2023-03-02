@@ -133,7 +133,7 @@ COVERAGE_COMMAND?=venv/bin/coverage run \
 	--source src/yafowil/widget/slider \
 	--omit src/yafowil/widget/slider/example.py \
 	-m yafowil.widget.slider.tests \
-	&& venv/bin/coverage report
+	&& venv/bin/coverage report --fail-under=99
 
 ##############################################################################
 # END SETTINGS - DO NOT EDIT BELOW THIS LINE
