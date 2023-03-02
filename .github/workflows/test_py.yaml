@@ -43,14 +43,11 @@ jobs:
           pip install webresource
           pip install yafowil
           pip install -e .[test]
-          make install
       - name: Run tests
         run: |
           python --version
           python -m yafowil.widget.slider.tests
-          make test
       - name: Run coverage
         run: |
           coverage run --source=src/yafowil/widget/slider --omit=src/yafowil/widget/slider/example.py -m yafowil.widget.slider.tests
           coverage report --fail-under=99
-          make coverage
