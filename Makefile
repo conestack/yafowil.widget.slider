@@ -9,6 +9,7 @@
 #: js.karma
 #: js.npm
 #: js.rollup
+#: js.scss
 #: qa.coverage
 #: qa.test
 #
@@ -54,6 +55,20 @@ NPM_OPT_PACKAGES?=
 # and `--save-bundle`.
 # No default value.
 NPM_INSTALL_OPTS?=
+
+## js.scss
+
+# The SCSS root source file.
+# Default: scss/styles.scss
+SCSS_SOURCE?=scss/widget.scss
+
+# The target file for the compiles Stylesheet.
+# Default: scss/styles.css
+SCSS_TARGET?=src/yafowil/widget/slider/resources/widget.css
+
+# Additional options to be passed to SCSS compiler.
+# Default: --no-source-map=none
+SCSS_OPTIONS?=--no-source-map=none
 
 ## js.rollup
 
@@ -217,6 +232,18 @@ DIRTY_TARGETS+=npm-dirty
 CLEAN_TARGETS+=npm-clean
 
 ##############################################################################
+# scss
+##############################################################################
+
+# extend npm dev packages
+NPM_DEV_PACKAGES+=sass
+
+.PHONY: scss
+scss: $(NPM_TARGET)
+	@$(NPM_PREFIX)/node_modules/.bin/sass \
+		$(SCSS_OPTIONS) $(SCSS_SOURCE) $(SCSS_TARGET)
+
+##############################################################################
 # rollup
 ##############################################################################
 
@@ -228,7 +255,7 @@ NPM_DEV_PACKAGES+=\
 
 .PHONY: rollup
 rollup: $(NPM_TARGET)
-	@$(NPM_PREFIX)/node_modules/rollup/dist/bin/rollup --config $(ROLLUP_CONFIG)
+	@$(NPM_PREFIX)/node_modules/.bin/rollup --config $(ROLLUP_CONFIG)
 
 ##############################################################################
 # karma
@@ -243,7 +270,7 @@ NPM_DEV_PACKAGES+=\
 
 .PHONY: karma
 karma: $(NPM_TARGET)
-	@$(NPM_PREFIX)/node_modules/karma/bin/karma start $(KARMA_CONFIG) $(KARMA_OPTIONS)
+	@$(NPM_PREFIX)/node_modules/.bin/karma start $(KARMA_CONFIG) $(KARMA_OPTIONS)
 
 ##############################################################################
 # mxenv
