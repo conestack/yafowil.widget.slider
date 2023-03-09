@@ -4,8 +4,12 @@ Changes
 2.0 (unreleased)
 ----------------
 
-- Rewrite of Javascript slider widget. No more jQuery UI.
+- Extend JS by ``slider_on_array_add`` and ``register_array_subscribers``
+  functions to enable usage in ``yafowil.widget.array``.
   [lenadax]
+
+- Rewrite of Javascript slider widget. No more jQuery UI.
+  [lenadax, rnix]
 
 
 1.3.1 (2020-05-30)

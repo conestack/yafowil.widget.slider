@@ -441,6 +441,10 @@ export class SliderWidget {
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
+            if (window.yafowil_array !== undefined &&
+                window.yafowil_array.inside_template(elem)) {
+                return;
+            }
             new SliderWidget(elem, {
                 min: elem.data('min'),
                 max: elem.data('max'),
@@ -507,4 +511,15 @@ export class SliderWidget {
         element.input.attr('value', handle.value);
         element.label.html(handle.value);
     }
+}
+
+function slider_on_array_add(inst, context) {
+    SliderWidget.initialize(context, true);
+}
+
+export function register_array_subscribers() {
+    if (window.yafowil_array === undefined) {
+        return;
+    }
+    window.yafowil_array.on_array_event('on_add', slider_on_array_add);
 }

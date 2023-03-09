@@ -402,6 +402,10 @@ var yafowil_slider = (function (exports, $) {
         static initialize(context) {
             $('.yafowil_slider', context).each(function() {
                 let elem = $(this);
+                if (window.yafowil_array !== undefined &&
+                    window.yafowil_array.inside_template(elem)) {
+                    return;
+                }
                 new SliderWidget(elem, {
                     min: elem.data('min'),
                     max: elem.data('max'),
@@ -465,6 +469,15 @@ var yafowil_slider = (function (exports, $) {
             element.label.html(handle.value);
         }
     }
+    function slider_on_array_add(inst, context) {
+        SliderWidget.initialize(context, true);
+    }
+    function register_array_subscribers() {
+        if (window.yafowil_array === undefined) {
+            return;
+        }
+        window.yafowil_array.on_array_event('on_add', slider_on_array_add);
+    }
 
     $(function() {
         if (window.ts !== undefined) {
@@ -474,12 +487,14 @@ var yafowil_slider = (function (exports, $) {
         } else {
             SliderWidget.initialize();
         }
+        register_array_subscribers();
     });
 
     exports.Slider = Slider;
     exports.SliderHandle = SliderHandle;
     exports.SliderWidget = SliderWidget;
     exports.lookup_callback = lookup_callback;
+    exports.register_array_subscribers = register_array_subscribers;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
