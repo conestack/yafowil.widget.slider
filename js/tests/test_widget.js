@@ -43,29 +43,32 @@ QUnit.module('slider_widget', hooks => {
         let _array_subscribers = {
             on_add: []
         };
-    
+
         // window.yafowil_array is undefined - return
         register_array_subscribers();
         assert.deepEqual(_array_subscribers['on_add'], []);
-    
+
         // patch yafowil_array
         window.yafowil_array = {
             on_array_event: function(evt_name, evt_function) {
                 _array_subscribers[evt_name] = evt_function;
+            },
+            inside_template(elem) {
+                return elem.parents('.arraytemplate').length > 0;
             }
         };
         register_array_subscribers();
-    
+
         // create table DOM
         let table = $('<table />')
             .append($('<tr />'))
             .append($('<td />'))
             .appendTo('body');
-    
+
         let el = $(`<div />`).addClass('yafowil_slider');
         $('td', table).addClass('arraytemplate');
         el.appendTo($('td', table));
-    
+
         // invoke array on_add - returns
         _array_subscribers['on_add'].apply(null, $('tr', table));
         let widget = el.data('yafowil-slider');
