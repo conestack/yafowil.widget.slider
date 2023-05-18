@@ -305,7 +305,7 @@ class TestSliderWidget(YafowilTestCase):
 
         self.assertTrue(styles[0].directory.endswith(np('/slider/resources')))
         self.assertEqual(styles[0].path, 'yafowil-slider')
-        self.assertEqual(styles[0].file_name, 'widget.css')
+        self.assertEqual(styles[0].file_name, 'widget.min.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
 
 

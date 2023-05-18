@@ -22,9 +22,18 @@
 # No default value.
 DEPLOY_TARGETS?=
 
+# target to be executed when calling `make run`
+# No default value.
+RUN_TARGET?=
+
 # Additional files and folders to remove when running clean target
 # No default value.
 CLEAN_FS?=
+
+# Optional makefile to include before default targets. This can
+# be used to provide custom targets or hook up to existing targets.
+# Default: include.mk
+INCLUDE_MAKEFILE?=include.mk
 
 ## js.npm
 
@@ -66,6 +75,10 @@ SCSS_SOURCE?=scss/widget.scss
 # Default: scss/styles.css
 SCSS_TARGET?=src/yafowil/widget/slider/resources/widget.css
 
+# The target file for the compressed Stylesheet.
+# Default: scss/styles.min.css
+SCSS_MIN_TARGET?=src/yafowil/widget/slider/resources/widget.min.css
+
 # Additional options to be passed to SCSS compiler.
 # Default: --no-source-map=none
 SCSS_OPTIONS?=--no-source-map=none
@@ -96,8 +109,8 @@ PYTHON_BIN?=python3
 # Default: 3.7
 PYTHON_MIN_VERSION?=3.7
 
-# Flag whether to use virtual environment.
-# If `false`, the interpreter according to `PYTHON_BIN` found in `PATH` is used.
+# Flag whether to use virtual environment. If `false`, the
+# interpreter according to `PYTHON_BIN` found in `PATH` is used.
 # Default: true
 VENV_ENABLED?=true
 
@@ -108,19 +121,20 @@ VENV_ENABLED?=true
 VENV_CREATE?=true
 
 # The folder of the virtual environment.
-# If `VENV_ENABLED` is `true` and `VENV_CREATE` is true it is used as the target folder for the virtual environment.
-# If `VENV_ENABLED` is `true` and `VENV_CREATE` is false it is expected to point to an existing virtual environment.
-# If `VENV_ENABLED` is `false` it is ignored.
+# If `VENV_ENABLED` is `true` and `VENV_CREATE` is true it is used as the
+# target folder for the virtual environment. If `VENV_ENABLED` is `true` and
+# `VENV_CREATE` is false it is expected to point to an existing virtual
+# environment. If `VENV_ENABLED` is `false` it is ignored.
 # Default: venv
 VENV_FOLDER?=venv
 
 # mxdev to install in virtual environment.
-# Default: https://github.com/mxstack/mxdev/archive/main.zip
+# Default: mxdev
 MXDEV?=https://github.com/mxstack/mxdev/archive/main.zip
 
 # mxmake to install in virtual environment.
-# Default: https://github.com/mxstack/mxmake/archive/develop.zip
-MXMAKE?=https://github.com/mxstack/mxmake/archive/develop.zip
+# Default: mxmake
+MXMAKE?=https://github.com/mxstack/mxmake/archive/main.zip
 
 ## core.mxfiles
 
@@ -134,6 +148,11 @@ PROJECT_CONFIG?=mx.ini
 # :ref:`run-tests` template gets rendered to if configured.
 # Default: .mxmake/files/run-tests.sh
 TEST_COMMAND?=venv/bin/python -m yafowil.widget.slider.tests
+
+# Additional Python requirements for running tests to be
+# installed (via pip).
+# Default: pytest
+TEST_REQUIREMENTS?=pytest
 
 # Additional make targets the test target depends on.
 # No default value.
@@ -242,6 +261,8 @@ NPM_DEV_PACKAGES+=sass
 scss: $(NPM_TARGET)
 	@$(NPM_PREFIX)/node_modules/.bin/sass \
 		$(SCSS_OPTIONS) $(SCSS_SOURCE) $(SCSS_TARGET)
+	@$(NPM_PREFIX)/node_modules/.bin/sass \
+		$(SCSS_OPTIONS) --style compressed $(SCSS_SOURCE) $(SCSS_MIN_TARGET)
 
 ##############################################################################
 # rollup
@@ -359,22 +380,7 @@ else
 	@echo "[settings]" > $(PROJECT_CONFIG)
 endif
 
-LOCAL_PACKAGE_FILES:=
-ifneq ("$(wildcard pyproject.toml)","")
-	LOCAL_PACKAGE_FILES+=pyproject.toml
-endif
-ifneq ("$(wildcard setup.cfg)","")
-	LOCAL_PACKAGE_FILES+=setup.cfg
-endif
-ifneq ("$(wildcard setup.py)","")
-	LOCAL_PACKAGE_FILES+=setup.py
-endif
-ifneq ("$(wildcard requirements.txt)","")
-	LOCAL_PACKAGE_FILES+=requirements.txt
-endif
-ifneq ("$(wildcard constraints.txt)","")
-	LOCAL_PACKAGE_FILES+=constraints.txt
-endif
+LOCAL_PACKAGE_FILES:=$(wildcard pyproject.toml setup.cfg setup.py requirements.txt constraints.txt)
 
 FILES_TARGET:=requirements-mxdev.txt
 $(FILES_TARGET): $(PROJECT_CONFIG) $(MXENV_TARGET) $(SOURCES_TARGET) $(LOCAL_PACKAGE_FILES)
@@ -383,6 +389,7 @@ $(FILES_TARGET): $(PROJECT_CONFIG) $(MXENV_TARGET) $(SOURCES_TARGET) $(LOCAL_PAC
 	$(call set_mxfiles_env,$(MXENV_PATH),$(MXMAKE_FILES))
 	@$(MXENV_PATH)mxdev -n -c $(PROJECT_CONFIG)
 	$(call unset_mxfiles_env,$(MXENV_PATH),$(MXMAKE_FILES))
+	@test -e $(MXMAKE_FILES)/pip.conf && cp $(MXMAKE_FILES)/pip.conf $(VENV_FOLDER)/pip.conf || :
 	@touch $(FILES_TARGET)
 
 .PHONY: mxfiles
@@ -440,19 +447,37 @@ CLEAN_TARGETS+=packages-clean
 # test
 ##############################################################################
 
+TEST_TARGET:=$(SENTINEL_FOLDER)/test.sentinel
+$(TEST_TARGET): $(MXENV_TARGET)
+	@echo "Install $(TEST_REQUIREMENTS)"
+	@$(MXENV_PATH)pip install $(TEST_REQUIREMENTS)
+	@touch $(TEST_TARGET)
+
 .PHONY: test
-test: $(FILES_TARGET) $(SOURCES_TARGET) $(PACKAGES_TARGET) $(TEST_DEPENDENCY_TARGETS)
+test: $(FILES_TARGET) $(SOURCES_TARGET) $(PACKAGES_TARGET) $(TEST_TARGET) $(TEST_DEPENDENCY_TARGETS)
 	@echo "Run tests"
 	@test -z "$(TEST_COMMAND)" && echo "No test command defined"
 	@test -z "$(TEST_COMMAND)" || bash -c "$(TEST_COMMAND)"
 
+.PHONY: test-dirty
+test-dirty:
+	@rm -f $(TEST_TARGET)
+
+.PHONY: test-clean
+test-clean: test-dirty
+	@test -e $(MXENV_PATH)pip && $(MXENV_PATH)pip uninstall -y $(TEST_REQUIREMENTS) || :
+	@rm -rf .pytest_cache
+
+INSTALL_TARGETS+=$(TEST_TARGET)
+CLEAN_TARGETS+=test-clean
+DIRTY_TARGETS+=test-dirty
 
 ##############################################################################
 # coverage
 ##############################################################################
 
 COVERAGE_TARGET:=$(SENTINEL_FOLDER)/coverage.sentinel
-$(COVERAGE_TARGET): $(MXENV_TARGET)
+$(COVERAGE_TARGET): $(TEST_TARGET)
 	@echo "Install Coverage"
 	@$(MXENV_PATH)pip install -U coverage
 	@touch $(COVERAGE_TARGET)
@@ -476,6 +501,8 @@ INSTALL_TARGETS+=$(COVERAGE_TARGET)
 DIRTY_TARGETS+=coverage-dirty
 CLEAN_TARGETS+=coverage-clean
 
+-include $(INCLUDE_MAKEFILE)
+
 ##############################################################################
 # Default targets
 ##############################################################################
@@ -487,6 +514,9 @@ $(INSTALL_TARGET): $(INSTALL_TARGETS)
 .PHONY: install
 install: $(INSTALL_TARGET)
 	@touch $(INSTALL_TARGET)
+
+.PHONY: run
+run: $(RUN_TARGET)
 
 .PHONY: deploy
 deploy: $(DEPLOY_TARGETS)

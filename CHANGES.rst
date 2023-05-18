@@ -4,7 +4,8 @@ Changes
 2.0a2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add minified css resource.
+  [rnix]
 
 
 2.0a1 (2023-05-15)
