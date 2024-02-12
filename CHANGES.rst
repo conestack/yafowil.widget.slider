@@ -1,7 +1,7 @@
 Changes
 =======
 
-2.0a2 (unreleased)
+2.0a2 (2024-02-12)
 ------------------
 
 - Add minified css resource.
