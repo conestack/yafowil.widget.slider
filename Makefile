@@ -79,6 +79,18 @@ SCSS_TARGET?=src/yafowil/widget/slider/resources/widget.css
 # Default: scss/styles.min.css
 SCSS_MIN_TARGET?=src/yafowil/widget/slider/resources/widget.min.css
 
+# The SCSS root source file for Bootstrap5.
+# Default: scss/styles.scss
+SCSS_SOURCE_BS5?=scss/bootstrap5/widget.scss
+
+# The target file for the compiled Bootstrap5 Stylesheet.
+# Default: scss/styles.css
+SCSS_TARGET_BS5?=src/yafowil/widget/slider/resources/bootstrap5/widget.css
+
+# The target file for the compressed Bootstrap5 Stylesheet.
+# Default: scss/styles.min.css
+SCSS_MIN_TARGET_BS5?=src/yafowil/widget/slider/resources/bootstrap5/widget.min.css
+
 # Additional options to be passed to SCSS compiler.
 # Default: --no-source-map=none
 SCSS_OPTIONS?=--no-source-map=none
@@ -263,6 +275,10 @@ scss: $(NPM_TARGET)
 		$(SCSS_OPTIONS) $(SCSS_SOURCE) $(SCSS_TARGET)
 	@$(NPM_PREFIX)/node_modules/.bin/sass \
 		$(SCSS_OPTIONS) --style compressed $(SCSS_SOURCE) $(SCSS_MIN_TARGET)
+	@$(NPM_PREFIX)/node_modules/.bin/sass \
+		$(SCSS_OPTIONS) $(SCSS_SOURCE_BS5) $(SCSS_TARGET_BS5)
+	@$(NPM_PREFIX)/node_modules/.bin/sass \
+		$(SCSS_OPTIONS) --style compressed $(SCSS_SOURCE_BS5) $(SCSS_MIN_TARGET_BS5)
 
 ##############################################################################
 # rollup

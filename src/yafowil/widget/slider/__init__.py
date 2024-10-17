@@ -43,6 +43,36 @@ css = [{
     'order': 20,
 }]
 
+##############################################################################
+# Bootstrap 5
+##############################################################################
+
+# webresource ################################################################
+
+bootstrap5_resources = wr.ResourceGroup(
+    name='yafowil.widget.slider',
+    directory=resources_dir,
+    path='yafowil-slider'
+)
+bootstrap5_resources.add(wr.ScriptResource(
+    name='yafowil-slider-js',
+    depends='jquery-js',
+    resource='widget.js',
+    compressed='widget.min.js'
+))
+bootstrap5_resources.add(wr.StyleResource(
+    name='yafowil-slider-css',
+    resource='bootstrap5/widget.css',
+    compressed='bootstrap5/widget.min.css'
+))
+
+# B/C resources ##############################################################
+
+bootstrap5_css = [{
+    'group': 'yafowil.widget.slider.common',
+    'resource': 'bootstrap5/widget.css',
+    'order': 20,
+}]
 
 ##############################################################################
 # Registration
@@ -60,3 +90,18 @@ def register():
         js=js, css=css
     )
     factory.register_resources('default', widget_name, resources)
+
+    # Bootstrap 5
+    factory.register_theme(
+        ['bootstrap5'],
+        widget_name,
+        resources_dir,
+        js=js,
+        css=bootstrap5_css
+    )
+
+    factory.register_resources(
+        ['bootstrap5'],
+        widget_name,
+        bootstrap5_resources
+    )
