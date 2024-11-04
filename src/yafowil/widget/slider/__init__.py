@@ -15,6 +15,7 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 yafowil_slider_js = wr.ScriptResource(
     name='yafowil-slider-js',
     directory=os.path.join(resources_dir, 'default'),
+    path='yafowil-slider/default',
     depends='jquery-js',
     resource='widget.js',
     compressed='widget.min.js'
@@ -28,6 +29,7 @@ resources.add(yafowil_slider_js)
 resources.add(wr.StyleResource(
     name='yafowil-slider-css',
     directory=os.path.join(resources_dir, 'default'),
+    path='yafowil-slider/default',
     resource='widget.min.css'
 ))
 
@@ -59,6 +61,7 @@ bootstrap5_resources.add(yafowil_slider_js)
 bootstrap5_resources.add(wr.StyleResource(
     name='yafowil-slider-css',
     directory=os.path.join(resources_dir, 'bootstrap5'),
+    path='yafowil-slider/bootstrap5',
     resource='widget.min.css'
 ))
 

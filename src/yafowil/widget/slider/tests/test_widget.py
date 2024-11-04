@@ -296,7 +296,7 @@ class TestSliderWidget(YafowilTestCase):
         self.assertEqual(len(scripts), 1)
 
         self.assertTrue(scripts[0].directory.endswith(np('/slider/resources/default')))
-        self.assertEqual(scripts[0].path, 'yafowil-slider')
+        self.assertEqual(scripts[0].path, 'yafowil-slider/default')
         self.assertEqual(scripts[0].file_name, 'widget.min.js')
         self.assertTrue(os.path.exists(scripts[0].file_path))
 
@@ -304,7 +304,7 @@ class TestSliderWidget(YafowilTestCase):
         self.assertEqual(len(styles), 1)
 
         self.assertTrue(styles[0].directory.endswith(np('/slider/resources/default')))
-        self.assertEqual(styles[0].path, 'yafowil-slider')
+        self.assertEqual(styles[0].path, 'yafowil-slider/default')
         self.assertEqual(styles[0].file_name, 'widget.min.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
 
