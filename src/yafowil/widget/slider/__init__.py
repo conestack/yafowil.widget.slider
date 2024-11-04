@@ -61,8 +61,7 @@ bootstrap5_resources.add(wr.ScriptResource(
 ))
 bootstrap5_resources.add(wr.StyleResource(
     name='yafowil-slider-css',
-    resource='bootstrap5/widget.css',
-    compressed='bootstrap5/widget.min.css'
+    resource='bootstrap5/widget.css'
 ))
 
 # B/C resources ##############################################################
