@@ -26,8 +26,7 @@ resources.add(wr.ScriptResource(
 ))
 resources.add(wr.StyleResource(
     name='yafowil-slider-css',
-    resource='widget.css',
-    compressed='widget.min.css'
+    resource='widget.css'
 ))
 
 # B/C resources ##############################################################

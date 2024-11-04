@@ -1,9 +1,6 @@
-name: PY Test slider
+name: Python tests
 
-on:
-  push:
-    paths:
-    - '**.py'
+on: [push]
 
 jobs:
   test:
@@ -19,35 +16,35 @@ jobs:
           - macos-latest
 
         python:
-          - "2.7"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
+          - "3.13"
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
 
-      - name: Install
-        run: |
-          pip install wheel
-          pip install coverage
-          pip install lxml
-          pip install zope.testrunner
-          pip install webresource
-          pip install yafowil
-          pip install -e .[test]
-      - name: Run tests
-        run: |
-          python --version
-          python -m yafowil.widget.slider.tests
-      - name: Run coverage
-        run: |
-          coverage run --source=src/yafowil/widget/slider --omit=src/yafowil/widget/slider/example.py -m yafowil.widget.slider.tests
-          coverage report --fail-under=99
+    - name: Install
+      run: |
+        pip install wheel
+        pip install coverage
+        pip install https://github.com/conestack/webresource/archive/master.zip
+        pip install https://github.com/conestack/yafowil/archive/master.zip
+        pip install -e .[test]
+
+    - name: Run tests
+      run: |
+        python --version
+        python -m pytest src/yafowil/widget/slider/tests
+
+    - name: Run coverage
+      run: |
+        coverage run --source=src/yafowil/widget/slider --omit=src/yafowil/widget/slider/example.py -m pytest src/yafowil/widget/slider/tests
+        coverage report --fail-under=99

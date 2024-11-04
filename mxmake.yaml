@@ -1,0 +1,30 @@
+topics:
+  core:
+    mxenv:
+      VENV_FOLDER: venv
+      PYTHON_PACKAGE_INSTALLER: uv
+
+  qa:
+    test:
+      TEST_COMMAND: $(VENV_FOLDER)/bin/pytest src/yafowil/widget/slider/tests
+
+    coverage:
+      COVERAGE_COMMAND: |
+        \
+        	$(VENV_FOLDER)/bin/coverage run \
+        		--omit src/yafowil/widget/slider/example.py \
+        		--source src/yafowil/widget/slider \
+        		-m pytest src/yafowil/widget/slider/tests \
+        	&& $(VENV_FOLDER)/bin/coverage report --fail-under=99
+
+  js:
+    nodejs:
+      NODEJS_PACKAGE_MANAGER: pnpm
+
+    rollup:
+      ROLLUP_CONFIG: js/rollup.conf.js
+
+    wtr:
+      WTR_CONFIG: js/wtr.config.mjs
+
+mx-ini: true

@@ -4,10 +4,12 @@
 /.coverage
 /.mxmake/
 /constraints-mxdev.txt
+/coverage/
 /dist/
 /htmlcov/
 /js/karma/
 /node_modules/
 /package-lock.json
+/pnpm-lock.yaml
 /requirements-mxdev.txt
 /venv/
