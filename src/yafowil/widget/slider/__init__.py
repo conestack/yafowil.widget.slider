@@ -21,25 +21,24 @@ resources = wr.ResourceGroup(
 resources.add(wr.ScriptResource(
     name='yafowil-slider-js',
     depends='jquery-js',
-    resource='widget.js',
-    compressed='widget.min.js'
+    resource='default/widget.js',
+    compressed='default/widget.min.js'
 ))
 resources.add(wr.StyleResource(
     name='yafowil-slider-css',
-    resource='widget.css',
-    compressed='widget.min.css'
+    resource='default/widget.css'
 ))
 
 # B/C resources ##############################################################
 
 js = [{
     'group': 'yafowil.widget.slider.common',
-    'resource': 'widget.min.js',
+    'resource': 'default/widget.min.js',
     'order': 20,
 }]
 css = [{
     'group': 'yafowil.widget.slider.common',
-    'resource': 'widget.css',
+    'resource': 'default/widget.css',
     'order': 20,
 }]
 
@@ -57,8 +56,8 @@ bootstrap5_resources = wr.ResourceGroup(
 bootstrap5_resources.add(wr.ScriptResource(
     name='yafowil-slider-js',
     depends='jquery-js',
-    resource='widget.js',
-    compressed='widget.min.js'
+    resource='default/widget.js',
+    compressed='default/widget.min.js'
 ))
 bootstrap5_resources.add(wr.StyleResource(
     name='yafowil-slider-css',

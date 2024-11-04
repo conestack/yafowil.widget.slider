@@ -1,27 +1,20 @@
-name: JS Test slider
+name: JS tests
 
-on:
-  push:
-    paths:
-    - '**.js'
+on: [push]
 
 jobs:
   test:
-    name: TEST SLIDER
+    name: Test
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-      - name: Install
-        run: |
-          make npm
+    - name: Install
+      run: |
+        corepack enable
+        make nodejs
 
-      - name: Run tests
-        run: |
-          make karma
-
-      - name: Run coverage
-        run: |
-          npm run karma-test:coverage
+    - name: Run tests
+      run: make wtr

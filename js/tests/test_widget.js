@@ -5,7 +5,7 @@ import {
     SliderWidget,
     lookup_callback,
     register_array_subscribers
-} from '../src/widget';
+} from '../src/default/widget';
 
 QUnit.module('slider_widget', hooks => {
     const container = $('<div />');
