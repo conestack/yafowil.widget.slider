@@ -313,8 +313,6 @@ export class SliderHandle {
 class SliderTrack {
 
     /**
-     * Initializes a new instance of SliderTrack.
-     * 
      * @param {Slider} slider - The parent slider instance this track belongs to.
      */
     constructor(slider) {
@@ -607,6 +605,8 @@ export class Slider {
 export class SliderWidget {
 
     /**
+     * Initializes each widget in the given DOM context.
+     * 
      * @param {HTMLElement} context - DOM context for initialization.
      */
     static initialize(context) {
@@ -636,8 +636,6 @@ export class SliderWidget {
     }
 
     /**
-     * Creates a new instance of SliderWidget.
-     *
      * @param {jQuery} elem - The jQuery element representing the slider widget.
      * @param {Object} opts - Configuration options for the slider.
      */
