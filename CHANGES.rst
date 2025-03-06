@@ -4,7 +4,20 @@ Changes
 2.0a3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Update jQuery to version ``4.0.0-beta.2``.
+  [lenadax]
+
+- Implement dark theme for ``Bootstrap5`` dark theme mode.
+  [lenadax]
+
+- Use rollup for bundling scss. Use ``make rollup`` to compile js and scss.
+  [lenadax]
+
+- Use ``webtestrunner`` instead of ``karma`` for js tests. Use ``make wtr`` to run tests.
+  [lenadax]
+
+- Use ``pnpm`` as package manager.
+  [lenadax]
 
 
 2.0a2 (2024-02-12)
