@@ -47,12 +47,13 @@ js_options = [
     'thickness',
     'handle_diameter',
     'slide',
-    'change'
+    'change',
+    'disabled'
 ]
 
 
-@managedprops(*['show_value', 'unit', 'height', 'data'] + js_options)
-def slider_edit_renderer(widget, data):
+@managedprops(*['show_value', 'unit', 'height', 'data', 'display_class'] + js_options)
+def slider_edit_renderer(widget, data, display_mode=False):
     value = fetch_value(widget, data)
     content = ''
     range = attr_value('range', widget, data)
@@ -103,7 +104,14 @@ def slider_edit_renderer(widget, data):
             slider_attrs['style'] = 'height:%spx;' % height
     content += data.tag('div', ' ', **slider_attrs)
     wrapper_attrs = data_attrs_helper(widget, data, js_options)
-    wrapper_attrs['class'] = cssclasses(widget, data)
+    display_class = attr_value('display_class', widget, data)
+    css_classes = None
+    if display_mode:
+        csscls = [display_class, 'disabled']
+        css_classes = cssclasses(widget, data, additional=[_ for _ in csscls if _ is not None])
+    else:
+        css_classes = cssclasses(widget, data)
+    wrapper_attrs['class'] = css_classes
     html_data = widget.attrs['data']
     data_keys = html_data.keys()
     for key in data_keys:
@@ -114,9 +122,10 @@ def slider_edit_renderer(widget, data):
     return data.tag('div', content, **wrapper_attrs)
 
 
+@managedprops(*['show_value', 'unit', 'height', 'data', 'display_class'] + js_options)
 def slider_display_renderer(widget, data):
-    raise NotImplementedError(u"``yafowil.widget.slider`` does not support "
-                              u"display mode yet")
+    widget.attrs['disabled'] = True
+    return slider_edit_renderer(widget, data, display_mode=True)
 
 
 factory.register(
@@ -133,6 +142,8 @@ Add-on blueprint `yafowil.widget.slider
 factory.defaults['slider.default'] = ''
 
 factory.defaults['slider.class'] = 'yafowil_slider'
+
+factory.defaults['slider.disabled'] = False
 
 factory.defaults['slider.show_value'] = False
 factory.doc['props']['slider.show_value'] = """\
@@ -203,4 +214,9 @@ factory.defaults['slider.data'] = dict()
 factory.doc['props']['slider.data'] = """\
 Additional data redered as HTML data attributes on slider wrapper
 DOM Element.
+"""
+
+factory.defaults['slider.display_class'] = None
+factory.doc['props']['slider.display_class'] = """\
+CSS class to be rendered on wrapper in widget display mode.
 """

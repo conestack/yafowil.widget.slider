@@ -4,6 +4,9 @@ Changes
 2.0a3 (unreleased)
 ------------------
 
+- Introduce ``display_class`` and ``disabled`` widget properties.
+  [lenadax]
+
 - Update jQuery to version ``4.0.0-beta.2``.
   [lenadax]
 

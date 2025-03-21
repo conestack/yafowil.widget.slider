@@ -2,6 +2,12 @@ div.yafowil_slider {
     padding-top:0.65em;
     width: 100%;
 
+    &.disabled {
+        .slider-value-track {
+            opacity: .25;
+        }
+    }
+
     & > .slider {
         position: relative;
         display: flex;
