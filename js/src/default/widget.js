@@ -1,5 +1,12 @@
 import $ from 'jquery';
 
+/**
+ * Retrieves a callback function from a given string path in `window` object.
+ * 
+ * @param {string} path - Dot-separated path to the desired function.
+ * @returns {Function|null} - The callback function, or null if path is empty.
+ * @throws Will throw an error if a part of the path is undefined.
+ */
 export function lookup_callback(path) {
     if (!path) {
         return null;
@@ -19,6 +26,11 @@ export function lookup_callback(path) {
 
 export class SliderHandle {
 
+    /**
+     * @param {Slider} slider - The parent slider instance this handle belongs to.
+     * @param {number} index - The index of this handle within the slider.
+     * @param {number} value - The initial value for this handle.
+     */
     constructor(slider, index, value) {
         this.slider = slider;
         let h_diam = slider.handle_diameter;
@@ -40,16 +52,28 @@ export class SliderHandle {
 
         this.selected = false;
 
-        this.elem.on('mousedown touchstart', this._on_start);
-        $(window).on('resize', this._on_resize);
+        if (!this.slider.disabled) {
+            this.elem.on('mousedown touchstart', this._on_start);
+            $(window).on('resize', this._on_resize);
+        }
 
         this._force_value = false;
     }
 
+    /**
+     * Gets the current value of the handle.
+     * 
+     * @returns {number} The current value of the handle.
+     */
     get value() {
         return this._value;
     }
 
+    /**
+     * Sets the value of the handle, aligning it with the slider's constraints.
+     * 
+     * @param {number} value - The new value for the handle.
+     */
     set value(value) {
         let slider = this.slider,
             min = slider.min,
@@ -69,10 +93,20 @@ export class SliderHandle {
         this._value = value;
     }
 
+    /**
+     * Gets the current position of the handle.
+     * 
+     * @returns {number} The current position of the handle.
+     */
     get pos() {
         return this._pos;
     }
 
+    /**
+     * Sets the position of the handle based on the provided pixel value.
+     * 
+     * @param {number} pos - The new pixel position for the handle.
+     */
     set pos(pos) {
         let slider = this.slider,
             min = slider.min,
@@ -82,35 +116,63 @@ export class SliderHandle {
         this.value = (max - min) * (pos / len) + min;
     }
 
+    /**
+     * Gets whether the handle is currently selected.
+     * 
+     * @returns {boolean} True if the handle is selected, false otherwise.
+     */
     get selected() {
         return this._selected;
     }
 
+    /**
+     * Sets the selection state of the handle.
+     * 
+     * @param {boolean} selected - The new selection state.
+     */
     set selected(selected) {
         let elem = this.elem,
             slider = this.slider;
         if (selected) {
             slider.unselect_handles();
-            elem.addClass('active').css('z-index', 10)
-            slider.elem.on('mousewheel wheel', this._on_scroll);
-            $(document).on('keydown', this._on_key);
+            elem.addClass('active').css('z-index', 10);
+            if (!this.slider.disabled) {
+                slider.elem.on('mousewheel wheel', this._on_scroll);
+                $(document).on('keydown', this._on_key);
+            }
         } else {
             elem.removeClass('active').css('z-index', 1);
-            slider.elem.off('mousewheel wheel', this._on_scroll);
-            $(document).off('keydown', this._on_key);
+            if (!this.slider.disabled) {
+                slider.elem.off('mousewheel wheel', this._on_scroll);
+                $(document).off('keydown', this._on_key);
+            }
         }
         this._selected = selected;
     }
 
+    /**
+     * Cleans up event handlers.
+     */
     destroy() {
         $(window).off('resize', this._on_resize);
         this.selected = false;
     }
 
+    /**
+     * Handles window resize events, updating the handle's value.
+     * 
+     * @private
+     */
     _on_resize() {
         this.value = this.value;
     }
 
+    /**
+     * Handles the start of drag events for the handle.
+     * 
+     * @param {Event} e - The event object.
+     * @private
+     */
     _on_start(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -121,6 +183,12 @@ export class SliderHandle {
             .on('mouseup touchend', this._on_end);
     }
 
+    /**
+     * Handles movement events during dragging.
+     * 
+     * @param {Event} e - The event object.
+     * @private
+     */
     _on_move(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -129,6 +197,12 @@ export class SliderHandle {
         slider.trigger('slide', this);
     }
 
+    /**
+     * Handles the end of drag events for the handle.
+     * 
+     * @param {Event} e - The event object.
+     * @private
+     */
     _on_end(e) {
         e.preventDefault();
         $(document)
@@ -137,6 +211,12 @@ export class SliderHandle {
         this.slider.trigger('stop', this);
     }
 
+    /**
+     * Handles scrolling events to adjust the handle's value.
+     * 
+     * @param {Event} e - The event object.
+     * @private
+     */
     _on_scroll(e) {
         e.preventDefault();
         let evt = e.originalEvent,
@@ -153,6 +233,12 @@ export class SliderHandle {
         slider.trigger('change', this);
     }
 
+    /**
+     * Handles keyboard events to adjust the handle's value.
+     * 
+     * @param {Event} e - The event object.
+     * @private
+     */
     _on_key(e) {
         let value = this.value,
             slider = this.slider,
@@ -174,6 +260,13 @@ export class SliderHandle {
         slider.trigger('change', this);
     }
 
+    /**
+     * Aligns the value according to the slider's step configuration.
+     * 
+     * @param {number} value - The value to align.
+     * @returns {number} The aligned value.
+     * @private
+     */
     _align_value(value) {
         let slider = this.slider,
             min = slider.min,
@@ -190,6 +283,13 @@ export class SliderHandle {
         return Math.round(value);
     }
 
+    /**
+     * Prevents overlap of the handle with adjacent handles.
+     * 
+     * @param {number} value - The proposed value for the handle.
+     * @returns {number} The adjusted value to prevent overlap.
+     * @private
+     */
     _prevent_overlap(value) {
         if (this._force_value) {
             return value;
@@ -218,6 +318,9 @@ export class SliderHandle {
 
 class SliderTrack {
 
+    /**
+     * @param {Slider} slider - The parent slider instance this track belongs to.
+     */
     constructor(slider) {
         this.slider = slider;
         let vertical = slider.vertical,
@@ -241,15 +344,23 @@ class SliderTrack {
             }
         }
         this.update = this.update.bind(this);
-        slider.elem.on('slide', this.update);
-        $(window).on('resize', this.update);
+        if (!this.slider.disabled) {
+            slider.elem.on('slide', this.update);
+            $(window).on('resize', this.update);
+        }
         this.update();
     }
 
+    /**
+     * Cleans up event listeners.
+     */
     destroy() {
         $(window).off('resize', this.update);
     }
 
+    /**
+     * Updates the size and position of the track based on the handles' positions.
+     */
     update() {
         let slider = this.slider,
             range = slider.range;
@@ -282,11 +393,18 @@ class SliderTrack {
 
 export class Slider {
 
+    /**
+     * Initializes a new instance of the Slider.
+     *
+     * @param {HTMLElement} elem - The DOM element that will serve as the slider.
+     * @param {Object} opts - Configuration options for the slider.
+     */
     constructor(elem, opts) {
         if (window.ts !== undefined) {
             ts.ajax.attach(this, elem);
         }
         this.elem = elem;
+        this.disabled = opts.disabled;
         this.range = opts.range || false;
         this.handle_diameter = opts.handle_diameter || 20;
         this.thickness = opts.thickness || 8;
@@ -315,15 +433,24 @@ export class Slider {
         }
         this.track = new SliderTrack(this);
         this._on_down = this._on_down.bind(this);
-        this.elem.on('mousedown touchstart', this._on_down);
-        for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
-            if (opts[evt]) {
-                this.elem.on(evt, opts[evt]);
+        if (!this.disabled) {
+            this.elem.on('mousedown touchstart', this._on_down);
+            for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
+                if (opts[evt]) {
+                    this.elem.on(evt, opts[evt]);
+                }
             }
         }
+
         this.trigger('create', this);
     }
 
+    /**
+     * Gets the current value(s) of the slider.
+     *
+     * @returns {number|Array} The current value if a single handle exists,
+     * or an array of values if a range slider.
+     */
     get value() {
         let handles = this.handles;
         if (handles.length == 1) {
@@ -336,6 +463,12 @@ export class Slider {
         return value;
     }
 
+    /**
+     * Sets the value(s) of the slider.
+     *
+     * @param {number|Array} value - The new value(s) to set.
+     * Must be in ascending order for range sliders.
+     */
     set value(value) {
         if (!(value instanceof Array)) {
             value = [value];
@@ -350,8 +483,7 @@ export class Slider {
                 throw new Error('Value out of bounds');
             }
             if (prev > val) {
-                let msg = 'Single values in range must be in ascending order';
-                throw new Error(msg);
+                throw new Error('Single values in range must be in ascending order');
             }
             prev = val;
         }
@@ -365,23 +497,49 @@ export class Slider {
         this.track.update();
     }
 
+    /**
+     * Gets the size of the slider based on its orientation.
+     *
+     * @returns {number} The width or height of the slider.
+     */
     get size() {
         let elem = this.elem;
         return this.vertical ? elem.height() : elem.width();
     }
 
+    /**
+     * Attaches an event handler to specified event names.
+     *
+     * @param {string} names - A space-separated list of event names.
+     * @param {function} handle - The event handler function.
+     */
     on(names, handle) {
         this.elem.on(names, handle);
     }
 
+    /**
+     * Detaches an event handler from specified event names.
+     *
+     * @param {string} names - A space-separated list of event names.
+     * @param {function} handle - The event handler function.
+     */
     off(names, handle) {
         this.elem.off(names, handle);
     }
 
+    /**
+     * Triggers a custom event.
+     *
+     * @param {string} name - The name of the event to trigger.
+     * @param {Object} widget - The widget instance related to the event.
+     */
     trigger(name, widget) {
         this.elem.trigger(new $.Event(name, {widget: widget}));
     }
 
+    /**
+     * Cleans up event listeners and elements of the slider and its components.
+     */
     destroy() {
         this.track.destroy();
         for (let handle of this.handles) {
@@ -389,12 +547,21 @@ export class Slider {
         }
     }
 
+    /**
+     * Deselects all slider handles.
+     */
     unselect_handles() {
         $('div.slider-handle').each(function() {
             $(this).data('slider-handle').selected = false;
         });
     }
 
+    /**
+     * Calculates the position based on the event for handle movement.
+     *
+     * @param {Event} e - The event object from the mouse or touch event.
+     * @returns {number} The calculated position for the handle.
+     */
     pos_from_evt(e) {
         let vertical = this.vertical,
             e_offset = this.elem.offset(),
@@ -405,6 +572,11 @@ export class Slider {
         return (vertical ? e.touches[0].pageY : e.touches[0].pageX) - offset;
     }
 
+    /**
+     * Handles the down event for the slider.
+     *
+     * @param {Event} e - The event object from the mouse or touch event.
+     */
     _on_down(e) {
         let handle;
         if (this.range === true) {
@@ -418,6 +590,12 @@ export class Slider {
         this.trigger('change', handle);
     }
 
+    /**
+     * Finds the closest handle to the specified position.
+     *
+     * @param {number} pos - The position to compare against the handles.
+     * @returns {SliderHandle} The closest slider handle.
+     */
     _closest_handle(pos) {
         let handles = this.handles,
             vertical = this.vertical,
@@ -438,6 +616,11 @@ export class Slider {
 
 export class SliderWidget {
 
+    /**
+     * Initializes each widget in the given DOM context.
+     * 
+     * @param {HTMLElement} context - DOM context for initialization.
+     */
     static initialize(context) {
         $('.yafowil_slider', context).each(function() {
             let elem = $(this);
@@ -459,14 +642,20 @@ export class SliderWidget {
                 create: lookup_callback(elem.data('create')),
                 slide: lookup_callback(elem.data('slide')),
                 start: lookup_callback(elem.data('start')),
-                stop: lookup_callback(elem.data('stop'))
+                stop: lookup_callback(elem.data('stop')),
+                disabled: elem.data('disabled')
             });
         });
     }
 
+    /**
+     * @param {jQuery} elem - The jQuery element representing the slider widget.
+     * @param {Object} opts - Configuration options for the slider.
+     */
     constructor(elem, opts) {
         elem.data('yafowil-slider', this);
         this.elem = elem;
+        this.disabled = opts.disabled;
         this.range = opts.range;
         if (this.range === true) {
             this.elements = [{
@@ -479,7 +668,7 @@ export class SliderWidget {
             opts.value = [
                 parseInt(this.elements[0].input.val()),
                 parseInt(this.elements[1].input.val())
-            ]
+            ];
         } else {
             this.elements = [{
                 input: $('input.slider_value', elem),
@@ -488,15 +677,28 @@ export class SliderWidget {
             opts.value = parseInt(this.elements[0].input.val());
         }
         this.slider = new Slider($('div.slider', elem), opts);
-        this.slider.on('change slide stop', e => {
-            this._update_value(e.widget);
-        });
+        if (!this.disabled) {
+            this.slider.on('change slide stop', e => {
+                this._update_value(e.widget);
+            });
+        }
     }
 
+    /**
+     * Gets the current value(s) of the slider widget.
+     *
+     * @returns {number|Array} The current value if a single handle exists,
+     * or an array of values if a range slider.
+     */
     get value() {
         return this.slider.value;
     }
 
+    /**
+     * Sets the value(s) of the slider widget.
+     *
+     * @param {number|Array} value - The new value(s) to set.
+     */
     set value(value) {
         let slider = this.slider;
         slider.value = value;
@@ -505,6 +707,11 @@ export class SliderWidget {
         }
     }
 
+    /**
+     * Updates the displayed value for the given handle.
+     *
+     * @param {SliderHandle} handle - The handle whose value is to be updated.
+     */
     _update_value(handle) {
         let index = handle.index,
             element = this.elements[index];
@@ -513,10 +720,20 @@ export class SliderWidget {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// yafowil.widget.array integration
+//////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Re-initializes widget on array add event.
+ */
 function slider_on_array_add(inst, context) {
     SliderWidget.initialize(context, true);
 }
 
+/**
+ * Registers subscribers to yafowil array events.
+ */
 export function register_array_subscribers() {
     if (window.yafowil_array === undefined) {
         return;

@@ -30,7 +30,7 @@ class TestSliderWidget(YafowilTestCase):
             'slider',
             name='sliderfield')
         self.checkOutput("""
-        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+        <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value=""/>
@@ -63,7 +63,7 @@ class TestSliderWidget(YafowilTestCase):
             name='sliderfield',
             value=3)
         self.checkOutput("""
-        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+        <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value="3"/>
@@ -102,7 +102,7 @@ class TestSliderWidget(YafowilTestCase):
                 'unit': 'Unit'
             })
         self.checkOutput("""
-        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+        <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value="20"/>
@@ -121,7 +121,7 @@ class TestSliderWidget(YafowilTestCase):
                 'range': True
             })
         self.checkOutput("""
-        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+        <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
                  name="sliderfield.lower" style="display:none;"
@@ -171,7 +171,7 @@ class TestSliderWidget(YafowilTestCase):
                 'range': True
             })
         self.checkOutput("""
-        <div class="yafowil_slider" data-handle_diameter="20" data-max="100"
+        <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
                  name="sliderfield.lower" style="display:none;"
@@ -233,6 +233,7 @@ class TestSliderWidget(YafowilTestCase):
         self.assertEqual(widget(), (
             '<div class="yafowil_slider" '
             'data-change=\'some_ns.some_callback\' '
+            'data-disabled=\'false\' '
             'data-handle_diameter=\'20\' '
             'data-max=\'50\' '
             'data-min=\'1\' '
@@ -262,15 +263,27 @@ class TestSliderWidget(YafowilTestCase):
         ))
 
     def test_render_display_mode(self):
-        # Render display mode, fails
+        # Render display mode
         widget = factory(
             'slider',
             name='sliderfield',
             mode='display')
-        with self.assertRaises(NotImplementedError) as arc:
-            widget()
-        msg = '``yafowil.widget.slider`` does not support display mode yet'
-        self.assertEqual(str(arc.exception), msg)
+        self.assertEqual(widget(), (
+            '<div class="disabled yafowil_slider" '
+            'data-disabled=\'true\' '
+            'data-handle_diameter=\'20\' '
+            'data-max=\'100\' '
+            'data-min=\'0\' '
+            'data-step=\'1\' '
+            'data-thickness=\'8\'><input '
+            'class="slider_value" '
+            'id="input-sliderfield" '
+            'name="sliderfield" '
+            'style="display:none;" '
+            'type="text" '
+            'value="" />'
+            '<div class="slider"> </div></div>'
+        ))
 
     def test_reserved_data_attribute(self):
         # Render reserved data attribute, fails
@@ -295,17 +308,17 @@ class TestSliderWidget(YafowilTestCase):
         scripts = resources.scripts
         self.assertEqual(len(scripts), 1)
 
-        self.assertTrue(scripts[0].directory.endswith(np('/slider/resources')))
-        self.assertEqual(scripts[0].path, 'yafowil-slider')
+        self.assertTrue(scripts[0].directory.endswith(np('/slider/resources/default')))
+        self.assertEqual(scripts[0].path, 'yafowil-slider/default')
         self.assertEqual(scripts[0].file_name, 'widget.min.js')
         self.assertTrue(os.path.exists(scripts[0].file_path))
 
         styles = resources.styles
         self.assertEqual(len(styles), 1)
 
-        self.assertTrue(styles[0].directory.endswith(np('/slider/resources')))
-        self.assertEqual(styles[0].path, 'yafowil-slider')
-        self.assertEqual(styles[0].file_name, 'widget.css')
+        self.assertTrue(styles[0].directory.endswith(np('/slider/resources/default')))
+        self.assertEqual(styles[0].path, 'yafowil-slider/default')
+        self.assertEqual(styles[0].file_name, 'widget.min.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
 
 

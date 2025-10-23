@@ -5,7 +5,7 @@
     "@web/test-runner": "^0.18.3",
     "@web/test-runner-core": "^0.13.2",
     "install": "^0.13.0",
-    "jquery": "^4.0.0-beta",
+    "jquery": "^4.0.0-beta.2",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.2.0",
     "karma-coverage": "^2.2.1",
