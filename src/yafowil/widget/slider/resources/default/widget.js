@@ -36,8 +36,10 @@ var yafowil_slider = (function (exports, $) {
             this._on_key = this._on_key.bind(this);
             this._on_resize = this._on_resize.bind(this);
             this.selected = false;
-            this.elem.on('mousedown touchstart', this._on_start);
-            $(window).on('resize', this._on_resize);
+            if (!this.slider.disabled) {
+                this.elem.on('mousedown touchstart', this._on_start);
+                $(window).on('resize', this._on_resize);
+            }
             this._force_value = false;
         }
         get value() {
@@ -81,12 +83,16 @@ var yafowil_slider = (function (exports, $) {
             if (selected) {
                 slider.unselect_handles();
                 elem.addClass('active').css('z-index', 10);
-                slider.elem.on('mousewheel wheel', this._on_scroll);
-                $(document).on('keydown', this._on_key);
+                if (!this.slider.disabled) {
+                    slider.elem.on('mousewheel wheel', this._on_scroll);
+                    $(document).on('keydown', this._on_key);
+                }
             } else {
                 elem.removeClass('active').css('z-index', 1);
-                slider.elem.off('mousewheel wheel', this._on_scroll);
-                $(document).off('keydown', this._on_key);
+                if (!this.slider.disabled) {
+                    slider.elem.off('mousewheel wheel', this._on_scroll);
+                    $(document).off('keydown', this._on_key);
+                }
             }
             this._selected = selected;
         }
@@ -219,8 +225,10 @@ var yafowil_slider = (function (exports, $) {
                 }
             }
             this.update = this.update.bind(this);
-            slider.elem.on('slide', this.update);
-            $(window).on('resize', this.update);
+            if (!this.slider.disabled) {
+                slider.elem.on('slide', this.update);
+                $(window).on('resize', this.update);
+            }
             this.update();
         }
         destroy() {
@@ -261,6 +269,7 @@ var yafowil_slider = (function (exports, $) {
                 ts.ajax.attach(this, elem);
             }
             this.elem = elem;
+            this.disabled = opts.disabled;
             this.range = opts.range || false;
             this.handle_diameter = opts.handle_diameter || 20;
             this.thickness = opts.thickness || 8;
@@ -289,10 +298,12 @@ var yafowil_slider = (function (exports, $) {
             }
             this.track = new SliderTrack(this);
             this._on_down = this._on_down.bind(this);
-            this.elem.on('mousedown touchstart', this._on_down);
-            for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
-                if (opts[evt]) {
-                    this.elem.on(evt, opts[evt]);
+            if (!this.disabled) {
+                this.elem.on('mousedown touchstart', this._on_down);
+                for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
+                    if (opts[evt]) {
+                        this.elem.on(evt, opts[evt]);
+                    }
                 }
             }
             this.trigger('create', this);
@@ -322,8 +333,7 @@ var yafowil_slider = (function (exports, $) {
                     throw new Error('Value out of bounds');
                 }
                 if (prev > val) {
-                    let msg = 'Single values in range must be in ascending order';
-                    throw new Error(msg);
+                    throw new Error('Single values in range must be in ascending order');
                 }
                 prev = val;
             }
@@ -420,13 +430,15 @@ var yafowil_slider = (function (exports, $) {
                     create: lookup_callback(elem.data('create')),
                     slide: lookup_callback(elem.data('slide')),
                     start: lookup_callback(elem.data('start')),
-                    stop: lookup_callback(elem.data('stop'))
+                    stop: lookup_callback(elem.data('stop')),
+                    disabled: elem.data('disabled')
                 });
             });
         }
         constructor(elem, opts) {
             elem.data('yafowil-slider', this);
             this.elem = elem;
+            this.disabled = opts.disabled;
             this.range = opts.range;
             if (this.range === true) {
                 this.elements = [{
@@ -448,9 +460,11 @@ var yafowil_slider = (function (exports, $) {
                 opts.value = parseInt(this.elements[0].input.val());
             }
             this.slider = new Slider($('div.slider', elem), opts);
-            this.slider.on('change slide stop', e => {
-                this._update_value(e.widget);
-            });
+            if (!this.disabled) {
+                this.slider.on('change slide stop', e => {
+                    this._update_value(e.widget);
+                });
+            }
         }
         get value() {
             return this.slider.value;

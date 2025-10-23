@@ -11,6 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Corepack
+      run: |
+        npm install --global corepack@latest
+        corepack enable
+
     - name: Install
       run: |
         corepack enable

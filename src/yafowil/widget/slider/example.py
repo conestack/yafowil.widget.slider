@@ -387,6 +387,55 @@ def vertical_range_slider():
     }
 
 
+DOC_DISPLAY_MODE = """
+Display Mode / Disabled Mode
+----------------------------
+
+In disabled Mode, the widget is not draggable or editable and will gain a muted color appearance.
+The widget's display mode will automatically set the widget's ``disabled`` property
+to True.
+
+The ``display_class`` widget property can be used to style the widget wrapper.
+
+.. code-block:: python
+
+    slider = factory('#field:slider', value=[75, 300], mode='display', props={
+        'label': 'Display Mode',
+        'range': 'max',
+        'min': 1,
+        'max': 10,
+        'show_value': True,
+        'unit': 'Value'
+        # 'disabled': True # disable a slider manually
+    })
+"""
+
+
+def display_mode_slider():
+    form = factory(
+        'fieldset',
+        name='yafowil.widget.slider.display'
+    )
+    form['slider'] = factory(
+        '#field:slider',
+        value=2,
+        props={
+            'label': 'Display Mode',
+            'range': 'max',
+            'min': 1,
+            'max': 10,
+            'show_value': True,
+            'unit': 'Value'
+        },
+        mode='display'
+    )
+    return {
+        'widget': form,
+        'doc': DOC_DISPLAY_MODE,
+        'title': 'Display Mode',
+    }
+
+
 def get_example():
     return [
         default_slider(),
@@ -397,5 +446,6 @@ def get_example():
         vertical_slider(),
         vertical_fixed_minimum_range(),
         vertical_fixed_maximum_range(),
-        vertical_range_slider()
+        vertical_range_slider(),
+        display_mode_slider()
     ]
