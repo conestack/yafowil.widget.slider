@@ -1,7 +1,7 @@
 Changes
 =======
 
-2.0a3 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
 - Introduce ``display_class`` and ``disabled`` widget properties.
