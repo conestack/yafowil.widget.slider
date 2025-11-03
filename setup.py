@@ -8,7 +8,7 @@ def read_file(name):
         return f.read()
 
 
-version = '1.4.dev0'
+version = '1.4'
 shortdesc = 'Slider Widget for YAFOWIL'
 longdesc = '\n\n'.join([read_file(name) for name in [
     'README.rst',
