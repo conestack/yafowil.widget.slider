@@ -3,6 +3,7 @@
 *.pyo
 /.coverage
 /.mxmake/
+/build
 /constraints-mxdev.txt
 /coverage/
 /dist/
@@ -12,5 +13,5 @@
 /package-lock.json
 /pnpm-lock.yaml
 /requirements-mxdev.txt
+/sources/
 /venv/
-/build

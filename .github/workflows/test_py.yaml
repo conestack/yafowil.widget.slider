@@ -1,21 +1,14 @@
-name: Python tests
+name: Test yafowil.widget.slider
 
 on: [push]
 
 jobs:
   test:
-    name: Test ${{ matrix.python }} - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-
-        python:
+        python-version:
           - "3.10"
           - "3.11"
           - "3.12"
@@ -23,27 +16,15 @@ jobs:
           - "3.14"
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install
-      run: |
-        pip install wheel
-        pip install coverage
-        pip install https://github.com/conestack/webresource/archive/master.zip
-        pip install https://github.com/conestack/yafowil/archive/master.zip
-        pip install -e .[test]
+      - name: Show Python version
+        run: python -c "import sys; print(sys.version)"
 
-    - name: Run tests
-      run: |
-        python --version
-        python -m pytest src/yafowil/widget/slider/tests
-
-    - name: Run coverage
-      run: |
-        coverage run --source=src/yafowil/widget/slider --omit=src/yafowil/widget/slider/example.py -m pytest src/yafowil/widget/slider/tests
-        coverage report --fail-under=99
+      - name: Run tests an collect code coverage
+        run: make coverage
