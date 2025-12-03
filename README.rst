@@ -1,5 +1,21 @@
+.. image:: https://img.shields.io/pypi/v/yafowil.widget.slider.svg
+    :target: https://pypi.python.org/pypi/yafowil.widget.slider
+    :alt: Latest PyPI version
+
+.. image:: https://img.shields.io/pypi/dm/yafowil.widget.slider.svg
+    :target: https://pypi.python.org/pypi/yafowil.widget.slider
+    :alt: Number of PyPI downloads
+
+.. image:: https://github.com/conestack/yafowil.widget.slider/actions/workflows/test_py.yaml/badge.svg
+    :target: https://github.com/conestack/yafowil.widget.slider/actions/workflows/test_py.yaml
+    :alt: Test yafowil.widget.slider Python
+
+.. image:: https://github.com/conestack/yafowil.widget.slider/actions/workflows/test_js.yaml/badge.svg
+    :target: https://github.com/conestack/yafowil.widget.slider/actions/workflows/test_js.yaml
+    :alt: Test yafowil.widget.slider JS
+
 This is a **slider widget** for for `YAFOWIL
-<http://pypi.python.org/pypi/yafowil>`_ .
+<http://pypi.python.org/pypi/yafowil>`_.
 
 - `Documentation <http://docs.yafowil.info/en/latest/blueprints.html#slider>`_
 - `DEMO - see it Live <http://demo.yafowil.info/++widget++yafowil.widget.slider/index.html>`_
