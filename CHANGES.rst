@@ -4,6 +4,9 @@ Changes
 2.0.0 (unreleased)
 ------------------
 
+- Refactor package layout to use ``pyproject.toml`` and implicit namespace packages.
+  [rnix]
+
 - Introduce ``display_class`` and ``disabled`` widget properties.
   [lenadax]
 
