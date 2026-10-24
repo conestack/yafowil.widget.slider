@@ -11,53 +11,50 @@ def np(path):
 
 
 class TestSliderWidget(YafowilTestCase):
-
     def setUp(self):
         super(TestSliderWidget, self).setUp()
         from yafowil.widget import slider
         from yafowil.widget.slider import widget
+
         reload(widget)
         slider.register()
 
     def test_render_no_range(self):
         # Render no range
-        widget = factory(
-            'slider',
-            name='sliderfield')
-        self.checkOutput("""
+        widget = factory('slider', name='sliderfield')
+        self.checkOutput(
+            """
         <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
                  style="display:none;" type="text" value=""/>
           <div class="slider"> </div>
         </div>
-        """, fxml(widget()))
+        """,
+            fxml(widget()),
+        )
 
     def test_extract_no_range(self):
         # Extract no range
-        widget = factory(
-            'slider',
-            name='sliderfield')
+        widget = factory('slider', name='sliderfield')
         request = {'sliderfield': ''}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', UNSET, UNSET, []]
+            ['sliderfield', UNSET, UNSET, []],
         )
         request = {'sliderfield': '5'}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', UNSET, 5, []]
+            ['sliderfield', UNSET, 5, []],
         )
 
     def test_render_no_range_preset_value(self):
         # Render no range, preset value
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            value=3)
-        self.checkOutput("""
+        widget = factory('slider', name='sliderfield', value=3)
+        self.checkOutput(
+            """
         <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
@@ -65,25 +62,24 @@ class TestSliderWidget(YafowilTestCase):
           <div class="slider">
           </div>
         </div>
-        """, fxml(widget()))
+        """,
+            fxml(widget()),
+        )
 
     def test_extract_no_range_preset_value(self):
         # Extract no range, preset value
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            value=3)
+        widget = factory('slider', name='sliderfield', value=3)
         request = {'sliderfield': ''}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', 3, UNSET, []]
+            ['sliderfield', 3, UNSET, []],
         )
         request = {'sliderfield': '5'}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', 3, 5, []]
+            ['sliderfield', 3, 5, []],
         )
 
     def test_render_no_range_display_value(self):
@@ -92,11 +88,10 @@ class TestSliderWidget(YafowilTestCase):
             'slider',
             name='sliderfield',
             value=20,
-            props={
-                'show_value': True,
-                'unit': 'Unit'
-            })
-        self.checkOutput("""
+            props={'show_value': True, 'unit': 'Unit'},
+        )
+        self.checkOutput(
+            """
         <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-step="1" data-thickness="8">
           <input class="slider_value" id="input-sliderfield" name="sliderfield"
@@ -105,17 +100,15 @@ class TestSliderWidget(YafowilTestCase):
           <span class="slider_value">20</span>
           <div class="slider"> </div>
         </div>
-        """, fxml(widget()))
+        """,
+            fxml(widget()),
+        )
 
     def test_render_range(self):
         # Render range
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            props={
-                'range': True
-            })
-        self.checkOutput("""
+        widget = factory('slider', name='sliderfield', props={'range': True})
+        self.checkOutput(
+            """
         <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
@@ -127,45 +120,33 @@ class TestSliderWidget(YafowilTestCase):
           <div class="slider">
           </div>
         </div>
-        """, fxml(widget()))
+        """,
+            fxml(widget()),
+        )
 
     def test_extract_range(self):
         # Extract range
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            props={
-                'range': True
-            })
-        request = {
-            'sliderfield.lower': '',
-            'sliderfield.upper': ''
-        }
+        widget = factory('slider', name='sliderfield', props={'range': True})
+        request = {'sliderfield.lower': '', 'sliderfield.upper': ''}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', UNSET, [UNSET, UNSET], []]
+            ['sliderfield', UNSET, [UNSET, UNSET], []],
         )
-        request = {
-            'sliderfield.lower': '4',
-            'sliderfield.upper': '6'
-        }
+        request = {'sliderfield.lower': '4', 'sliderfield.upper': '6'}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', UNSET, [4, 6], []]
+            ['sliderfield', UNSET, [4, 6], []],
         )
 
     def test_render_range_preset_value(self):
         # Render range, preset value
         widget = factory(
-            'slider',
-            name='sliderfield',
-            value=[2, 4],
-            props={
-                'range': True
-            })
-        self.checkOutput("""
+            'slider', name='sliderfield', value=[2, 4], props={'range': True}
+        )
+        self.checkOutput(
+            """
         <div class="yafowil_slider" data-disabled="false" data-handle_diameter="20" data-max="100"
              data-min="0" data-range="true" data-step="1" data-thickness="8">
           <input class="lower_value" id="input-lower-sliderfield"
@@ -176,34 +157,26 @@ class TestSliderWidget(YafowilTestCase):
                  type="text" value="4"/>
           <div class="slider"> </div>
         </div>
-        """, fxml(widget()))
+        """,
+            fxml(widget()),
+        )
 
     def test_extract_range_preset_value(self):
         # Extract range, preset value
         widget = factory(
-            'slider',
-            name='sliderfield',
-            value=[2, 4],
-            props={
-                'range': True
-            })
-        request = {
-            'sliderfield.lower': '',
-            'sliderfield.upper': ''
-        }
-        data = widget.extract(request)
-        self.assertEqual(
-            [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', [2, 4], [UNSET, UNSET], []]
+            'slider', name='sliderfield', value=[2, 4], props={'range': True}
         )
-        request = {
-            'sliderfield.lower': '4',
-            'sliderfield.upper': '6'
-        }
+        request = {'sliderfield.lower': '', 'sliderfield.upper': ''}
         data = widget.extract(request)
         self.assertEqual(
             [data.name, data.value, data.extracted, data.errors],
-            ['sliderfield', [2, 4], [4, 6], []]
+            ['sliderfield', [2, 4], [UNSET, UNSET], []],
+        )
+        request = {'sliderfield.lower': '4', 'sliderfield.upper': '6'}
+        data = widget.extract(request)
+        self.assertEqual(
+            [data.name, data.value, data.extracted, data.errors],
+            ['sliderfield', [2, 4], [4, 6], []],
         )
 
     def test_render_with_all_options(self):
@@ -223,71 +196,70 @@ class TestSliderWidget(YafowilTestCase):
                 'step': 5,
                 'slide': 'some_ns.some_callback',
                 'change': 'some_ns.some_callback',
-                'data': {'mydata': 1}
-            })
-        self.assertEqual(widget(), (
-            '<div class="yafowil_slider" '
-            'data-change=\'some_ns.some_callback\' '
-            'data-disabled=\'false\' '
-            'data-handle_diameter=\'20\' '
-            'data-max=\'50\' '
-            'data-min=\'1\' '
-            'data-mydata=\'1\' '
-            'data-orientation=\'vertical\' '
-            'data-range=\'true\' '
-            'data-slide=\'some_ns.some_callback\' '
-            'data-step=\'5\' '
-            'data-thickness=\'8\'><input '
-            'class="lower_value" '
-            'id="input-lower-sliderfield" '
-            'name="sliderfield.lower" '
-            'style="display:none;" '
-            'type="text" '
-            'value="2" /><input '
-            'class="upper_value" '
-            'id="input-upper-sliderfield" '
-            'name="sliderfield.upper" '
-            'style="display:none;" '
-            'type="text" '
-            'value="4" /><span '
-            'class="unit">Kg: </span><span '
-            'class="lower_value">2</span> - <span '
-            'class="upper_value">4</span><div '
-            'class="slider" '
-            'style="height:120px;"> </div></div>'
-        ))
+                'data': {'mydata': 1},
+            },
+        )
+        self.assertEqual(
+            widget(),
+            (
+                '<div class="yafowil_slider" '
+                "data-change='some_ns.some_callback' "
+                "data-disabled='false' "
+                "data-handle_diameter='20' "
+                "data-max='50' "
+                "data-min='1' "
+                "data-mydata='1' "
+                "data-orientation='vertical' "
+                "data-range='true' "
+                "data-slide='some_ns.some_callback' "
+                "data-step='5' "
+                "data-thickness='8'><input "
+                'class="lower_value" '
+                'id="input-lower-sliderfield" '
+                'name="sliderfield.lower" '
+                'style="display:none;" '
+                'type="text" '
+                'value="2" /><input '
+                'class="upper_value" '
+                'id="input-upper-sliderfield" '
+                'name="sliderfield.upper" '
+                'style="display:none;" '
+                'type="text" '
+                'value="4" /><span '
+                'class="unit">Kg: </span><span '
+                'class="lower_value">2</span> - <span '
+                'class="upper_value">4</span><div '
+                'class="slider" '
+                'style="height:120px;"> </div></div>'
+            ),
+        )
 
     def test_render_display_mode(self):
         # Render display mode
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            mode='display')
-        self.assertEqual(widget(), (
-            '<div class="disabled yafowil_slider" '
-            'data-disabled=\'true\' '
-            'data-handle_diameter=\'20\' '
-            'data-max=\'100\' '
-            'data-min=\'0\' '
-            'data-step=\'1\' '
-            'data-thickness=\'8\'><input '
-            'class="slider_value" '
-            'id="input-sliderfield" '
-            'name="sliderfield" '
-            'style="display:none;" '
-            'type="text" '
-            'value="" />'
-            '<div class="slider"> </div></div>'
-        ))
+        widget = factory('slider', name='sliderfield', mode='display')
+        self.assertEqual(
+            widget(),
+            (
+                '<div class="disabled yafowil_slider" '
+                "data-disabled='true' "
+                "data-handle_diameter='20' "
+                "data-max='100' "
+                "data-min='0' "
+                "data-step='1' "
+                "data-thickness='8'><input "
+                'class="slider_value" '
+                'id="input-sliderfield" '
+                'name="sliderfield" '
+                'style="display:none;" '
+                'type="text" '
+                'value="" />'
+                '<div class="slider"> </div></div>'
+            ),
+        )
 
     def test_reserved_data_attribute(self):
         # Render reserved data attribute, fails
-        widget = factory(
-            'slider',
-            name='sliderfield',
-            props={
-                'data': {'min': 1}
-            })
+        widget = factory('slider', name='sliderfield', props={'data': {'min': 1}})
         with self.assertRaises(ValueError) as arc:
             widget()
         msg = "Additional data dict contains reserved attribute name 'min'"

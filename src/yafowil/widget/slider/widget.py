@@ -48,7 +48,7 @@ js_options = [
     'handle_diameter',
     'slide',
     'change',
-    'disabled'
+    'disabled',
 ]
 
 
@@ -108,7 +108,9 @@ def slider_edit_renderer(widget, data, display_mode=False):
     css_classes = None
     if display_mode:
         csscls = [display_class, 'disabled']
-        css_classes = cssclasses(widget, data, additional=[_ for _ in csscls if _ is not None])
+        css_classes = cssclasses(
+            widget, data, additional=[_ for _ in csscls if _ is not None]
+        )
     else:
         css_classes = cssclasses(widget, data)
     wrapper_attrs['class'] = css_classes
@@ -116,8 +118,9 @@ def slider_edit_renderer(widget, data, display_mode=False):
     data_keys = html_data.keys()
     for key in data_keys:
         if key in js_options:
-            raise ValueError(u"Additional data dict contains reserved "
-                             u"attribute name '%s'" % key)
+            raise ValueError(
+                "Additional data dict contains reserved attribute name '%s'" % key
+            )
         wrapper_attrs['data-%s' % key] = html_data[key]
     return data.tag('div', content, **wrapper_attrs)
 
@@ -132,7 +135,8 @@ factory.register(
     'slider',
     extractors=[slider_extractor],
     edit_renderers=[slider_edit_renderer],
-    display_renderers=[slider_display_renderer])
+    display_renderers=[slider_display_renderer],
+)
 
 factory.doc['blueprint']['slider'] = """\
 Add-on blueprint `yafowil.widget.slider

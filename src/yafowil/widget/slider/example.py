@@ -14,16 +14,13 @@ Default slider
 
 
 def default_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.default'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.default')
     form['slider'] = factory(
         '#field:slider',
         value=20,
         props={
             'label': 'Default Slider',
-        }
+        },
     )
     return {
         'widget': form,
@@ -53,10 +50,7 @@ maximum. Set the ``range`` option to ``'min'``.
 
 
 def fixed_minimum_range():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.fixed_minimum_range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.fixed_minimum_range')
     form['slider'] = factory(
         '#field:slider',
         value=50,
@@ -67,7 +61,7 @@ def fixed_minimum_range():
             'max': 200,
             'show_value': True,
             'unit': 'Pieces',
-        }
+        },
     )
     return {
         'widget': form,
@@ -97,10 +91,7 @@ minimum. Set the ``range`` option to ``'max'``.
 
 
 def fixed_maximum_range():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.fixed_maximum_range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.fixed_maximum_range')
     form['slider'] = factory(
         '#field:slider',
         value=2,
@@ -111,7 +102,7 @@ def fixed_maximum_range():
             'max': 10,
             'show_value': True,
             'unit': 'Minimum number',
-        }
+        },
     )
     return {
         'widget': form,
@@ -142,10 +133,7 @@ color to indicate those values are selected.
 
 
 def range_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.range')
     form['slider'] = factory(
         '#field:slider',
         value=[75, 300],
@@ -156,7 +144,7 @@ def range_slider():
             'max': 500,
             'show_value': True,
             'unit': 'Price range (EUR)',
-        }
+        },
     )
     return {
         'widget': form,
@@ -186,10 +174,7 @@ dividend of the slider's maximum value. The default increment is '1'.
 
 
 def step_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.step'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.step')
     form['slider'] = factory(
         '#field:slider',
         value=100,
@@ -200,7 +185,7 @@ def step_slider():
             'step': 50,
             'show_value': True,
             'unit': 'Donation (50 EUR increments)',
-        }
+        },
     )
     return {
         'widget': form,
@@ -230,10 +215,7 @@ option to ``vertical``.
 
 
 def vertical_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.vertical'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.vertical')
     form['slider'] = factory(
         '#field:slider',
         value=50,
@@ -243,7 +225,7 @@ def vertical_slider():
             'height': 200,
             'show_value': True,
             'unit': 'mmHg',
-        }
+        },
     )
     return {
         'widget': form,
@@ -272,10 +254,7 @@ Vertical range with fixed minimum
 
 
 def vertical_fixed_minimum_range():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.fixed_minimum_range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.fixed_minimum_range')
     form['slider'] = factory(
         '#field:slider',
         value=50,
@@ -288,7 +267,7 @@ def vertical_fixed_minimum_range():
             'max': 200,
             'show_value': True,
             'unit': 'Pieces',
-        }
+        },
     )
     return {
         'widget': form,
@@ -317,10 +296,7 @@ Vertical range with fixed maximum
 
 
 def vertical_fixed_maximum_range():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.fixed_maximum_range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.fixed_maximum_range')
     form['slider'] = factory(
         '#field:slider',
         value=2,
@@ -333,7 +309,7 @@ def vertical_fixed_maximum_range():
             'max': 10,
             'show_value': True,
             'unit': 'Minimum number',
-        }
+        },
     )
     return {
         'widget': form,
@@ -362,10 +338,7 @@ Vertical range slider
 
 
 def vertical_range_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.range'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.range')
     form['slider'] = factory(
         '#field:slider',
         value=[75, 300],
@@ -378,7 +351,7 @@ def vertical_range_slider():
             'max': 500,
             'show_value': True,
             'unit': 'Price range (EUR)',
-        }
+        },
     )
     return {
         'widget': form,
@@ -412,10 +385,7 @@ The ``display_class`` widget property can be used to style the widget wrapper.
 
 
 def display_mode_slider():
-    form = factory(
-        'fieldset',
-        name='yafowil.widget.slider.display'
-    )
+    form = factory('fieldset', name='yafowil.widget.slider.display')
     form['slider'] = factory(
         '#field:slider',
         value=2,
@@ -425,9 +395,9 @@ def display_mode_slider():
             'min': 1,
             'max': 10,
             'show_value': True,
-            'unit': 'Value'
+            'unit': 'Value',
         },
-        mode='display'
+        mode='display',
     )
     return {
         'widget': form,
@@ -447,5 +417,5 @@ def get_example():
         vertical_fixed_minimum_range(),
         vertical_fixed_maximum_range(),
         vertical_range_slider(),
-        display_mode_slider()
+        display_mode_slider(),
     ]
