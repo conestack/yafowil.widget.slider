@@ -1,13 +1,13 @@
 import $ from 'jquery';
 import {
+    lookup_callback,
+    register_array_subscribers,
     Slider,
     SliderHandle,
     SliderWidget,
-    lookup_callback,
-    register_array_subscribers
 } from '../src/default/widget';
 
-QUnit.module('slider_widget', hooks => {
+QUnit.module('slider_widget', (hooks) => {
     const container = $('<div />');
 
     hooks.before(() => {
@@ -22,24 +22,21 @@ QUnit.module('slider_widget', hooks => {
         container.remove();
     });
 
-    QUnit.test('lookup_callback', assert => {
+    QUnit.test('lookup_callback', (assert) => {
         window.namespace = {
-            callback: function() {}
+            callback: () => {},
         };
 
         assert.strictEqual(lookup_callback(), null);
-        assert.deepEqual(
-            lookup_callback('namespace.callback'),
-            window.namespace.callback
-        );
-        assert.raises(function() {
+        assert.deepEqual(lookup_callback('namespace.callback'), window.namespace.callback);
+        assert.raises(() => {
             lookup_callback('inexistent');
         }, "'inexistent' not found.");
 
         delete window.namespace;
     });
 
-    QUnit.test('SliderHandle.constructor', assert => {
+    QUnit.test('SliderHandle.constructor', (assert) => {
         const elem = $('<div />').css('width', 100).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -59,12 +56,12 @@ QUnit.module('slider_widget', hooks => {
         assert.false(handle.selected);
     });
 
-    QUnit.test('SliderHandle._align_value', assert => {
+    QUnit.test('SliderHandle._align_value', (assert) => {
         const slider = {
             elem: $('<div />'),
             handle_diameter: 20,
             min: 0,
-            step: false
+            step: false,
         };
         const handle = new SliderHandle(slider, 0, 0);
 
@@ -119,9 +116,9 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle._align_value(8), 9);
     });
 
-    QUnit.test('SliderHandle._prevent_overlap', assert => {
+    QUnit.test('SliderHandle._prevent_overlap', (assert) => {
         const slider = {
-            elem: $('<div />')
+            elem: $('<div />'),
         };
         const handle_0 = new SliderHandle(slider, 0, 25);
         assert.strictEqual(handle_0._prevent_overlap(80), 80);
@@ -134,7 +131,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle_1._prevent_overlap(20), 25);
     });
 
-    QUnit.test('SliderHandle.value -> horizontal', assert => {
+    QUnit.test('SliderHandle.value -> horizontal', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -205,9 +202,9 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.pos, 200);
     });
 
-    QUnit.test('SliderHandle.value -> vertical', assert => {
+    QUnit.test('SliderHandle.value -> vertical', (assert) => {
         const elem = $('<div />').css('height', 200).appendTo(container);
-        const slider = new Slider(elem, {orientation: 'vertical'});
+        const slider = new Slider(elem, { orientation: 'vertical' });
         const handle = slider.handles[0];
 
         assert.strictEqual(slider.min, 0);
@@ -276,7 +273,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.pos, 0);
     });
 
-    QUnit.test('SliderHandle.pos -> horizontal', assert => {
+    QUnit.test('SliderHandle.pos -> horizontal', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -337,9 +334,9 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.pos, 200);
     });
 
-    QUnit.test('SliderHandle.pos -> vertical', assert => {
+    QUnit.test('SliderHandle.pos -> vertical', (assert) => {
         const elem = $('<div />').css('height', 200).appendTo(container);
-        const slider = new Slider(elem, {orientation: 'vertical'});
+        const slider = new Slider(elem, { orientation: 'vertical' });
         const handle = slider.handles[0];
 
         assert.strictEqual(slider.min, 0);
@@ -398,7 +395,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(handle.pos, 200);
     });
 
-    QUnit.test('SliderHandle.selected', assert => {
+    QUnit.test('SliderHandle.selected', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -427,7 +424,7 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(events.keydown[0].handler, handle._on_key);
     });
 
-    QUnit.test('SliderHandle -> drag', assert => {
+    QUnit.test('SliderHandle -> drag', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -460,9 +457,11 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(events.mousemove[0].handler, handle._on_move);
         assert.deepEqual(events.mouseup[0].handler, handle._on_end);
 
-        $(document).trigger(new $.Event('mousemove', {
-            pageX: 100 + slider.elem.offset().left
-        }));
+        $(document).trigger(
+            new $.Event('mousemove', {
+                pageX: 100 + slider.elem.offset().left,
+            }),
+        );
         assert.verifySteps(['slide event triggered']);
 
         $(document).trigger(new $.Event('mouseup'));
@@ -481,9 +480,11 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(events.touchend[0].handler, handle._on_end);
 
         handle.value = 0;
-        $(document).trigger(new $.Event('touchmove', {
-            touches: [{pageX: 100 + slider.elem.offset().left}]
-        }));
+        $(document).trigger(
+            new $.Event('touchmove', {
+                touches: [{ pageX: 100 + slider.elem.offset().left }],
+            }),
+        );
         assert.verifySteps(['slide event triggered']);
 
         $(document).trigger(new $.Event('touchend'));
@@ -494,7 +495,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(events.touchend, undefined);
     });
 
-    QUnit.test('SliderHandle -> scroll', assert => {
+    QUnit.test('SliderHandle -> scroll', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {});
         const handle = slider.handles[0];
@@ -511,36 +512,44 @@ QUnit.module('slider_widget', hooks => {
 
         handle.selected = true;
 
-        slider.elem.trigger(new $.Event('mousewheel', {
-            originalEvent: {deltaY: 1},
-            preventDefault: function() {}
-        }));
+        slider.elem.trigger(
+            new $.Event('mousewheel', {
+                originalEvent: { deltaY: 1 },
+                preventDefault: () => {},
+            }),
+        );
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle.value, 1);
 
-        slider.elem.trigger(new $.Event('wheel', {
-            originalEvent: {deltaY: 1},
-            preventDefault: function() {}
-        }));
+        slider.elem.trigger(
+            new $.Event('wheel', {
+                originalEvent: { deltaY: 1 },
+                preventDefault: () => {},
+            }),
+        );
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle.value, 2);
 
-        slider.elem.trigger(new $.Event('mousewheel', {
-            originalEvent: {deltaY: -1},
-            preventDefault: function() {}
-        }));
+        slider.elem.trigger(
+            new $.Event('mousewheel', {
+                originalEvent: { deltaY: -1 },
+                preventDefault: () => {},
+            }),
+        );
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle.value, 1);
 
-        slider.elem.trigger(new $.Event('wheel', {
-            originalEvent: {deltaY: -1},
-            preventDefault: function() {}
-        }));
+        slider.elem.trigger(
+            new $.Event('wheel', {
+                originalEvent: { deltaY: -1 },
+                preventDefault: () => {},
+            }),
+        );
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle.value, 0);
     });
 
-    QUnit.test('SliderHandle -> keys', assert => {
+    QUnit.test('SliderHandle -> keys', (assert) => {
         const elem_h = $('<div />').css('width', 200).appendTo(container);
         const slider_h = new Slider(elem_h, {});
         const handle_h = slider_h.handles[0];
@@ -557,16 +566,16 @@ QUnit.module('slider_widget', hooks => {
 
         handle_h.selected = true;
 
-        slider_h.elem.trigger(new $.Event('keydown', {key: 'ArrowRight'}));
+        slider_h.elem.trigger(new $.Event('keydown', { key: 'ArrowRight' }));
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle_h.value, 1);
 
-        slider_h.elem.trigger(new $.Event('keydown', {key: 'ArrowLeft'}));
+        slider_h.elem.trigger(new $.Event('keydown', { key: 'ArrowLeft' }));
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle_h.value, 0);
 
         const elem_v = $('<div />').css('height', 200).appendTo(container);
-        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const slider_v = new Slider(elem_v, { orientation: 'vertical' });
         const handle_v = slider_v.handles[0];
 
         slider_v.on('change', (e) => {
@@ -581,16 +590,16 @@ QUnit.module('slider_widget', hooks => {
 
         handle_v.selected = true;
 
-        slider_v.elem.trigger(new $.Event('keydown', {key: 'ArrowUp'}));
+        slider_v.elem.trigger(new $.Event('keydown', { key: 'ArrowUp' }));
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle_v.value, 1);
 
-        slider_v.elem.trigger(new $.Event('keydown', {key: 'ArrowDown'}));
+        slider_v.elem.trigger(new $.Event('keydown', { key: 'ArrowDown' }));
         assert.verifySteps(['change event triggered']);
         assert.strictEqual(handle_v.value, 0);
     });
 
-    QUnit.test('SliderTrack', assert => {
+    QUnit.test('SliderTrack', (assert) => {
         // horizontal slider with no range
         const elem_h = $('<div />').css('width', 200).appendTo(container);
         const slider_h = new Slider(elem_h, {});
@@ -603,7 +612,7 @@ QUnit.module('slider_widget', hooks => {
         const elem_h_min = $('<div />').css('width', 200).appendTo(container);
         const slider_h_min = new Slider(elem_h_min, {
             range: 'min',
-            value: 25
+            value: 25,
         });
         const track_h_min = slider_h_min.track;
 
@@ -619,7 +628,7 @@ QUnit.module('slider_widget', hooks => {
         const elem_h_max = $('<div />').css('width', 200).appendTo(container);
         const slider_h_max = new Slider(elem_h_max, {
             range: 'max',
-            value: 25
+            value: 25,
         });
         const track_h_max = slider_h_max.track;
 
@@ -635,7 +644,7 @@ QUnit.module('slider_widget', hooks => {
         const elem_h_range = $('<div />').css('width', 200).appendTo(container);
         const slider_h_range = new Slider(elem_h_range, {
             range: true,
-            value: [25, 75]
+            value: [25, 75],
         });
         const track_h_range = slider_h_range.track;
 
@@ -650,7 +659,7 @@ QUnit.module('slider_widget', hooks => {
 
         // vertical slider with no range
         const elem_v = $('<div />').css('height', 200).appendTo(container);
-        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const slider_v = new Slider(elem_v, { orientation: 'vertical' });
         const track_v = slider_v.track;
 
         assert.strictEqual(track_v.range_elem, null);
@@ -661,7 +670,7 @@ QUnit.module('slider_widget', hooks => {
         const slider_v_min = new Slider(elem_v_min, {
             orientation: 'vertical',
             range: 'min',
-            value: 25
+            value: 25,
         });
         const track_v_min = slider_v_min.track;
 
@@ -678,7 +687,7 @@ QUnit.module('slider_widget', hooks => {
         const slider_v_max = new Slider(elem_v_max, {
             orientation: 'vertical',
             range: 'max',
-            value: 25
+            value: 25,
         });
         const track_v_max = slider_v_max.track;
 
@@ -695,7 +704,7 @@ QUnit.module('slider_widget', hooks => {
         const slider_v_range = new Slider(elem_v_range, {
             orientation: 'vertical',
             range: true,
-            value: [25, 75]
+            value: [25, 75],
         });
         const track_v_range = slider_v_range.track;
 
@@ -709,14 +718,14 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(track_v_range.range_elem.css('height'), '120px');
     });
 
-    QUnit.module('Slider -> treibstoff integration', hooks => {
+    QUnit.module('Slider -> treibstoff integration', (hooks) => {
         const ts = {
             ajax: {
                 assert: null,
-                attach: function (inst, elem) {
+                attach: function (_inst, _elem) {
                     this.assert.step('attach slider widget');
-                }
-            }
+                },
+            },
         };
 
         hooks.before(() => {
@@ -727,7 +736,7 @@ QUnit.module('slider_widget', hooks => {
             window.ts = undefined;
         });
 
-        QUnit.test('Slider.constructor -> ts.ajax.attach', assert => {
+        QUnit.test('Slider.constructor -> ts.ajax.attach', (assert) => {
             ts.ajax.assert = assert;
 
             const elem = $('<div />').css('width', 200).appendTo(container);
@@ -736,7 +745,7 @@ QUnit.module('slider_widget', hooks => {
         });
     });
 
-    QUnit.test('Slider.constructor -> options', assert => {
+    QUnit.test('Slider.constructor -> options', (assert) => {
         // defaults
         let elem = $('<div />').css('width', 200).appendTo(container),
             slider = new Slider(elem, {});
@@ -759,7 +768,7 @@ QUnit.module('slider_widget', hooks => {
             min: 10,
             max: 50,
             step: 10,
-            orientation: 'vertical'
+            orientation: 'vertical',
         });
         assert.strictEqual(slider.value, 10);
         assert.strictEqual(slider.handle_diameter, 25);
@@ -773,7 +782,7 @@ QUnit.module('slider_widget', hooks => {
         // step takes precedence over scroll_step if given
         elem = $('<div />').css('width', 200).appendTo(container);
         slider = new Slider(elem, {
-            scroll_step: 10
+            scroll_step: 10,
         });
         assert.false(slider.step);
         assert.strictEqual(slider.scroll_step, 10);
@@ -781,7 +790,7 @@ QUnit.module('slider_widget', hooks => {
         elem = $('<div />').css('width', 200).appendTo(container);
         slider = new Slider(elem, {
             step: 5,
-            scroll_step: 10
+            scroll_step: 10,
         });
         assert.strictEqual(slider.step, 5);
         assert.strictEqual(slider.scroll_step, 5);
@@ -794,7 +803,7 @@ QUnit.module('slider_widget', hooks => {
 
         elem = $('<div />').css('width', 200).appendTo(container);
         slider = new Slider(elem, {
-            range: true
+            range: true,
         });
         assert.deepEqual(slider.value, [0, 0]);
         assert.strictEqual(slider.handles.length, 2);
@@ -802,9 +811,9 @@ QUnit.module('slider_widget', hooks => {
         // create event
         elem = $('<div />').css('width', 200).appendTo(container);
         new Slider(elem, {
-            create: function(e) {
+            create: () => {
                 assert.step('create event triggered');
-            }
+            },
         });
         assert.verifySteps(['create event triggered']);
 
@@ -817,14 +826,14 @@ QUnit.module('slider_widget', hooks => {
         elem = $('<div />').css('height', 200).appendTo(container);
         slider = new Slider(elem, {
             orientation: 'vertical',
-            height: 200
+            height: 200,
         });
         assert.strictEqual(elem.css('height'), '200px');
         assert.strictEqual(elem.css('width'), '20px');
         assert.strictEqual(elem[0].className, 'slider-vertical');
     });
 
-    QUnit.test('Slider.value', assert => {
+    QUnit.test('Slider.value', (assert) => {
         const elem_s = $('<div />').css('width', 200).appendTo(container);
         const slider_s = new Slider(elem_s, {});
 
@@ -834,12 +843,18 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(slider_s.value, 50);
         slider_s.value = 100;
         assert.strictEqual(slider_s.value, 100);
-        assert.throws(() => {slider_s.value = [1, 2]}, 'Invalid value size');
-        assert.throws(() => {slider_s.value = -1}, 'Value out of bounds');
-        assert.throws(() => {slider_s.value = 101}, 'Value out of bounds');
+        assert.throws(() => {
+            slider_s.value = [1, 2];
+        }, 'Invalid value size');
+        assert.throws(() => {
+            slider_s.value = -1;
+        }, 'Value out of bounds');
+        assert.throws(() => {
+            slider_s.value = 101;
+        }, 'Value out of bounds');
 
         const elem_r = $('<div />').css('width', 200).appendTo(container);
-        const slider_r = new Slider(elem_r, {range: true});
+        const slider_r = new Slider(elem_r, { range: true });
 
         slider_r.value = [100, 100];
         assert.deepEqual(slider_r.value, [100, 100]);
@@ -849,26 +864,31 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(slider_r.value, [0, 0]);
         slider_r.value = [25, 75];
         assert.deepEqual(slider_r.value, [25, 75]);
-        assert.throws(() => {slider_r.value = 1}, 'Invalid value size');
-        assert.throws(() => {slider_r.value = [-1, 100]}, 'Value out of bounds');
-        assert.throws(() => {slider_r.value = [0, 101]}, 'Value out of bounds');
-        assert.throws(
-            () => {slider_r.value = [75, 25]},
-            'Single values in range must be in ascending order'
-        );
+        assert.throws(() => {
+            slider_r.value = 1;
+        }, 'Invalid value size');
+        assert.throws(() => {
+            slider_r.value = [-1, 100];
+        }, 'Value out of bounds');
+        assert.throws(() => {
+            slider_r.value = [0, 101];
+        }, 'Value out of bounds');
+        assert.throws(() => {
+            slider_r.value = [75, 25];
+        }, 'Single values in range must be in ascending order');
     });
 
-    QUnit.test('Slider.size', assert => {
+    QUnit.test('Slider.size', (assert) => {
         const elem_h = $('<div />').css('width', 100).appendTo(container);
         const slider_h = new Slider(elem_h, {});
         assert.strictEqual(slider_h.size, 100);
 
         const elem_v = $('<div />').css('height', 200).appendTo(container);
-        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const slider_v = new Slider(elem_v, { orientation: 'vertical' });
         assert.strictEqual(slider_v.size, 200);
     });
 
-    QUnit.test('Slider._closest_handle', assert => {
+    QUnit.test('Slider._closest_handle', (assert) => {
         // horizontal single slider
         const elem_sh = $('<div />').css('width', 200).appendTo(container);
         const slider_sh = new Slider(elem_sh, {});
@@ -885,7 +905,7 @@ QUnit.module('slider_widget', hooks => {
 
         // horizontal range slider
         const elem_rh = $('<div />').css('width', 200).appendTo(container);
-        const slider_rh = new Slider(elem_rh, {range: true});
+        const slider_rh = new Slider(elem_rh, { range: true });
 
         assert.strictEqual(slider_rh.handles.length, 2);
         assert.deepEqual(slider_rh.value, [0, 0]);
@@ -912,7 +932,7 @@ QUnit.module('slider_widget', hooks => {
         const elem_rv = $('<div />').css('height', 200).appendTo(container);
         const slider_rv = new Slider(elem_rv, {
             range: true,
-            orientation: 'vertical'
+            orientation: 'vertical',
         });
 
         assert.strictEqual(slider_rv.handles.length, 2);
@@ -937,61 +957,77 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(slider_rv.value, [100, 100]);
         assert.deepEqual(slider_rv._closest_handle(-1), slider_rv.handles[1]);
         // XXX: should return handles[0] at value 0.01
-        assert.deepEqual(slider_rv._closest_handle(.01), slider_rv.handles[0]);
+        assert.deepEqual(slider_rv._closest_handle(0.01), slider_rv.handles[0]);
         assert.deepEqual(slider_rv._closest_handle(1), slider_rv.handles[0]);
     });
 
-    QUnit.test('Slider.pos_from_evt', assert => {
+    QUnit.test('Slider.pos_from_evt', (assert) => {
         let pos;
 
         const elem_h = $('<div />').css('width', 200).appendTo(container);
         const slider_h = new Slider(elem_h, {});
 
-        pos = slider_h.pos_from_evt(new $.Event('mousedown', {
-            pageX: 10 + slider_h.elem.offset().left
-        }));
+        pos = slider_h.pos_from_evt(
+            new $.Event('mousedown', {
+                pageX: 10 + slider_h.elem.offset().left,
+            }),
+        );
         assert.strictEqual(pos, 10);
 
-        pos = slider_h.pos_from_evt(new $.Event('mousemove', {
-            pageX: 20 + slider_h.elem.offset().left
-        }));
+        pos = slider_h.pos_from_evt(
+            new $.Event('mousemove', {
+                pageX: 20 + slider_h.elem.offset().left,
+            }),
+        );
         assert.strictEqual(pos, 20);
 
-        pos = slider_h.pos_from_evt(new $.Event('touchstart', {
-            touches: [{pageX: 30 + slider_h.elem.offset().left}]
-        }));
+        pos = slider_h.pos_from_evt(
+            new $.Event('touchstart', {
+                touches: [{ pageX: 30 + slider_h.elem.offset().left }],
+            }),
+        );
         assert.strictEqual(pos, 30);
 
-        pos = slider_h.pos_from_evt(new $.Event('touchmove', {
-            touches: [{pageX: 40 + slider_h.elem.offset().left}]
-        }));
+        pos = slider_h.pos_from_evt(
+            new $.Event('touchmove', {
+                touches: [{ pageX: 40 + slider_h.elem.offset().left }],
+            }),
+        );
         assert.strictEqual(pos, 40);
 
         const elem_v = $('<div />').css('height', 200).appendTo(container);
-        const slider_v = new Slider(elem_v, {orientation: 'vertical'});
+        const slider_v = new Slider(elem_v, { orientation: 'vertical' });
 
-        pos = slider_v.pos_from_evt(new $.Event('mousedown', {
-            pageY: 50 + slider_v.elem.offset().top
-        }));
+        pos = slider_v.pos_from_evt(
+            new $.Event('mousedown', {
+                pageY: 50 + slider_v.elem.offset().top,
+            }),
+        );
         assert.strictEqual(pos, 50);
 
-        pos = slider_v.pos_from_evt(new $.Event('mousemove', {
-            pageY: 60 + slider_v.elem.offset().top
-        }));
+        pos = slider_v.pos_from_evt(
+            new $.Event('mousemove', {
+                pageY: 60 + slider_v.elem.offset().top,
+            }),
+        );
         assert.strictEqual(pos, 60);
 
-        pos = slider_v.pos_from_evt(new $.Event('touchstart', {
-            touches: [{pageY: 70 + slider_v.elem.offset().top}]
-        }));
+        pos = slider_v.pos_from_evt(
+            new $.Event('touchstart', {
+                touches: [{ pageY: 70 + slider_v.elem.offset().top }],
+            }),
+        );
         assert.strictEqual(pos, 70);
 
-        pos = slider_v.pos_from_evt(new $.Event('touchmove', {
-            touches: [{pageY: 80 + slider_v.elem.offset().top}]
-        }));
+        pos = slider_v.pos_from_evt(
+            new $.Event('touchmove', {
+                touches: [{ pageY: 80 + slider_v.elem.offset().top }],
+            }),
+        );
         assert.strictEqual(pos, 80);
     });
 
-    QUnit.test('Slider.unselect_handles', assert => {
+    QUnit.test('Slider.unselect_handles', (assert) => {
         const elem_1 = $('<div />').css('width', 200).appendTo(container);
         const slider_1 = new Slider(elem_1, {});
 
@@ -1002,22 +1038,22 @@ QUnit.module('slider_widget', hooks => {
         const slider_3 = new Slider(elem_3, {});
 
         slider_1.handles[0].selected = true;
-        assert.true(slider_1.handles[0].selected)
-        assert.false(slider_2.handles[0].selected)
-        assert.false(slider_3.handles[0].selected)
+        assert.true(slider_1.handles[0].selected);
+        assert.false(slider_2.handles[0].selected);
+        assert.false(slider_3.handles[0].selected);
 
         slider_2.handles[0].selected = true;
-        assert.false(slider_1.handles[0].selected)
-        assert.true(slider_2.handles[0].selected)
-        assert.false(slider_3.handles[0].selected)
+        assert.false(slider_1.handles[0].selected);
+        assert.true(slider_2.handles[0].selected);
+        assert.false(slider_3.handles[0].selected);
 
         slider_3.handles[0].selected = true;
-        assert.false(slider_1.handles[0].selected)
-        assert.false(slider_2.handles[0].selected)
-        assert.true(slider_3.handles[0].selected)
+        assert.false(slider_1.handles[0].selected);
+        assert.false(slider_2.handles[0].selected);
+        assert.true(slider_3.handles[0].selected);
     });
 
-    QUnit.test('Slider.destroy', assert => {
+    QUnit.test('Slider.destroy', (assert) => {
         $(window).off('resize');
         let events = $._data(window, 'events');
         assert.strictEqual(events, undefined);
@@ -1034,39 +1070,51 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(events, undefined);
     });
 
-    QUnit.test('Slider -> events', assert => {
+    QUnit.test('Slider -> events', (assert) => {
         const elem = $('<div />').css('width', 200).appendTo(container);
         const slider = new Slider(elem, {
-            create: e => {assert.step('create')},
-            start: e => {assert.step('start')},
-            slide: e => {assert.step('slide')},
-            stop: e => {assert.step('stop')},
-            change: e => {assert.step('change')},
+            create: () => {
+                assert.step('create');
+            },
+            start: () => {
+                assert.step('start');
+            },
+            slide: () => {
+                assert.step('slide');
+            },
+            stop: () => {
+                assert.step('stop');
+            },
+            change: () => {
+                assert.step('change');
+            },
         });
         assert.verifySteps(['create']);
 
-        let handle = slider.handles[0];
+        const handle = slider.handles[0];
         handle.elem.trigger(new $.Event('mousedown'));
         assert.verifySteps(['start']);
 
-        $(document).trigger(new $.Event('mousemove', {
-            pageX: 100 + slider.elem.offset().left
-        }));
+        $(document).trigger(
+            new $.Event('mousemove', {
+                pageX: 100 + slider.elem.offset().left,
+            }),
+        );
         assert.verifySteps(['slide']);
 
         $(document).trigger(new $.Event('mouseup'));
         assert.verifySteps(['stop']);
 
         const change_evt = new $.Event('mousewheel', {
-            originalEvent: {deltaY: 1},
-            preventDefault: function() {}
+            originalEvent: { deltaY: 1 },
+            preventDefault: () => {},
         });
         slider.elem.trigger(change_evt);
         assert.verifySteps(['change']);
 
-        const ext_change = e => {
-            assert.step('ext_change')
-        }
+        const ext_change = () => {
+            assert.step('ext_change');
+        };
         slider.on('change', ext_change);
         slider.elem.trigger(change_evt);
         assert.verifySteps(['change', 'ext_change']);
@@ -1076,7 +1124,7 @@ QUnit.module('slider_widget', hooks => {
         assert.verifySteps(['change']);
     });
 
-    QUnit.test('Slider -> select', assert => {
+    QUnit.test('Slider -> select', (assert) => {
         // single slider
         const elem_s = $('<div />').css('width', 200).appendTo(container);
         const slider_s = new Slider(elem_s, {});
@@ -1089,22 +1137,28 @@ QUnit.module('slider_widget', hooks => {
 
         assert.false(slider_s.handles[0].selected);
 
-        slider_s.elem.trigger(new $.Event('mousedown', {
-            pageX: 100 + slider_s.elem.offset().left,
-            pageY: 0 + slider_s.elem.offset().top,
-        }));
+        slider_s.elem.trigger(
+            new $.Event('mousedown', {
+                pageX: 100 + slider_s.elem.offset().left,
+                pageY: 0 + slider_s.elem.offset().top,
+            }),
+        );
 
         assert.verifySteps(['change event triggered']);
         assert.true(slider_s.handles[0].selected);
         assert.strictEqual(slider_s.value, 50);
 
         slider_s.handles[0].selected = false;
-        slider_s.elem.trigger(new $.Event('touchstart', {
-            touches: [{
-                pageX: 150 + slider_s.elem.offset().left,
-                pageY: 0 + slider_s.elem.offset().top,
-            }],
-        }));
+        slider_s.elem.trigger(
+            new $.Event('touchstart', {
+                touches: [
+                    {
+                        pageX: 150 + slider_s.elem.offset().left,
+                        pageY: 0 + slider_s.elem.offset().top,
+                    },
+                ],
+            }),
+        );
 
         assert.verifySteps(['change event triggered']);
         assert.true(slider_s.handles[0].selected);
@@ -1112,7 +1166,7 @@ QUnit.module('slider_widget', hooks => {
 
         // range slider
         const elem_r = $('<div />').css('width', 200).appendTo(container);
-        const slider_r = new Slider(elem_r, {range: true});
+        const slider_r = new Slider(elem_r, { range: true });
 
         let current_handle = null;
         slider_r.on('change', (e) => {
@@ -1125,10 +1179,12 @@ QUnit.module('slider_widget', hooks => {
         assert.false(slider_r.handles[1].selected);
 
         current_handle = 1;
-        slider_r.elem.trigger(new $.Event('mousedown', {
-            pageX: 100 + slider_r.elem.offset().left,
-            pageY: 0 + slider_r.elem.offset().top,
-        }));
+        slider_r.elem.trigger(
+            new $.Event('mousedown', {
+                pageX: 100 + slider_r.elem.offset().left,
+                pageY: 0 + slider_r.elem.offset().top,
+            }),
+        );
 
         assert.verifySteps(['change event triggered']);
         assert.false(slider_r.handles[0].selected);
@@ -1136,34 +1192,28 @@ QUnit.module('slider_widget', hooks => {
         assert.deepEqual(slider_r.value, [0, 50]);
     });
 
-    // QUnit.module('Slider -> resize window', hooks => {
-    //     let base_width = $(window).width(),
-    //         base_height = $(window).height();
-    //
-    //     hooks.after(() => {
-    //         viewport.set(base_width, base_height);
-    //     });
-    //
-    //     QUnit.skip('resize', assert => {
-    //         const elem = $('<div />').css('width', 200).appendTo(container);
-    //         const slider = new Slider(elem, {value: 50});
-    //         const track = slider_h.track;
-    //         const handle = slider.handles[0];
-    //
-    //         assert.strictEqual(slider.size, 200);
-    //         assert.strictEqual(track.elem.width(), 200);
-    //         assert.strictEqual(handle.pos, 50);
-    //
-    //         viewport.set(base_width / 2, base_height);
-    //         window.dispatchEvent(new Event('resize'));
-    //
-    //         assert.strictEqual(slider.size, 100);
-    //         assert.strictEqual(track.elem.width(), 100);
-    //         assert.strictEqual(handle.pos, 25);
-    //     });
-    // });
+    QUnit.test('Slider -> resize window', (assert) => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, { value: 50, range: 'min' });
+        const track = slider.track;
+        const handle = slider.handles[0];
 
-    QUnit.test('SliderWidget -> single value', assert => {
+        assert.strictEqual(slider.size, 200);
+        assert.strictEqual(handle.pos, 100);
+        assert.strictEqual(track.range_elem.width(), 100);
+
+        elem.css('width', 100);
+        window.dispatchEvent(new Event('resize'));
+
+        assert.strictEqual(slider.size, 100);
+        assert.strictEqual(handle.value, 50);
+        assert.strictEqual(handle.pos, 50);
+        assert.strictEqual(track.range_elem.width(), 50);
+
+        slider.destroy();
+    });
+
+    QUnit.test('SliderWidget -> single value', (assert) => {
         $(`
         <div class="yafowil_slider">
           <input class="slider_value" type="text" value="60"/>
@@ -1191,7 +1241,7 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(widget.elements[0].label.html(), '40');
     });
 
-    QUnit.test('SliderWidget -> range value', assert => {
+    QUnit.test('SliderWidget -> range value', (assert) => {
         $(`
         <div class="yafowil_slider" data-range="true">
           <input class="lower_value" type="text" value="25"/>
@@ -1225,44 +1275,41 @@ QUnit.module('slider_widget', hooks => {
         assert.strictEqual(widget.elements[0].label.html(), '50');
     });
 
-    QUnit.test('register_array_subscribers', assert => {
+    QUnit.test('register_array_subscribers', (assert) => {
         let _array_subscribers = {
-            on_add: []
+            on_add: [],
         };
 
         // window.yafowil_array is undefined - return
         register_array_subscribers();
-        assert.deepEqual(_array_subscribers['on_add'], []);
+        assert.deepEqual(_array_subscribers.on_add, []);
 
         // patch yafowil_array
         window.yafowil_array = {
-            on_array_event: function(evt_name, evt_function) {
+            on_array_event: (evt_name, evt_function) => {
                 _array_subscribers[evt_name] = evt_function;
             },
             inside_template(elem) {
                 return elem.parents('.arraytemplate').length > 0;
-            }
+            },
         };
         register_array_subscribers();
 
         // create table DOM
-        let table = $('<table />')
-            .append($('<tr />'))
-            .append($('<td />'))
-            .appendTo('body');
+        const table = $('<table />').append($('<tr />')).append($('<td />')).appendTo('body');
 
-        let el = $(`<div />`).addClass('yafowil_slider');
+        const el = $(`<div />`).addClass('yafowil_slider');
         $('td', table).addClass('arraytemplate');
         el.appendTo($('td', table));
 
         // invoke array on_add - returns
-        _array_subscribers['on_add'].apply(null, $('tr', table));
+        _array_subscribers.on_add.apply(null, $('tr', table));
         let widget = el.data('yafowil-slider');
         assert.notOk(widget);
         $('td', table).removeClass('arraytemplate');
 
         // invoke array on_add
-        _array_subscribers['on_add'].apply(null, $('tr', table));
+        _array_subscribers.on_add.apply(null, $('tr', table));
         widget = el.data('yafowil-slider');
         assert.ok(widget);
         table.remove();

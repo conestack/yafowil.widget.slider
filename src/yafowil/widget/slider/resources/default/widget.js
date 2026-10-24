@@ -11,7 +11,7 @@ var yafowil_slider = (function (exports, $) {
         for (const idx in source) {
             name = source[idx];
             if (cb[name] === undefined) {
-                throw "'" + name + "' not found.";
+                throw `'${name}' not found.`;
             }
             cb = cb[name];
         }
@@ -20,7 +20,7 @@ var yafowil_slider = (function (exports, $) {
     class SliderHandle {
         constructor(slider, index, value) {
             this.slider = slider;
-            let h_diam = slider.handle_diameter;
+            const h_diam = slider.handle_diameter;
             this.elem = $('<div />')
                 .addClass('slider-handle')
                 .width(h_diam)
@@ -46,7 +46,7 @@ var yafowil_slider = (function (exports, $) {
             return this._value;
         }
         set value(value) {
-            let slider = this.slider,
+            const slider = this.slider,
                 min = slider.min,
                 max = slider.max,
                 vertical = slider.vertical;
@@ -67,7 +67,7 @@ var yafowil_slider = (function (exports, $) {
             return this._pos;
         }
         set pos(pos) {
-            let slider = this.slider,
+            const slider = this.slider,
                 min = slider.min,
                 max = slider.max,
                 len = slider.size;
@@ -78,7 +78,7 @@ var yafowil_slider = (function (exports, $) {
             return this._selected;
         }
         set selected(selected) {
-            let elem = this.elem,
+            const elem = this.elem,
                 slider = this.slider;
             if (selected) {
                 slider.unselect_handles();
@@ -108,22 +108,18 @@ var yafowil_slider = (function (exports, $) {
             e.stopPropagation();
             this.selected = true;
             this.slider.trigger('start', this);
-            $(document)
-                .on('mousemove touchmove', this._on_move)
-                .on('mouseup touchend', this._on_end);
+            $(document).on('mousemove touchmove', this._on_move).on('mouseup touchend', this._on_end);
         }
         _on_move(e) {
             e.preventDefault();
             e.stopPropagation();
-            let slider = this.slider;
+            const slider = this.slider;
             this.pos = slider.pos_from_evt(e);
             slider.trigger('slide', this);
         }
         _on_end(e) {
             e.preventDefault();
-            $(document)
-                .off('mousemove touchmove', this._on_move)
-                .off('mouseup touchend', this._on_end);
+            $(document).off('mousemove touchmove', this._on_move).off('mouseup touchend', this._on_end);
             this.slider.trigger('stop', this);
         }
         _on_scroll(e) {
@@ -162,12 +158,12 @@ var yafowil_slider = (function (exports, $) {
             slider.trigger('change', this);
         }
         _align_value(value) {
-            let slider = this.slider,
+            const slider = this.slider,
                 min = slider.min,
                 step = slider.step;
             if (step) {
                 value -= min;
-                let offset = value % step;
+                const offset = value % step;
                 value = Math.floor(value / step) * step;
                 if (offset >= step / 2) {
                     value += step;
@@ -180,20 +176,20 @@ var yafowil_slider = (function (exports, $) {
             if (this._force_value) {
                 return value;
             }
-            let slider = this.slider,
+            const slider = this.slider,
                 handles = slider.handles,
                 index = this.index;
             if (handles === undefined) {
                 return value;
             }
             if (index > 0) {
-                let prev = handles[index - 1];
+                const prev = handles[index - 1];
                 if (value < prev.value) {
                     value = prev.value;
                 }
             }
             if (index < handles.length - 1) {
-                let next = handles[index + 1];
+                const next = handles[index + 1];
                 if (value > next.value) {
                     value = next.value;
                 }
@@ -204,7 +200,7 @@ var yafowil_slider = (function (exports, $) {
     class SliderTrack {
         constructor(slider) {
             this.slider = slider;
-            let vertical = slider.vertical,
+            const vertical = slider.vertical,
                 thickness = slider.thickness,
                 thickness_attr = vertical ? 'width' : 'height';
             this.elem = $('<div />')
@@ -212,12 +208,13 @@ var yafowil_slider = (function (exports, $) {
                 .css(thickness_attr, thickness)
                 .appendTo(slider.elem);
             this.range_elem = null;
-            let range = slider.range;
+            const range = slider.range;
             if (range) {
-                let range_elem = this.range_elem = $('<div />')
+                const range_elem = $('<div />')
                     .addClass('slider-value-track')
                     .css(thickness_attr, thickness)
                     .appendTo(slider.elem);
+                this.range_elem = range_elem;
                 if (range === 'min' && vertical) {
                     range_elem.css('bottom', 0).css('top', 'auto');
                 } else if (range === 'max' && !vertical) {
@@ -235,12 +232,12 @@ var yafowil_slider = (function (exports, $) {
             $(window).off('resize', this.update);
         }
         update() {
-            let slider = this.slider,
+            const slider = this.slider,
                 range = slider.range;
             if (!range) {
                 return;
             }
-            let handles = slider.handles,
+            const handles = slider.handles,
                 pos_0 = handles[0].pos,
                 pos_1 = range === true ? handles[1].pos : null,
                 elem = this.range_elem;
@@ -290,7 +287,7 @@ var yafowil_slider = (function (exports, $) {
                 value = opts.value || [0, 0];
                 this.handles = [
                     new SliderHandle(this, 0, value[0]),
-                    new SliderHandle(this, 1, value[1])
+                    new SliderHandle(this, 1, value[1]),
                 ];
             } else {
                 value = opts.value || 0;
@@ -300,7 +297,7 @@ var yafowil_slider = (function (exports, $) {
             this._on_down = this._on_down.bind(this);
             if (!this.disabled) {
                 this.elem.on('mousedown touchstart', this._on_down);
-                for (let evt of ['change', 'create', 'slide', 'start', 'stop']) {
+                for (const evt of ['change', 'create', 'slide', 'start', 'stop']) {
                     if (opts[evt]) {
                         this.elem.on(evt, opts[evt]);
                     }
@@ -309,26 +306,26 @@ var yafowil_slider = (function (exports, $) {
             this.trigger('create', this);
         }
         get value() {
-            let handles = this.handles;
-            if (handles.length == 1) {
+            const handles = this.handles;
+            if (handles.length === 1) {
                 return handles[0].value;
             }
-            let value = [];
-            for (let handle of handles) {
+            const value = [];
+            for (const handle of handles) {
                 value.push(handle.value);
             }
             return value;
         }
         set value(value) {
-            if (!(value instanceof Array)) {
+            if (!Array.isArray(value)) {
                 value = [value];
             }
-            let handles = this.handles;
+            const handles = this.handles;
             if (value.length !== handles.length) {
                 throw new Error('Invalid value size');
             }
             let prev = 0;
-            for (let val of value) {
+            for (const val of value) {
                 if (val < this.min || val > this.max) {
                     throw new Error('Value out of bounds');
                 }
@@ -338,7 +335,7 @@ var yafowil_slider = (function (exports, $) {
                 prev = val;
             }
             let handle;
-            for (let i in handles) {
+            for (const i in handles) {
                 handle = handles[i];
                 handle._force_value = true;
                 handle.value = value[i];
@@ -347,7 +344,7 @@ var yafowil_slider = (function (exports, $) {
             this.track.update();
         }
         get size() {
-            let elem = this.elem;
+            const elem = this.elem;
             return this.vertical ? elem.height() : elem.width();
         }
         on(names, handle) {
@@ -357,21 +354,21 @@ var yafowil_slider = (function (exports, $) {
             this.elem.off(names, handle);
         }
         trigger(name, widget) {
-            this.elem.trigger(new $.Event(name, {widget: widget}));
+            this.elem.trigger(new $.Event(name, { widget: widget }));
         }
         destroy() {
             this.track.destroy();
-            for (let handle of this.handles) {
+            for (const handle of this.handles) {
                 handle.destroy();
             }
         }
         unselect_handles() {
-            $('div.slider-handle').each(function() {
+            $('div.slider-handle').each(function () {
                 $(this).data('slider-handle').selected = false;
             });
         }
         pos_from_evt(e) {
-            let vertical = this.vertical,
+            const vertical = this.vertical,
                 e_offset = this.elem.offset(),
                 offset = vertical ? e_offset.top : e_offset.left;
             if (e.type === 'mousedown' || e.type === 'mousemove') {
@@ -392,7 +389,7 @@ var yafowil_slider = (function (exports, $) {
             this.trigger('change', handle);
         }
         _closest_handle(pos) {
-            let handles = this.handles,
+            const handles = this.handles,
                 vertical = this.vertical,
                 first = vertical ? handles[handles.length - 1] : handles[0],
                 last = vertical ? handles[0] : handles[handles.length - 1];
@@ -401,8 +398,8 @@ var yafowil_slider = (function (exports, $) {
             } else if (pos >= last.pos) {
                 return last;
             }
-            let distances = [];
-            for (let handle of handles) {
+            const distances = [];
+            for (const handle of handles) {
                 distances.push(Math.abs(pos - handle.pos));
             }
             return handles[distances.indexOf(Math.min(...distances))];
@@ -410,10 +407,9 @@ var yafowil_slider = (function (exports, $) {
     }
     class SliderWidget {
         static initialize(context) {
-            $('.yafowil_slider', context).each(function() {
-                let elem = $(this);
-                if (window.yafowil_array !== undefined &&
-                    window.yafowil_array.inside_template(elem)) {
+            $('.yafowil_slider', context).each(function () {
+                const elem = $(this);
+                if (window.yafowil_array?.inside_template(elem)) {
                     return;
                 }
                 new SliderWidget(elem, {
@@ -431,7 +427,7 @@ var yafowil_slider = (function (exports, $) {
                     slide: lookup_callback(elem.data('slide')),
                     start: lookup_callback(elem.data('start')),
                     stop: lookup_callback(elem.data('stop')),
-                    disabled: elem.data('disabled')
+                    disabled: elem.data('disabled'),
                 });
             });
         }
@@ -441,27 +437,32 @@ var yafowil_slider = (function (exports, $) {
             this.disabled = opts.disabled;
             this.range = opts.range;
             if (this.range === true) {
-                this.elements = [{
-                    input: $('input.lower_value', elem),
-                    label: $('span.lower_value', elem)
-                }, {
-                    input: $('input.upper_value', elem),
-                    label: $('span.upper_value', elem)
-                }];
+                this.elements = [
+                    {
+                        input: $('input.lower_value', elem),
+                        label: $('span.lower_value', elem),
+                    },
+                    {
+                        input: $('input.upper_value', elem),
+                        label: $('span.upper_value', elem),
+                    },
+                ];
                 opts.value = [
-                    parseInt(this.elements[0].input.val()),
-                    parseInt(this.elements[1].input.val())
+                    parseInt(this.elements[0].input.val(), 10),
+                    parseInt(this.elements[1].input.val(), 10),
                 ];
             } else {
-                this.elements = [{
-                    input: $('input.slider_value', elem),
-                    label: $('span.slider_value', elem)
-                }];
-                opts.value = parseInt(this.elements[0].input.val());
+                this.elements = [
+                    {
+                        input: $('input.slider_value', elem),
+                        label: $('span.slider_value', elem),
+                    },
+                ];
+                opts.value = parseInt(this.elements[0].input.val(), 10);
             }
             this.slider = new Slider($('div.slider', elem), opts);
             if (!this.disabled) {
-                this.slider.on('change slide stop', e => {
+                this.slider.on('change slide stop', (e) => {
                     this._update_value(e.widget);
                 });
             }
@@ -470,20 +471,20 @@ var yafowil_slider = (function (exports, $) {
             return this.slider.value;
         }
         set value(value) {
-            let slider = this.slider;
+            const slider = this.slider;
             slider.value = value;
-            for (let handle of slider.handles) {
+            for (const handle of slider.handles) {
                 this._update_value(handle);
             }
         }
         _update_value(handle) {
-            let index = handle.index,
+            const index = handle.index,
                 element = this.elements[index];
             element.input.attr('value', handle.value);
             element.label.html(handle.value);
         }
     }
-    function slider_on_array_add(inst, context) {
+    function slider_on_array_add(_inst, context) {
         SliderWidget.initialize(context, true);
     }
     function register_array_subscribers() {
@@ -493,7 +494,7 @@ var yafowil_slider = (function (exports, $) {
         window.yafowil_array.on_array_event('on_add', slider_on_array_add);
     }
 
-    $(function() {
+    $(() => {
         if (window.ts !== undefined) {
             ts.ajax.register(SliderWidget.initialize, true);
         } else if (window.bdajax !== undefined) {
