@@ -4,6 +4,10 @@ Changes
 2.0.1 (unreleased)
 ------------------
 
+- Fix setting a negative value on a slider with a negative ``min``. It failed
+  with "Single values in range must be in ascending order".
+  [rnix]
+
 - Extend the JS tests to 100 % coverage, all modules including bundles are
   loaded by the tests now.
   [rnix]

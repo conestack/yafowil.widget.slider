@@ -324,7 +324,7 @@ var yafowil_slider = (function (exports, $) {
             if (value.length !== handles.length) {
                 throw new Error('Invalid value size');
             }
-            let prev = 0;
+            let prev = this.min;
             for (const val of value) {
                 if (val < this.min || val > this.max) {
                     throw new Error('Value out of bounds');

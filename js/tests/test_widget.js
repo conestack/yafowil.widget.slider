@@ -878,6 +878,25 @@ QUnit.module('slider_widget', (hooks) => {
         }, 'Single values in range must be in ascending order');
     });
 
+    QUnit.test('Slider.value -> negative min', (assert) => {
+        const elem_s = $('<div />').css('width', 200).appendTo(container);
+        const slider_s = new Slider(elem_s, { min: -100, max: 100 });
+
+        slider_s.value = -50;
+        assert.strictEqual(slider_s.value, -50);
+        slider_s.value = -100;
+        assert.strictEqual(slider_s.value, -100);
+
+        const elem_r = $('<div />').css('width', 200).appendTo(container);
+        const slider_r = new Slider(elem_r, { min: -100, max: 100, range: true });
+
+        slider_r.value = [-75, -25];
+        assert.deepEqual(slider_r.value, [-75, -25]);
+        assert.throws(() => {
+            slider_r.value = [-25, -75];
+        }, 'Single values in range must be in ascending order');
+    });
+
     QUnit.test('Slider.size', (assert) => {
         const elem_h = $('<div />').css('width', 100).appendTo(container);
         const slider_h = new Slider(elem_h, {});
