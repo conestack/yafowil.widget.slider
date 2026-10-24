@@ -897,6 +897,21 @@ QUnit.module('slider_widget', (hooks) => {
         }, 'Single values in range must be in ascending order');
     });
 
+    QUnit.test('Slider.constructor -> zero max', (assert) => {
+        const elem = $('<div />').css('width', 200).appendTo(container);
+        const slider = new Slider(elem, { min: -100, max: 0, value: -50 });
+        assert.strictEqual(slider.min, -100);
+        assert.strictEqual(slider.max, 0);
+        assert.strictEqual(slider.value, -50);
+        assert.strictEqual(slider.handles[0].pos, slider.size / 2);
+
+        slider.value = 0;
+        assert.strictEqual(slider.value, 0);
+        assert.throws(() => {
+            slider.value = 50;
+        }, 'Value out of bounds');
+    });
+
     QUnit.test('Slider.size', (assert) => {
         const elem_h = $('<div />').css('width', 100).appendTo(container);
         const slider_h = new Slider(elem_h, {});

@@ -270,8 +270,8 @@ var yafowil_slider = (function (exports, $) {
             this.range = opts.range || false;
             this.handle_diameter = opts.handle_diameter || 20;
             this.thickness = opts.thickness || 8;
-            this.min = opts.min || 0;
-            this.max = opts.max || 100;
+            this.min = opts.min ?? 0;
+            this.max = opts.max ?? 100;
             this.step = opts.step || false;
             this.scroll_step = opts.step || opts.scroll_step || 1;
             this.vertical = opts.orientation === 'vertical';

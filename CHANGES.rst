@@ -4,6 +4,11 @@ Changes
 2.0.1 (unreleased)
 ------------------
 
+- Fix ``max: 0`` being ignored by ``Slider``. The slider used the default
+  maximum of 100 instead, e.g. ``min: -100, max: 0`` resulted in a range from
+  -100 to 100.
+  [rnix]
+
 - Fix setting a negative value on a slider with a negative ``min``. It failed
   with "Single values in range must be in ascending order".
   [rnix]
