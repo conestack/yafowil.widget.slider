@@ -1,25 +1,30 @@
 import $ from 'jquery';
 
+// Reachable through a path, but never meant to be a callback.
+const REFUSED_CALLBACKS = ['eval', 'Function', 'setTimeout', 'setInterval'].map(
+    (name) => window[name],
+);
+
 /**
  * Retrieves a callback function from a given string path in `window` object.
  *
  * @param {string} path - Dot-separated path to the desired function.
  * @returns {Function|null} - The callback function, or null if path is empty.
- * @throws Will throw an error if a part of the path is undefined.
+ * @throws Will throw an error if the path is no own path to a function.
  */
 export function lookup_callback(path) {
     if (!path) {
         return null;
     }
-    let source = path.split('.'),
-        cb = window,
-        name;
-    for (const idx in source) {
-        name = source[idx];
-        if (cb[name] === undefined) {
+    let cb = window;
+    for (const name of path.split('.')) {
+        if (!Object.hasOwn(Object(cb), name)) {
             throw `'${name}' not found.`;
         }
         cb = cb[name];
+    }
+    if (typeof cb !== 'function' || REFUSED_CALLBACKS.includes(cb)) {
+        throw `'${path}' is no callback.`;
     }
     return cb;
 }

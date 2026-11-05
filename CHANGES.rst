@@ -4,6 +4,11 @@ Changes
 2.0.2 (unreleased)
 ------------------
 
+- Callback paths in ``slide``, ``change`` and the like resolve own properties only
+  and have to point to a function. ``eval``, ``Function``, ``setTimeout`` and
+  ``setInterval`` are refused.
+  [rnix]
+
 - Encode the value shown with ``show_value``. Requires ``yafowil`` 4.2.0.
   [rnix]
 

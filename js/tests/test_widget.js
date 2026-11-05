@@ -36,6 +36,21 @@ QUnit.module('slider_widget', (hooks) => {
         delete window.namespace;
     });
 
+    QUnit.test('lookup_callback only returns own functions', (assert) => {
+        window.namespace = { callback: () => {}, value: 1 };
+        assert.strictEqual(lookup_callback('namespace.callback'), window.namespace.callback);
+        assert.raises(() => lookup_callback('namespace.toString'), /'toString' not found/);
+        assert.raises(() => lookup_callback('namespace.value'), /is no callback/);
+        assert.raises(() => lookup_callback('namespace'), /is no callback/);
+        delete window.namespace;
+    });
+
+    QUnit.test('lookup_callback refuses functions which run code', (assert) => {
+        for (const name of ['eval', 'Function', 'setTimeout', 'setInterval']) {
+            assert.raises(() => lookup_callback(name), /is no callback/);
+        }
+    });
+
     QUnit.test('SliderHandle.constructor', (assert) => {
         const elem = $('<div />').css('width', 100).appendTo(container);
         const slider = new Slider(elem, {});

@@ -1,19 +1,22 @@
 var yafowil_slider = (function (exports, $) {
     'use strict';
 
+    const REFUSED_CALLBACKS = ['eval', 'Function', 'setTimeout', 'setInterval'].map(
+        (name) => window[name],
+    );
     function lookup_callback(path) {
         if (!path) {
             return null;
         }
-        let source = path.split('.'),
-            cb = window,
-            name;
-        for (const idx in source) {
-            name = source[idx];
-            if (cb[name] === undefined) {
+        let cb = window;
+        for (const name of path.split('.')) {
+            if (!Object.hasOwn(Object(cb), name)) {
                 throw `'${name}' not found.`;
             }
             cb = cb[name];
+        }
+        if (typeof cb !== 'function' || REFUSED_CALLBACKS.includes(cb)) {
+            throw `'${path}' is no callback.`;
         }
         return cb;
     }
