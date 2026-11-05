@@ -92,11 +92,17 @@ def slider_edit_renderer(widget, data, display_mode=False):
         if unit:
             content += data.tag('span', '%s: ' % unit, **{'class': 'unit'})
         if range is True:
-            content += data.tag('span', value[0], **{'class': 'lower_value'})
+            content += data.tag(
+                'span', data.tag.escape(value[0]), **{'class': 'lower_value'}
+            )
             content += ' - '
-            content += data.tag('span', value[1], **{'class': 'upper_value'})
+            content += data.tag(
+                'span', data.tag.escape(value[1]), **{'class': 'upper_value'}
+            )
         else:
-            content += data.tag('span', value, **{'class': 'slider_value'})
+            content += data.tag(
+                'span', data.tag.escape(value), **{'class': 'slider_value'}
+            )
     slider_attrs = {'class': 'slider'}
     if attr_value('orientation', widget, data) == 'vertical':
         height = attr_value('height', widget, data)

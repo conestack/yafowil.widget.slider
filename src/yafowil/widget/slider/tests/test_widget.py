@@ -104,6 +104,22 @@ class TestSliderWidget(YafowilTestCase):
             fxml(widget()),
         )
 
+    def test_render_encodes_shown_value(self):
+        widget = factory(
+            'slider', name='sliderfield', value='<b>&', props={'show_value': True}
+        )
+        self.assertIn('<span class="slider_value">&lt;b&gt;&amp;</span>', widget())
+
+        widget = factory(
+            'slider',
+            name='sliderfield',
+            value=['<b>', '<i>'],
+            props={'show_value': True, 'range': True},
+        )
+        rendered = widget()
+        self.assertIn('<span class="lower_value">&lt;b&gt;</span>', rendered)
+        self.assertIn('<span class="upper_value">&lt;i&gt;</span>', rendered)
+
     def test_render_range(self):
         # Render range
         widget = factory('slider', name='sliderfield', props={'range': True})
