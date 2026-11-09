@@ -1,7 +1,7 @@
 Changes
 =======
 
-2.0.2 (unreleased)
+2.0.2 (2026-11-09)
 ------------------
 
 - Callback paths in ``slide``, ``change`` and the like resolve own properties only
